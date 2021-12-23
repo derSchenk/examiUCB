@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+body{
+	font-family: 'Open Sans', sans-serif;*/
+	font-weight: bold;
+	letter-spacing: 0.2em;
+	background-color: #95F0B6;
+	margin: 0;
+}
+body::-webkit-scrollbar {   /*Nur für Chrome. Eventuell später für ander Browser hinzufügen.*/
+    display: none;
+}
+
+h2{
+	font-size: medium;
+	margin-top: 10vh;
+	margin-left: 3vw;
+
+}
+
+hr{
+	border: 1px solid black;
+	margin-top: 4vh;
+}
+
+hr:last-of-type{
+	margin-bottom: 7vh;
+	border-color: #95F0B6;
+}
+
+a{
+	text-decoration: none;
+}
+
+
+/*--------------NAV-------------------------------------------------------------------------------------*/
+
+#nav{
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 1vw;
+	height: 11vh;
+	font-size:medium;
+	background-color: black;
+	position: sticky;
+	top: 0;
+	z-index: 12;
+	}
+
+	.navitem:last-child{
+		border-right: 0;
+	}
+
+	.navitem:hover{
+		color: #F46EBE;
+	}
+
+.navitem{
+	color: white;
+	background-color: black;
+	height: 2vw;
+	width: 10vw;
+	text-align: center;
+	border-right: 2px solid white;
+}
+
+.menutext{
+	position: relative;
+	top: calc(50% - 1ex);
+}
+
+.zent{
+	display: flex;
+	justify-content: center;
+}
+/*FORM--------------------------*/
+form input, .auswahl, button{
+	height: 2.5vh;
+	min-height: 1em;
+	border-radius: 3px;
+	border-color: white;
+	border-style: none;
+}
+
+.wrapper{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1vw;
+	margin-top: 3vh;
+}
+
+/*Umrechner-----------------------*/
+#footer{
+	background-color: black;
+	height: 7vh;
+	position: fixed;
+	z-index: 12;
+	bottom: 0;
+	right: 0;
+	left:0;
+	color: white;
+}
+
+#footer span{
+	font-size: x-small;
+}
+
+#ergebnis, #ergebnis2, #ergebnis3{
+	width: 4em;
+}
+
+#footer form{
+	margin-top: 2vh;
+}
+
+#date{
+	width: 13vw;
+}

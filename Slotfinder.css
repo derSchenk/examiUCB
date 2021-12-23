@@ -1,0 +1,169 @@
+
+
+/*------------------------------FORM-----------------------------------------------------------------------*/
+
+form{
+	margin: 1vh;
+	margin-top: 5vh;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1vw;
+}
+
+
+#datalistpruf{
+	width: 17.57vw;
+	margin-top: 0.5vh;
+	border-radius: 3px;
+	border-color: white;
+	border-style: none;
+}
+
+#inputlistprufinput{
+	width: 13vw;
+	margin-right: -0.2vw;
+	border-radius: 3px;
+	border-color: white;
+	border-style: none;
+
+}
+#buttonaddpruf{
+	width: 4.2vw;
+	margin-left: 0;
+	height: 2.8vh;
+	min-height: 1.5em;
+	color: white;
+	background-color: black;
+}
+
+#buttonaddpruf:hover{
+	border: 1px solid #F46EBE;
+	color: #F46EBE;
+}
+
+#selectroomcat{
+	width: 13vw;
+	height: 2.8vh;
+	min-height: 1em;
+	border-radius: 3px;
+	border-color: white;
+	border-style: none;
+}
+
+#buttonSuchen{
+	height: 2.8vh;
+	min-height: 1.5em;
+	width: 8vw;
+	background-color: black;
+	color: white;
+}
+
+#buttonSuchen:hover{
+	border: 1px solid #F46EBE;
+	color: #F46EBE;
+}
+
+/*GRID---------------------------------------------*/
+
+.insidediv{
+	border: 2px solid black;
+	border-radius: 10px;
+	padding: 1vh;
+	margin: 1px;
+	background-color: white;
+}
+
+.outsidediv{
+	display: flex;
+	flex: none;
+	border-bottom: 1px solid gray;
+}
+
+
+.nameDiv{
+	flex:0 0 15vw;
+	position: sticky;
+	left: 0;
+	background-color: #95F0B6;
+	border-right: 1px solid gray;
+
+	vertical-align: sub;
+}
+
+#raumgrid{
+	width: 100%;
+	overflow-x: scroll;
+	margin-top: -10vh;
+	margin-bottom: 7vh;
+
+}
+::-webkit-scrollbar {
+  width: 10px;
+	background: white;
+	height: 1vh;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: black;
+	border-radius: 100px;
+}
+
+::-webkit-scrollbar-track-piece{
+	background:#E7E9EB;
+}
+
+::-webkit-scrollbar-track-piece:hover{
+	background: #E7E9EB;
+}
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #black;
+		border-radius: 100px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb{
+  background: black;
+		border-radius: 100px;
+}
+
+/*Drag and Drop ELemmt*/
+.dnd{
+	width: 4.5vw;
+	height: 4.5vh;
+	background-color: pink;
+	border: 1px solid black;
+	border-radius: 30px;
+	vertical-align: middle;
+	text-align: center;
+	font-size: medium;
+	cursor: move;
+}
+
+.dropable{
+
+}
+
+.dragable{
+
+}
+
+#panel{
+	display:flex;
+	position: sticky;
+	bottom: 7.5vh;
+	width: 21vw;
+}
+
+.newdrag{
+	justify-content: center;
+	align-items: center;
+	width: 10vw;
+	height: 10vh;
+	border: 1px solid black;
+	border-radius: 10px;
+	margin-top: 1vh;
+	margin-left: 0.5vw;
+	font-size: x-small
+}

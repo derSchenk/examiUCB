@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>examiUCB</title>
+	<link rel="stylesheet" href="Slotfinder.css">
+  <script src="commonJS.js" async></script>
+	<script src="slotfinder.js" async></script>
+  <link rel="stylesheet" href="commonStyle.css">
+  </head>
+  <body>
+
+
+  <nav id="nav">
+    <a href="index.html"><div class="navitem" id="navitemeins"><span style="color:#F46EBE;" class="menutext">Slotfinder</span></div></a>
+    <a href="prüfungAnlegen.html"><div class="navitem" id="navitemeins"><span class="menutext">Prüfungen</span></div></a>
+    <a href="StudsemAnlegen.html"><div class="navitem" id="navitemeins"><span class="menutext">StudSem</span></div></a>
+    <a href="AnwesenAnlegen.html"><div class="navitem" id="navitemeins"><span class="menutext">Anwesende</span></div></a>
+    <a href="RaumAnlegen.html"><div class="navitem" id="navitemeins"><span class="menutext">Räume</span></div></a>
+  </nav>
+  <h2>Zeitfenster suchen:</h2>
+  <div class="zent">
+  	<form id="formular">
+  		<div>
+  			<label id="inputlistpruf">
+  				<input name="inputlistpruf" autocomplete="off" id="inputlistprufinput" list="listprufungen" placeholder="Prüfung eintragen" title="Prüfung zum Slot hinzufügen">
+  			</label>
+  			<datalist id="listprufungen"></datalist>
+  			<button id="buttonaddpruf">add</button><br>
+  			<label id="datalistpruf2">
+  				<select title="STRG gedrückt halten zum entwählen einzelner Prüfungen" name="datalistpruf2" id="datalistpruf" name="cars" size="4" multiple></select>
+  			</label>
+  		</div>
+  		<div>
+  			<label id="selectroomcat2">
+  				<select name="selectroomcat2" id="selectroomcat" title="Raumkategorie">
+  				  <option value="Saal" selected>Saal (Default)</option>
+  				  <option value="PC-Pool">PC-Pool</option>
+  				  <option value="Cat3">Cat3</option>
+  				  <option value="Cat4">Kein Raum benötigt</option>
+  				</select>
+  			</label>
+  		</div>
+  		<div>
+  			<label id="ZeitPrufung2">
+  				<input id="ZeitPrufung" step=30 name="ZeitPrufung2" placeholder="Zeit der Prüfung in Min." title="Zeit der Prüfung in Min." value="90" min=0 max=600 type=number>
+  			</label>
+  		</div>
+  		<div>
+  			<label id="kws2">
+  				<input id="kws" name="kws2" placeholder="Gewünschte Kalenderwoche(n)" title="Gewünschte Kalenderwoche(n) separiert durch Leerzeichen">
+  			</label>
+  		</div>
+  		<div>
+  			<label id="days2">
+  				<input id="days" name="days2" placeholder="Gewünschte Tage (1 bis 5)" value="1 2 3 4 5" title="Gewünschte Tage (1=Montag, 2=Di., usw., 5=Fr.) separiert durch Leerzeichen">
+  			</label>
+  		</div>
+  		<div>
+  			<input id="buttonSuchen" type="submit" value="Slot suchen" >
+  		</div>
+  	</form>
+  </div>
+  <hr>
+  <div id="footer">
+    <form>
+      <div>
+        <span>Datum:</span>
+        <input type="date" id="date">
+        <span style="margin-left: 2vw;">KW / Wochentag / Jahr:</span>
+        <input type="number" min="1" max="53" id="ergebnis" title="KW" placeholder="KW*">
+        <span>/</span>
+        <input type="number" min="1" max="7" id="ergebnis2" title="Tag 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr, 6=Sa, 7=So" placeholder="Tag">
+        <span>/</span>
+        <input type="number" min="2021" id="ergebnis3" title="Falls keine Angabe wird dieses Jahr oder das nächste Jahr angenommen. Das nächste Jahr wird angenommen wenn die angegebene KW in diesem Jahr bereits mehr als 2 Monate in der Vergangenheit liegt." placeholder="JJJJ">
+      </div>
+    </form>
+  </div>
+  <hr>
+  <div id="raumgrid" hidden></div>
+  <div id="panel">
+    <div class="newdrag" hidden>
+      <div draggable="true" class="dnd dragable" id="drag1" data-token="true" title="Bewege den Token nicht zu schnell von einem Slot in einen anderen." hidden>3</div>
+    </div>
+    <div class="newdrag" id="papierkorb" draggable="false" hidden><span id="paperbin">Papierkorb</span></div>
+  <div>
+  <hr>
+  </body>
+  <script>
+	require('./renderer.js');
+  </script>
+</html>

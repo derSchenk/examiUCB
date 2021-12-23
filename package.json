@@ -1,0 +1,17 @@
+{
+  "name": "myapp",
+  "version": "1.0.0",
+  "description": "Prüfungsverwaltung",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Christopher Gehlen",
+  "license": "ISC",
+  "dependencies": {
+    "dialogs": "^2.0.1",
+    "electron": "^16.0.3",
+    "mysql": "^2.18.1",
+    "vex-dialog": "^1.1.0"
+  }
+}

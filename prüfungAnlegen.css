@@ -1,0 +1,85 @@
+
+
+/*------------------------------FORM-----------------------------------------------------------------------*/
+
+form{
+	margin: 1vh;
+	margin-top: 5vh;
+}
+
+
+
+#pflichtprufcheck{
+	height: 2.6vh;
+	width: 2.6vw;
+	margin-left: -1.5vw;
+}
+
+#dataliststudsem, #datalistanwesen{
+	width: 31.5vw;
+	margin-top: 0.5vh;
+	border-radius: 3px;
+	border-color: white;
+	border-style: none;
+}
+
+#inputlistanweseninput, #inputliststudseminput{
+	width: 27vw;
+	margin-right: -0.2vw;
+	border-radius: 3px;
+	border-color: white;
+	border-style: none;
+
+}
+#buttonaddstudsem, #buttonaddanwesen {
+	width: 4.2vw;
+	margin-left: 0;
+	height: 2.8vh;
+	min-height: 1.5em;
+	color: white;
+	background-color: black;
+}
+
+#buttonaddstudsem:hover,#buttonaddanwesen:hover {
+	border: 1px solid #F46EBE;
+	color: #F46EBE;
+}
+
+#pp{
+	font-size: small;
+	margin-left: 2vw;
+	color: gray;
+	padding-top: 0.5vh;
+	margin-right: 0.3vw;
+}
+
+textarea{
+	width: 31.3vw;
+	border-radius: 3px;
+	border-color: white;
+	border-style: none;
+	font-family: arial;
+}
+
+.waehlen, input{
+	width: 20.7vw;
+	height: 2.8vh;
+	min-height: 1em;
+	border-radius: 3px;
+	border-color: white;
+	border-style: none;
+}
+
+#buttonAddPruf,#buttonLöschen{
+	height: 2.8vh;
+	min-height: 1.5em;
+
+	background-color: black;
+	color: white;
+	font-weight: bold;
+}
+
+#buttonAddPruf:hover, #buttonLöschen:hover{
+	border: 1px solid #F46EBE;
+	color: #F46EBE;
+}

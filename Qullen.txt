@@ -1,0 +1,9 @@
+install Nodejs			^			https://www.youtube.com/watch?v=AuCuHvgOeBY
+Web to App ELECTRON					https://www.youtube.com/watch?v=mr9Mtm_TRpw
+Datenbank mit Node.js 					https://www.youtube.com/watch?v=h6MBeqjX0Nc&list=PLeDWwoIQzEFdCqXqQbTN2SNpMYk09SDEL&index=9
+Electron akzeptiert require() nicht  			https://stackoverflow.com/questions/55093700/electron-5-0-0-uncaught-referenceerror-require-is-not-defined/66604710#66604710
+
+https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript
+https://katjabrunner.de/wissen/html-css/eigene-attribute-definieren-mit-html5.html
+https://stackoverflow.com/questions/8923114/how-to-reset-auto-increment-in-mysql
+https://www.npmjs.com/package/dialogs

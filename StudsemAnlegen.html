@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>examiUCB</title>
+	<link rel="stylesheet" href="StudsemAnlegen.css">
+  <link rel="stylesheet" href="commonStyle.css">
+  <script src="commonJS.js" async></script>
+	<script src="StudSemAnlegen.js" async></script>
+  </head>
+  <body>
+
+
+  <nav id="nav">
+    <a href="index.html"><div class="navitem" id="navitemeins"><span  class="menutext">Slotfinder</span></div></a>
+    <a href="prüfungAnlegen.html"><div class="navitem" id="navitemeins"><span  class="menutext">Prüfungen</span></div></a>
+    <a href="StudsemAnlegen.html"><div class="navitem" id="navitemeins"><span style="color:#F46EBE;" class="menutext">StudSem</span></div></a>
+    <a href="AnwesenAnlegen.html"><div class="navitem" id="navitemeins"><span class="menutext">Anwesende</span></div></a>
+    <a href="RaumAnlegen.html"><div class="navitem" id="navitemeins"><span class="menutext">Räume</span></div></a>
+	</nav>
+  <h2>StudSem hinzufügen:</h2>
+  <div class="zent">
+  	<form class="formular">
+  		<div>
+        <input id="studiengang" title="Studiengang eintragen" placeholder="Studiengang">
+      </div>
+      <div>
+        <input id="semester" placeholder="Semester" type="number" min="1" max="15" title="Semester eintragen">
+      </div>
+  		<div>
+  			<input id="buttonEintragen" type="submit" value="StudSem eintragen" >
+  		</div>
+  	</form>
+  </div>
+  <hr>
+  <h2>StudSem entfernen:</h2>
+  <div class="zent">
+  	<form class="formular">
+      <div>
+        <input autocomplete="off" id="löschen" list="alleElemente" placeholder="Zu löschendes Element wählen" title="Zu löschendes Element wählen">
+        <datalist id="alleElemente"></datalist>
+      </div>
+  		<div>
+  			<input id="buttonLöschen" type="submit" value="Element löschen" >
+  		</div>
+  	</form>
+
+  </div>
+  <hr>
+  <div id="footer">
+    <form>
+      <div>
+        <span>Datum:</span>
+        <input type="date" id="date">
+        <span style="margin-left: 2vw;">KW / Wochentag / Jahr:</span>
+        <input type="number" min="1" max="53" id="ergebnis" title="KW" placeholder="KW*">
+        <span>/</span>
+        <input type="number" min="1" max="7" id="ergebnis2" title="Tag 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr, 6=Sa, 7=So" placeholder="Tag">
+        <span>/</span>
+        <input type="number" min="2021" id="ergebnis3" title="Falls keine Angabe wird dieses Jahr oder das nächste Jahr angenommen. Das nächste Jahr wird angenommen wenn die angegebene KW in diesem Jahr bereits mehr als 2 Monate in der Vergangenheit liegt." placeholder="JJJJ">
+      </div>
+    </form>
+  </div>
+  </body>
+  <script>
+	require('./renderer.js');
+  </script>
+</html>

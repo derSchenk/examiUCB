@@ -65,7 +65,7 @@ form{
 
 /*GRID---------------------------------------------*/
 
-.insidediv{
+.insidediv, .capcounterInner{
 	border: 2px solid black;
 	border-radius: 10px;
 	padding: 1vh;
@@ -73,10 +73,20 @@ form{
 	background-color: white;
 }
 
+.capcounterInner{
+	background-color: #A9CAEB;
+}
+
+.space{
+	display: inline-block;
+	width: 3.55em;
+}
+
 .outsidediv{
 	display: flex;
 	flex: none;
 	border-bottom: 1px solid gray;
+	width: 100%;
 }
 
 
@@ -87,7 +97,7 @@ form{
 	background-color: #95F0B6;
 	border-right: 1px solid gray;
 	opacity: 100%;
-	vertical-align: sub;
+	/*vertical-align: sub;*/
 	z-index: 1;
 }
 

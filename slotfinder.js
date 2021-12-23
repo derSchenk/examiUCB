@@ -18,7 +18,7 @@ const dragcontainer = document.querySelectorAll(".newdrag");
 
 
 
-//----------Formular-Datenspeicher---------
+//----------Formular-Datenspeicher--------- //Unnutz
 var prufungen;
 var roomcat;
 var time;
@@ -64,40 +64,44 @@ db.query(sql, function(err, results){
 //-----------------------------------------------------------------
 
 function setVisible(){
+  //Das Panel (Mit Papierkorb und Tokenquelle) soll erst sichbar sein, sobald auf "Slot suchen" gedrückt wird
+  //hierfür hidden entfernen und display eigenschaft (flex, table-cell) hinzufügen. Display direkt ins CSS-Sheet zuschreiben ist nicht möglich, da dann hidden nicht mehr funktioniert
   dnd.removeAttribute("hidden");
   dnd.style.display = "table-cell";
   dnd2 = document.querySelector(".newdrag .dnd")
   dnd2.textContent = calcTimeSlots();
   dragcontainer.forEach((item) => {
-    item.removeAttribute("hidden")
-    item.style.display = "flex";
+  item.removeAttribute("hidden")
+  item.style.display = "flex";
   })
+  //Statt hidden könnte auch Display = none gesetzt werden? Besser?
 }
 
 //Formular Daten abrufen und Format anpassen-----------------------
 function getDataForm(e) {
+//Funktion macht in diesem Zustand noch keinen Sinn, da die globalen Variablen,die durch diese Funtion initialisiert werden, können später nicht von anderen Funktionen gelesen werden. Strikte Trennung...
+//...der Funktionen -> Macht Sinn, da zum Zeitpunkt in dem die lesende Funktion durch ein Event ausgelöst wird, noch nicht gesagt ist, ob die schreibende Funktion bereits ausgelöst wurde.
 
 		e.preventDefault();
-    setVisible();
+    setVisible();          //siehe Funktion
 
 		prufungen = [];
 		days = [];
 		kalenderwochen = [];
 
 		var formData = new FormData(formular[0]);
-
+//Auslesen des Formulas mit .get/.getAll. Besser/schlechter als .value oder egal?
 		var prufungenVar = formData.getAll('datalistpruf2');
 		var timeString = formData.get('ZeitPrufung2');
-		var kalenderwochen3 = formData.get('kws2').trim();
-		var kalenderwochen2 = kalenderwochen3.split(" ");
+		var kalenderwochen3 = formData.get('kws2').trim(); //trim() entfernt Leerzeichen am Anfang und Ende --> Nur Leerzeichen werden als leere Eingabe erkannt.
+		var kalenderwochen2 = kalenderwochen3.split(" "); //KWs werden leerzeichen-separiert vom User angegeben
 		var daysdrei = formData.get('days2').trim();
 		var dayszwei = daysdrei.split(" ");
 	  var timeVar= parseInt(timeString);
 
 		if(prufungenVar.length > 0 && kalenderwochen3.localeCompare("") != 0 && daysdrei.localeCompare("") != 0 && timeVar >= 0){
-		//ÄNDERN: Wenn nur ein Buchsstabe in Kalenderwochen ist, wird es akzeptiert!!!
-			prufungen = prufungenVar;
-			var time = timeVar;
+		//Prüft nicht sämtliche Fehleingaben, sondern nur wahrscheinlichste
+
 			roomcat = formData.get('selectroomcat2');
 
 			kalenderwochen2.forEach(function(item){
@@ -130,6 +134,7 @@ function getDataForm(e) {
 buttonSend.addEventListener('click', getDataForm, false);
 //---------------------------------------------------
 
+
 //Verschieben der Prüfung von Input zu Select--------------------------
 
 function addPrufung(e){
@@ -160,6 +165,7 @@ buttonAdd.addEventListener('click', addPrufung, false);
 
 
 //Verhinderungen abfragen-------------------------------------------------------------
+//Wird noch nicht verwendet. Kommentare folgen, sobald genutzt
 var exam = "algebrastat";
 sql = "SELECT anwesende.Nachname, anwesende_belegung.jahr, anwesende_belegung.tag, anwesende_belegung.kw, anwesende_belegung.tslot FROM prufungen, prufunganwesendeverbindung, anwesende, anwesendebelegungverbindung, anwesende_belegung WHERE prufungen.Prufung_Name = '"+exam+"' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID AND anwesende.Anwesende_ID = anwesendebelegungverbindung.Anwesende_ID AND anwesendebelegungverbindung.Belegungs_ID = anwesende_belegung.Belegungs_ID"
 sql2 = "SELECT studiengangssemester.Studiengang, studiengangssemester_belegung.jahr, studiengangssemester_belegung.tag, studiengangssemester_belegung.kw, studiengangssemester_belegung.tslot FROM prufungen, prufungstudsemverbindung, studiengangssemester, studsembelegungverbindung, studiengangssemester_belegung WHERE prufungen.Prufung_Name = '"+exam+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID AND studiengangssemester.Studiengangssemester_ID = studsembelegungverbindung.Studiengangssemester_ID AND studsembelegungverbindung.Belegungs_ID = studiengangssemester_belegung.Belegungs_ID"
@@ -177,7 +183,7 @@ db.query(sql2, function(err, results){
 });
 //---------------------------------------
 
-function getTime(number){
+function getTime(number){  //Die Funktion liefert einen String mit der zum Timeslot korespondierenden Uhrzeit zurück.
   var time;
   if(number === 1){
     time = "09:00";
@@ -226,49 +232,61 @@ function getTime(number){
 }
 
 
-function loadRooms(e){
+function loadRooms(e){  //Funktion erstellt das Grid für das Drag'n'Drop
   e.preventDefault();
-  while (raumgrid.firstChild) {
+  while (raumgrid.firstChild) {      //Falls das Grid durch vorherige Abfrage bereits gefüllt. Lösche diese.
       raumgrid.firstChild.remove()
   }
-
-
-
   var rooms = [];
-  var sql3 = "SELECT * FROM raum WHERE Kategorie='"+kategorie.value+"' ORDER BY Kapazität, Bezeichnung ASC;"
-  db.query(sql3, function(err, results){
+  var sql3 = "SELECT * FROM raum WHERE Kategorie='"+kategorie.value+"' ORDER BY Kapazität, Bezeichnung ASC;"  //Datenbankabfrage nach allen Räumen, der vom User gewählten Raumkategorie.
+  db.query(sql3, function(err, results){   //Ergebnise werden in Array results zurückgeliefert
   	if(err) throw err;
-    results.forEach(function(item){
+    results.forEach(function(item){       //Für jede Ergebnis...
       console.log(results)
-        const outsidediv = document.createElement('div');
+        const outsidediv = document.createElement('div');  //...erstelle ein Outer-Div an das später die Div's für die Timeslots angehangen werde
         outsidediv.className = "outsidediv";
-        const divName = document.createElement("div");
+        const divName = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
         divName.className = "nameDiv";
-        const bez = document.createTextNode(item["Bezeichnung"]+" | Kap: "+item["Kapazität"]);
-        divName.appendChild(bez);
+        const bez = document.createTextNode(item["Bezeichnung"]+" | Kap: "+item["Kapazität"]); //Erstelle einen Textknoten mit Bezeichnung und Kapazität des Raumes
+        divName.appendChild(bez); // Hänge Textknoten an Tabellenkopf Div
         outsidediv.appendChild(divName);
-        for(var i = 1; i <= 21; i++){
-          console.log(i);
-          const neuerText = document.createTextNode(getTime(i));
+        for(var i = 1; i <= 21; i++){  //Der Tag ist in 21 Timeslots unterteilt. Erstelle diese.
+          const neuerText = document.createTextNode(getTime(i)); //Erstelle einen Textnknoten mit der zum Timeslot korrespondieren Uhrzeit -> siehe getTime()
           const newSpan = document.createElement("span");
-          newSpan.removeAttribute("draggable");
+          newSpan.removeAttribute("draggable"); //Text ist von default aus draggable (ist hier nicht gewünscht). Funktioniert aber irgendwie nicht --> klären
           newSpan.appendChild(neuerText);
-          const insidediv = document.createElement('div');
-          insidediv.appendChild(newSpan);
+          const insidediv = document.createElement('div'); //Erstelle ein inner-div (Timeslot)
+          insidediv.appendChild(newSpan); //Hänge diesem den Text (Uhrzeit an);
           insidediv.className = "insidediv dropable";
           insidediv.id = item["Bezeichnung"]+"_"+i;
-          insidediv.setAttribute("data-this", i.toString());
-          insidediv.setAttribute("data-prev", (i-1).toString());
-          insidediv.setAttribute("data-next", (i+1).toString());
-          insidediv.setAttribute("data-cap", item["Kapazität"]);
-          insidediv.setAttribute("data-parent", item["Bezeichnung"]);
-          insidediv.setAttribute("data-state", "free");
-          outsidediv.appendChild(insidediv);
+          insidediv.setAttribute("data-this", i.toString());      //Benutzerdefinierte Attribute beginnen in HTML immer mit data-...
+          insidediv.setAttribute("data-prev", (i-1).toString());  //wird eigentlich nicht benötigt
+          insidediv.setAttribute("data-next", (i+1).toString());  //wird eigentlich nicht benötigt
+          insidediv.setAttribute("data-cap", item["Kapazität"]);  //Jedes Timeslot-Div bekommt die Kapazität des Raumes als Attribut zugeordnet
+          insidediv.setAttribute("data-parent", item["Bezeichnung"]); //...ebenso wie die Bezeichnung des Raums
+          insidediv.setAttribute("data-state", "free");           // gibt an ob Timeslot belegt oder frei. Default: free
+          outsidediv.appendChild(insidediv);  //hänge Timeslot-Div an Outerdiv
         }
-        raumgrid.appendChild(outsidediv);
+
+        raumgrid.appendChild(outsidediv);  //hänge Outerdiv (für einen Raum) ans Griddiv für alle Räume
         raumgrid.removeAttribute("hidden");
 
     })
+
+    capcounterOuter = document.createElement("div");
+    capcounterOuter.classList.add("outsidediv")
+    const seitlicherPlatzhalter = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
+    seitlicherPlatzhalter.className = "nameDiv";
+    capcounterOuter.appendChild(seitlicherPlatzhalter);
+    for(var i = 1; i <= 21; i++){
+      capcounterInner = document.createElement("div");
+      capcounterInner.classList.add("capcounterInner");
+      var newspan = document.createElement("span");
+      newspan.classList.add("space");
+      capcounterInner.appendChild(newspan);
+      capcounterOuter.appendChild(capcounterInner);
+    }
+    raumgrid.appendChild(capcounterOuter);
   });
 
 }
@@ -286,7 +304,9 @@ function dragoverpapierkorb(e){
 }
 
 function droppapierkorb(){
+  if(this.lastChild.hasAttribute("data-token")){
     this.lastChild.remove();
+  }
 }
 
 drags.forEach(item => {
@@ -319,8 +339,8 @@ function dragover(e){
 
   const draggable = document.querySelector('.dragging');
   this.appendChild(draggable);
-  colorize();
   findfirst();
+  colorize();
 }
 
 function dragstart(e){
@@ -335,14 +355,16 @@ function dragend(e) {
 }
 
 function dragleave(e){
+  //wird momentan nur benötigt, wenn Token in den Papierkorb verschoben wird.
+  //ziemlich unnötig für alle anderen Dragleaves, vllt bessere Methode?
   var number = parseInt(this.lastChild.textContent);
   var item2 = this;
     this.style.backgroundColor = "white";
     for(var i = 1; i < number; i++){
         item2 = item2.nextSibling;
-        item2.style.backgroundColor = "white";
-      }
-    }
+        item2.style.backgroundColor = "white";}
+
+}
 
 function calcTimeSlots(){
   var duration = minutes.value;

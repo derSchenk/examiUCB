@@ -281,7 +281,10 @@ function loadRooms(e){  //Funktion erstellt das Grid für das Drag'n'Drop
     for(var i = 1; i <= 21; i++){
       capcounterInner = document.createElement("div");
       capcounterInner.classList.add("capcounterInner");
+      var neededCap = 123     //wird später berechnet durch funktion
+      const neuerText = document.createTextNode(String(neededCap))
       var newspan = document.createElement("span");
+      newspan.appendChild(neuerText);
       newspan.classList.add("space");
       capcounterInner.appendChild(newspan);
       capcounterOuter.appendChild(capcounterInner);
@@ -304,6 +307,7 @@ function dragoverpapierkorb(e){
 }
 
 function droppapierkorb(){
+  calcCap();
   if(this.lastChild.hasAttribute("data-token")){
     this.lastChild.remove();
   }
@@ -446,10 +450,28 @@ function findfirst(){
   });
 }
 
+function calcCap(){
+  var neededCap = 120;  //wird später durch funktion berechnet
+  var arr = [neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap]
+  var alldrops = document.querySelectorAll(".insidediv");
+  alldrops.forEach((item) => {
+    if(item.lastChild.hasAttribute("data-token")){
+      var thisItem = item.getAttribute("data-this");
+      for(var i = 0; i < calcTimeSlots(); i++){
+        arr[parseInt(thisItem)-1+i] = arr[parseInt(thisItem)-1+i] - parseInt(item.getAttribute("data-cap"));
+      }
+    }
+  });
+  var allSpaces = document.querySelectorAll(".space");
+  for(var i = 0; i < 21; i++){
+      allSpaces[i].textContent = arr[i];
+  }
+}
+
 function drop(e){
   e.preventDefault();
   createNewElement();
-  //findfirst();
+  calcCap();
 }
 //https://www.youtube.com/watch?v=jfYWwQrtzzY
 //https://www.youtube.com/watch?v=7HUCAYMylCQ

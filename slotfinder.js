@@ -283,6 +283,7 @@ function dragoverpapierkorb(e){
   this.appendChild(draggable);
   createNewElement();
   colorize();
+  //findfirst();
 }
 
 function droppapierkorb(){
@@ -320,6 +321,7 @@ function dragover(e){
   const draggable = document.querySelector('.dragging');
   this.appendChild(draggable);
   colorize();
+  findfirst();
 }
 
 function dragstart(e){
@@ -376,7 +378,7 @@ function createNewElement(){
 
 
 function colorize(){
-  allDrops = document.querySelectorAll(".insidediv");
+  var allDrops = document.querySelectorAll(".insidediv");
   allDrops.forEach( element => {
     if(element.lastChild.hasAttribute("data-token")){
       if(calcTimeSlots() != 0){
@@ -392,9 +394,37 @@ function colorize(){
   })
 }
 
+function findfirst(){
+  var allDrops = document.querySelectorAll(".insidediv");
+  var first;
+  var firstandall = [];
+  for (var item of allDrops){
+    if(item.lastChild.hasAttribute("data-token")){
+      item.lastChild.style.borderColor = "green";   //muss wieder umgefärbt werden.
+      first = item.getAttribute("data-this");
+      break;
+    }
+  }
+
+  for(var i = parseInt(first); i < parseInt(first)+calcTimeSlots(); i++){
+    firstandall.push(i);
+    console.log(i)
+  }
+  allDrops.forEach((item) => {
+    if(!firstandall.includes(parseInt(item.getAttribute("data-this")))){
+      item.style.backgroundColor = "#CCCCCC";
+      item.style.opacity = "60%"
+    } else {
+      item.style.backgroundColor = "white";
+      item.style.opacity = "100%"
+    }
+  });
+}
+
 function drop(e){
   e.preventDefault();
   createNewElement();
+  //findfirst();
 }
 //https://www.youtube.com/watch?v=jfYWwQrtzzY
 //https://www.youtube.com/watch?v=7HUCAYMylCQ

@@ -129,6 +129,8 @@ form{
 }
 
 /*Drag and Drop ELemmt*/
+
+
 .dnd{
 	width: 4.5vw;
 	height: 4.5vh;
@@ -139,6 +141,7 @@ form{
 	text-align: center;
 	font-size: medium;
 	cursor: move;
+
 }
 
 .dropable{

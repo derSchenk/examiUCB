@@ -367,7 +367,7 @@ function createNewElement(){
     anotherDrag.classList.add("dnd");
     anotherDrag.setAttribute("draggable", "true");  //Brauch ich das noch?
     anotherDrag.setAttribute("data-token", "true");
-    anotherDrag.setAttribute("title", "Bewege den Token nicht zu schnell von einem Slot in einen anderen.")
+    anotherDrag.setAttribute("title", "Token")
     anotherDrag.addEventListener("dragstart", dragstart);
     anotherDrag.addEventListener("dragend", dragend);
     anotherDrag.appendChild(text);
@@ -395,31 +395,33 @@ function colorize(){
 
 function findfirst(){
   const alldrags = document.querySelectorAll("#raumgrid .dnd");
-  if(alldrags.length > 1){
-    var allDrops = document.querySelectorAll(".insidediv");
-    var first;
-    var firstandfellows = [];
-    for (var item of allDrops){
-      if(item.lastChild.hasAttribute("data-token")){
-        first = item.getAttribute("data-this");
-        break;
-      }
-    }
 
-    for(var i = parseInt(first); i < parseInt(first)+calcTimeSlots(); i++){
-      firstandfellows.push(i);
-      console.log(i)
-    }
-    allDrops.forEach((item) => {
-      if(!firstandfellows.includes(parseInt(item.getAttribute("data-this")))){
-        item.style.opacity = "60%"
-        item.style.backgroundColor = "white";
-      } else {
-        item.style.backgroundColor = "white";
-        item.style.opacity = "100%"
-      }
-    });
+  alldrags[0].style.borderColor = "#2D9FFC"
+  alldrags[0].style.color = "#2D9FFC"
+  alldrags[0].setAttribute("title", "Mastertoken");
+  if(alldrags.length > 1){
+    alldrags[1].style.color = "black";
+    alldrags[1].style.borderColor = "black";
+    alldrags[1].setAttribute("title", "Token");
   }
+  var allDrops = document.querySelectorAll(".insidediv");
+  var first;
+  var firstandfellows = [];
+
+  first = alldrags[0].parentElement.getAttribute("data-this");
+  for(var i = parseInt(first); i < parseInt(first)+calcTimeSlots(); i++){
+    firstandfellows.push(i);
+    console.log(i)
+  }
+  allDrops.forEach((item) => {
+    if(!firstandfellows.includes(parseInt(item.getAttribute("data-this")))){
+      item.style.opacity = "60%"
+      item.style.backgroundColor = "white";
+    } else {
+      item.style.backgroundColor = "white";
+      item.style.opacity = "100%"
+    }
+  });
 }
 
 function drop(e){

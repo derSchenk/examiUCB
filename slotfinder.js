@@ -283,7 +283,6 @@ function dragoverpapierkorb(e){
   this.appendChild(draggable);
   createNewElement();
   colorize();
-  //findfirst();
 }
 
 function droppapierkorb(){
@@ -395,30 +394,32 @@ function colorize(){
 }
 
 function findfirst(){
-  var allDrops = document.querySelectorAll(".insidediv");
-  var first;
-  var firstandall = [];
-  for (var item of allDrops){
-    if(item.lastChild.hasAttribute("data-token")){
-      item.lastChild.style.borderColor = "green";   //muss wieder umgefärbt werden.
-      first = item.getAttribute("data-this");
-      break;
+  const alldrags = document.querySelectorAll("#raumgrid .dnd");
+  if(alldrags.length > 1){
+    var allDrops = document.querySelectorAll(".insidediv");
+    var first;
+    var firstandfellows = [];
+    for (var item of allDrops){
+      if(item.lastChild.hasAttribute("data-token")){
+        first = item.getAttribute("data-this");
+        break;
+      }
     }
-  }
 
-  for(var i = parseInt(first); i < parseInt(first)+calcTimeSlots(); i++){
-    firstandall.push(i);
-    console.log(i)
-  }
-  allDrops.forEach((item) => {
-    if(!firstandall.includes(parseInt(item.getAttribute("data-this")))){
-      item.style.backgroundColor = "#CCCCCC";
-      item.style.opacity = "60%"
-    } else {
-      item.style.backgroundColor = "white";
-      item.style.opacity = "100%"
+    for(var i = parseInt(first); i < parseInt(first)+calcTimeSlots(); i++){
+      firstandfellows.push(i);
+      console.log(i)
     }
-  });
+    allDrops.forEach((item) => {
+      if(!firstandfellows.includes(parseInt(item.getAttribute("data-this")))){
+        item.style.opacity = "60%"
+        item.style.backgroundColor = "white";
+      } else {
+        item.style.backgroundColor = "white";
+        item.style.opacity = "100%"
+      }
+    });
+  }
 }
 
 function drop(e){

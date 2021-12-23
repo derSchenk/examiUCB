@@ -86,8 +86,9 @@ form{
 	left: 0;
 	background-color: #95F0B6;
 	border-right: 1px solid gray;
-
+	opacity: 100%;
 	vertical-align: sub;
+	z-index: 1;
 }
 
 #raumgrid{
@@ -155,6 +156,7 @@ form{
 #panel{
 	display:flex;
 	position: sticky;
+	z-index: 2;
 	bottom: 7.5vh;
 	width: 21vw;
 }

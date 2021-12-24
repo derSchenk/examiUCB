@@ -17,6 +17,7 @@ form{
 	border-radius: 3px;
 	border-color: white;
 	border-style: none;
+	overflow-x: scroll;
 }
 
 #inputlistprufinput{
@@ -65,7 +66,7 @@ form{
 
 /*GRID---------------------------------------------*/
 
-.insidediv, .capcounterInner{
+.insidediv, .capcounterInner, .capcounterInner2{
 	border: 2px solid black;
 	border-radius: 10px;
 	padding: 1vh;
@@ -73,11 +74,15 @@ form{
 	background-color: white;
 }
 
-.capcounterInner{
+.capcounterInner, .capcounterInner2{
 	background-color: #A9CAEB;
 }
 
-.space{
+.capcounterOuter, .capcounterOuter2{
+
+}
+
+.space, .space2{
 	display: inline-block;
 	width: 3.55em;
 }
@@ -89,6 +94,9 @@ form{
 	width: 100%;
 }
 
+.outsidediv:first-child, .outsidediv:nth-last-child(2){
+	border-bottom: 3px solid gray;
+}
 
 .nameDiv{
 	flex:0 0 15vw;
@@ -106,8 +114,8 @@ form{
 	overflow-x: scroll;
 	margin-top: -10vh;
 	margin-bottom: 7vh;
-
 }
+
 ::-webkit-scrollbar {
   width: 10px;
 	background: white;

@@ -46,7 +46,7 @@ function loadFormData(e){
     raum = inputRaum.value.trim().toLowerCase();
     kapazität = inputKapazität.value;
     kategorie = inputKategorie.value;
-    extras = inputExtras;
+    extras = inputExtras.value;
 
     //Formulardatenspeicher in Datenbank prufungen schreiben
     var sql = "INSERT INTO raum (Bezeichnung, Kategorie, Kapazität, Extras) VALUES ('"+raum+"','"+kategorie+"','"+kapazität+"','"+extras+"');";

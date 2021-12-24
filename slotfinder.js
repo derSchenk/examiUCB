@@ -55,8 +55,8 @@ db.query(sql, function(err, results){
 	//console.log(results);
   results.forEach(result => {
   	const nOption = document.createElement('option');
-  	nOption.value = result["Prufung_Name"].toLowerCase().trim()+" | "+result["Standardsemester"]+" | "+result["Prüfungsstatus"];
-    allePrufungen.push(result["Prufung_Name"].toLowerCase().trim()+" | "+result["Standardsemester"]+" | "+result["Prüfungsstatus"]);
+  	nOption.value = result["Prufung_Name"].toLowerCase().trim()+" | "+result["Standardsemester"]+" | "+result["Prüfungsstatus"]+" [T.: "+result["Teilnehmerzahl"]+"]";
+    allePrufungen.push(result["Prufung_Name"].toLowerCase().trim()+" | "+result["Standardsemester"]+" | "+result["Prüfungsstatus"]+" [T.: "+result["Teilnehmerzahl"]+"]");
   	listprufungen.appendChild(nOption);
   });
 });
@@ -237,6 +237,26 @@ function loadRooms(e){  //Funktion erstellt das Grid für das Drag'n'Drop
   while (raumgrid.firstChild) {      //Falls das Grid durch vorherige Abfrage bereits gefüllt. Lösche diese.
       raumgrid.firstChild.remove()
   }
+
+  const capcounterOuter = document.createElement("div");
+  capcounterOuter.classList.add("outsidediv")
+  const seitlicherPlatzhalter = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
+  seitlicherPlatzhalter.className = "nameDiv";
+  capcounterOuter.appendChild(seitlicherPlatzhalter);
+  for(var i = 1; i <= 21; i++){
+    const capcounterInner = document.createElement("div");
+    capcounterInner.classList.add("capcounterInner");
+    var neededCap = getTeilnehmer()     //wird später berechnet durch funktion
+    const neuerText = document.createTextNode(String(neededCap))
+    var newspan = document.createElement("span");
+    newspan.appendChild(neuerText);
+    newspan.classList.add("space");
+    capcounterInner.appendChild(newspan);
+    capcounterOuter.appendChild(capcounterInner);
+  }
+  capcounterOuter.classList.add("capcounterOuter");
+  raumgrid.appendChild(capcounterOuter);
+
   var rooms = [];
   var sql3 = "SELECT * FROM raum WHERE Kategorie='"+kategorie.value+"' ORDER BY Kapazität, Bezeichnung ASC;"  //Datenbankabfrage nach allen Räumen, der vom User gewählten Raumkategorie.
   db.query(sql3, function(err, results){   //Ergebnise werden in Array results zurückgeliefert
@@ -247,6 +267,7 @@ function loadRooms(e){  //Funktion erstellt das Grid für das Drag'n'Drop
         outsidediv.className = "outsidediv";
         const divName = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
         divName.className = "nameDiv";
+        divName.setAttribute("title", item["Extras"]);
         const bez = document.createTextNode(item["Bezeichnung"]+" | Kap: "+item["Kapazität"]); //Erstelle einen Textknoten mit Bezeichnung und Kapazität des Raumes
         divName.appendChild(bez); // Hänge Textknoten an Tabellenkopf Div
         outsidediv.appendChild(divName);
@@ -268,28 +289,31 @@ function loadRooms(e){  //Funktion erstellt das Grid für das Drag'n'Drop
           outsidediv.appendChild(insidediv);  //hänge Timeslot-Div an Outerdiv
         }
 
+
+
         raumgrid.appendChild(outsidediv);  //hänge Outerdiv (für einen Raum) ans Griddiv für alle Räume
         raumgrid.removeAttribute("hidden");
 
     })
-
-    capcounterOuter = document.createElement("div");
-    capcounterOuter.classList.add("outsidediv")
-    const seitlicherPlatzhalter = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
-    seitlicherPlatzhalter.className = "nameDiv";
-    capcounterOuter.appendChild(seitlicherPlatzhalter);
+    const capcounterOuter2 = document.createElement("div");
+    capcounterOuter2.classList.add("outsidediv")
+    const seitlicherPlatzhalter2 = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
+    seitlicherPlatzhalter2.className = "nameDiv";
+    capcounterOuter2.appendChild(seitlicherPlatzhalter2);
     for(var i = 1; i <= 21; i++){
-      capcounterInner = document.createElement("div");
-      capcounterInner.classList.add("capcounterInner");
-      var neededCap = 123     //wird später berechnet durch funktion
-      const neuerText = document.createTextNode(String(neededCap))
-      var newspan = document.createElement("span");
-      newspan.appendChild(neuerText);
-      newspan.classList.add("space");
-      capcounterInner.appendChild(newspan);
-      capcounterOuter.appendChild(capcounterInner);
+      const capcounterInner2 = document.createElement("div");
+      capcounterInner2.classList.add("capcounterInner2");
+      var neededCap2 = getTeilnehmer()     //wird später berechnet durch funktion
+      const neuerText2 = document.createTextNode(String(neededCap2))
+      var newspan2 = document.createElement("span");
+      newspan2.appendChild(neuerText2);
+      newspan2.classList.add("space2");
+      capcounterInner2.appendChild(newspan2);
+      capcounterOuter2.appendChild(capcounterInner2);
     }
-    raumgrid.appendChild(capcounterOuter);
+    capcounterOuter2.classList.add("capcounterOuter2");
+    raumgrid.appendChild(capcounterOuter2);
+
   });
 
 }
@@ -450,22 +474,49 @@ function findfirst(){
   });
 }
 
+function getTeilnehmer(){
+  var prufungen = document.querySelectorAll("#datalistpruf option");
+  var teilnehmer = 0;
+  prufungen.forEach((item) =>{
+    if(item.selected){
+      var temp = item.textContent.split("[T.: ");
+      var temp = temp[1].split("]");
+      teilnehmer += parseInt(temp[0]);
+    }
+  })
+  return teilnehmer;
+}
+
+
 function calcCap(){
-  var neededCap = 120;  //wird später durch funktion berechnet
+  var neededCap = getTeilnehmer();
   var arr = [neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap,neededCap]
   var alldrops = document.querySelectorAll(".insidediv");
-  alldrops.forEach((item) => {
-    if(item.lastChild.hasAttribute("data-token")){
-      var thisItem = item.getAttribute("data-this");
-      for(var i = 0; i < calcTimeSlots(); i++){
-        arr[parseInt(thisItem)-1+i] = arr[parseInt(thisItem)-1+i] - parseInt(item.getAttribute("data-cap"));
+
+
+    alldrops.forEach((item) => {
+      if(item.lastChild.hasAttribute("data-token")){
+        var thisItem = item.getAttribute("data-this");
+        for(var i = 0; i < calcTimeSlots(); i++){
+          arr[parseInt(thisItem)-1+i] = arr[parseInt(thisItem)-1+i] - parseInt(item.getAttribute("data-cap"));
+        }
       }
+    });
+    var allSpaces = document.querySelectorAll(".space");
+    var allSpaces2 = document.querySelectorAll(".space2");
+    for(var i = 0; i < 21; i++){
+        allSpaces[i].textContent = arr[i];
+        allSpaces2[i].textContent = arr[i];
+        if(arr[i] <= 0){
+          allSpaces[i].parentElement.style.backgroundColor = "#DFBD6E";
+          allSpaces2[i].parentElement.style.backgroundColor = "#DFBD6E";
+          //allSpaces[i].parentElement.style.borderColor = "#37F72E";
+        } else{
+          allSpaces[i].parentElement.style.backgroundColor = "#A9CAEB";
+          allSpaces2[i].parentElement.style.backgroundColor = "#A9CAEB";
+          //allSpaces[i].parentElement.style.borderColor = "black";
+        }
     }
-  });
-  var allSpaces = document.querySelectorAll(".space");
-  for(var i = 0; i < 21; i++){
-      allSpaces[i].textContent = arr[i];
-  }
 }
 
 function drop(e){

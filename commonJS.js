@@ -7,6 +7,8 @@ const outputDay = document.querySelector("#ergebnis2");
 const outputYear = document.querySelector('#ergebnis3');
 
 
+
+
 //Datum in KW umrechnen---------------------------------------------------
 function dateTokw(tag, monat, jahr){
 //https://die-aktuelle-kalenderwoche.de/kalenderwochen-in-javascript

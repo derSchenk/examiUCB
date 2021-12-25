@@ -10,6 +10,7 @@ const listprufungen = document.querySelector('#listprufungen');
 const kategorie = document.querySelector("#selectroomcat");
 const raumgrid = document.querySelector("#raumgrid");
 const minutes = document.querySelector("#ZeitPrufung");
+const raumkat = document.querySelector('#selectroomcat')
 
 const drags = document.querySelectorAll(".dragable");
 const dnd = document.querySelector(".dnd");
@@ -161,7 +162,7 @@ function addPrufung(e){
     var dauer = eingabe.split("[D.: ");
     dauer = dauer[1].split("]");
     if(dauer[0] != "null"){
-      if(parseInt(dauer[0]) > parseInt(minutes.value)){
+      if(parseInt(dauer[0]) >= parseInt(minutes.value)){
         minutes.value = dauer[0];
       }
     }
@@ -170,6 +171,17 @@ function addPrufung(e){
 }
 
 buttonAdd.addEventListener('click', addPrufung, false);
+
+var vorher;
+function changeRaumkat(){
+  if(raumkat.value != "- Kein Raum benötigt -"){
+    vorher = raumkat.value;
+  }
+  if (minutes.value == 0){
+    raumkat.value = "- Kein Raum benötigt -";
+  } else raumkat.value = vorher;
+}
+minutes.addEventListener('change', changeRaumkat)
 
 
 //Verhinderungen abfragen-------------------------------------------------------------
@@ -242,10 +254,11 @@ function getTime(number){  //Die Funktion liefert einen String mit der zum Times
 
 function loadRooms(e){  //Funktion erstellt das Grid für das Drag'n'Drop
   e.preventDefault();
-  while (raumgrid.firstChild) {      //Falls das Grid durch vorherige Abfrage bereits gefüllt. Lösche diese.
+  while (raumgrid.firstChild) {      //Falls das Grid durch vorherige Abfrage bereits gefüllt. Lösche diese Einträge.
       raumgrid.firstChild.remove()
   }
 
+//Oberer Teilnehmer: siehe unterer Teilnehmer-Counter für Erläuterungen (weiter unten)
   const capcounterOuter = document.createElement("div");
   capcounterOuter.classList.add("outsidediv")
   const seitlicherPlatzhalter = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
@@ -265,6 +278,7 @@ function loadRooms(e){  //Funktion erstellt das Grid für das Drag'n'Drop
   capcounterOuter.classList.add("capcounterOuter");
   raumgrid.appendChild(capcounterOuter);
 
+//------Erstelle Timsolt-Divs für das Grid
   var rooms = [];
   var sql3 = "SELECT * FROM raum WHERE Kategorie='"+kategorie.value+"' ORDER BY Kapazität, Bezeichnung ASC;"  //Datenbankabfrage nach allen Räumen, der vom User gewählten Raumkategorie.
   db.query(sql3, function(err, results){   //Ergebnise werden in Array results zurückgeliefert
@@ -296,45 +310,45 @@ function loadRooms(e){  //Funktion erstellt das Grid für das Drag'n'Drop
           outsidediv.appendChild(insidediv);  //hänge Timeslot-Div an Outerdiv
         }
 
-
-
         raumgrid.appendChild(outsidediv);  //hänge Outerdiv (für einen Raum) ans Griddiv für alle Räume
         raumgrid.removeAttribute("hidden");
-
     })
-    const capcounterOuter2 = document.createElement("div");
+
+//Unterer Teilnehmer-Counter. Prinzipiell wie die Timeslot divs nur mit anderen Klassen.-------------------------------------
+    const capcounterOuter2 = document.createElement("div"); //Erstelle äußerer Container
     capcounterOuter2.classList.add("outsidediv")
-    const seitlicherPlatzhalter2 = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
+    const seitlicherPlatzhalter2 = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Damit Seitenabstann gleich wie oben bei Kategorie und  Kapazität
     seitlicherPlatzhalter2.className = "nameDiv";
     capcounterOuter2.appendChild(seitlicherPlatzhalter2);
-    for(var i = 1; i <= 21; i++){
+    for(var i = 1; i <= 21; i++){           //Erstelle 21 Counter-divs
       const capcounterInner2 = document.createElement("div");
       capcounterInner2.classList.add("capcounterInner2");
-      var neededCap2 = getTeilnehmer()     //wird später berechnet durch funktion
-      const neuerText2 = document.createTextNode(String(neededCap2))
+      var neededCap2 = getTeilnehmer()     //Funktion liefert Summe aller Teilnehmer der gewählten Klausuren
+      const neuerText2 = document.createTextNode(String(neededCap2)) //schreibe die Summe der Teilnehmer in Counter-Div
       var newspan2 = document.createElement("span");
       newspan2.appendChild(neuerText2);
       newspan2.classList.add("space2");
       capcounterInner2.appendChild(newspan2);
-      capcounterOuter2.appendChild(capcounterInner2);
+      capcounterOuter2.appendChild(capcounterInner2); //Hänge Counter-Div an äußeren Container
     }
     capcounterOuter2.classList.add("capcounterOuter2");
-    raumgrid.appendChild(capcounterOuter2);
+    raumgrid.appendChild(capcounterOuter2); //Hänge äußeren Container an Raumgrid
 
   });
-
+//----------------------------------------------------------------------------
 }
 
 buttonSend.addEventListener("click", loadRooms, false);
 
 //----------DRAG AND DROP-----------------------------------------------------
 
-function dragoverpapierkorb(e){
-  e.preventDefault();
-  const draggable = document.querySelector('.dragging');
-  this.appendChild(draggable);
+function dragoverpapierkorb(e){ //Was passiert wenn ein Token über den Papierkorb gezogen wird
+  e.preventDefault();    //Elemente sind von Default nicht droppabel. Durch e.preventDefault() wirde dies aufgehoben
+  const draggable = document.querySelector('.dragging'); //das gerade gezogene Element hat die Klasse .dragging. Dieses Selektieren wir...
+  this.appendChild(draggable); //... und hängen es dem
   createNewElement();
-  colorize();
+  findfirst();
+  //colorize();
 }
 
 function droppapierkorb(){
@@ -368,37 +382,100 @@ function listenershinzufügen(){
 
 function dragover(e){
   var lastDrops = 21 - (calcTimeSlots()-2);
-  if(this.getAttribute("data-this") < lastDrops){
-    e.preventDefault();
-  }else this.lastChild.style.display = none;
+  if(this.getAttribute("data-this") >= lastDrops){
+    this.lastChild.style.display = none;
 
+  }  //Schmeißt eien Fehler da none statt "none" und verhindert somit das Setzen des Token. Wie geht es anders???
+
+  e.preventDefault();
   const draggable = document.querySelector('.dragging');
+
   this.appendChild(draggable);
-  findfirst();
-  colorize();
+
 }
 
 function dragstart(e){
-    listenershinzufügen();                //geht sicher besser!
+  console.log(this.parentElement);
+  if(this.parentElement.classList.contains("newdrag")){
+    listenershinzufügen();
+  }
+                    //geht sicher besser!
     this.classList.add('dragging');
+if(e.target.parentElement.classList.contains("insidediv")){
+  if(e.target.hasAttribute("data-token")){
+
+
+
+
+        var number = parseInt(e.target.lastChild.textContent);
+
+        if(e.target.parentElement.getAttribute("setby") == e.target.id){
+        var item2 = e.target.parentElement;
+        for(var i = 1; i < number; i++){
+          item2 = item2.nextSibling;
+          if(item2.getAttribute("setby") == e.target.id){
+            item2.removeAttribute("setBy");
+            item2.style.backgroundColor = "white";
+            if(i == number-1){
+              item2.removeAttribute("setby");
+            }
+          }
+
+        }
+
+            e.target.parentElement.style.backgroundColor = "white";
+            e.target.parentElement.setAttribute("data-besetzt", "false");
+            e.target.parentElement.removeAttribute("setBy");
+          }
 }
 
+
+}
+}
 
 function dragend(e) {
-  this.classList.remove('dragging');
-  colorize();
-}
+  e.target.classList.remove('dragging');
+  if(e.target.parentElement.classList.contains("insidediv")){
+    if(e.target.hasAttribute("data-token")){
 
+          var number = parseInt(e.target.lastChild.textContent);
+
+
+          if(!(e.target.parentElement.hasAttribute("setby"))){
+          var item2 = e.target.parentElement;
+          for(var i = 1; i < number; i++){
+            console.log(!(item2.hasAttribute("setby")))
+            item2 = item2.nextSibling;
+            if(!(item2.hasAttribute("setby"))){
+              item2.setAttribute("setby", e.target.id);
+              item2.style.backgroundColor = "pink";
+              if(i == number-1){
+                item2.setAttribute("setby", e.target.id);
+              }
+            }
+          }
+          if(calcTimeSlots() != 0){
+
+            e.target.parentElement.style.backgroundColor = "pink";
+            e.target.parentElement.setAttribute("data-besetzt", "true");
+            e.target.parentElement.setAttribute("setby", e.target.id);
+          }
+          }
+    calcCap();
+    findfirst();
+  }
+}
+}
 function dragleave(e){
   //wird momentan nur benötigt, wenn Token in den Papierkorb verschoben wird.
   //ziemlich unnötig für alle anderen Dragleaves, vllt bessere Methode?
-  var number = parseInt(this.lastChild.textContent);
-  var item2 = this;
-    this.style.backgroundColor = "white";
-    for(var i = 1; i < number; i++){
-        item2 = item2.nextSibling;
-        item2.style.backgroundColor = "white";}
-
+  // var number = parseInt(this.lastChild.textContent);
+  // var item2 = this;
+    // this.style.backgroundColor = "white";
+    // this.removeAttribute("data-besetzt");
+    // for(var i = 1; i < number; i++){
+    //     item2 = item2.nextSibling;
+    //     item2.style.backgroundColor = "white";}
 }
 
 function calcTimeSlots(){
@@ -433,22 +510,23 @@ function createNewElement(){
 }
 
 
-function colorize(){
-  var allDrops = document.querySelectorAll(".insidediv");
-  allDrops.forEach( element => {
-    if(element.lastChild.hasAttribute("data-token")){
-      if(calcTimeSlots() != 0){
-      element.style.backgroundColor = "pink";
-      }
-      var number = parseInt(element.lastChild.textContent);
-      var item2 = element;
-      for(var i = 1; i < number; i++){
-        item2 = item2.nextSibling;
-        item2.style.backgroundColor = "pink";
-      }
-    }
-  })
-}
+// function colorize(){
+//   var allDrops = document.querySelectorAll(".insidediv");
+//   allDrops.forEach( element => {
+//     if(element.lastChild.hasAttribute("data-token")){
+//       if(calcTimeSlots() != 0){
+//       element.style.backgroundColor = "pink";
+//       element.setAttribute("data-besetzt", "true");
+//       }
+//       var number = parseInt(element.lastChild.textContent);
+//       var item2 = element;
+//       for(var i = 1; i < number; i++){
+//         item2 = item2.nextSibling;
+//         item2.style.backgroundColor = "pink";
+//       }
+//     }
+//   })
+// }
 
 function findfirst(){
   const alldrags = document.querySelectorAll("#raumgrid .dnd");
@@ -470,11 +548,9 @@ function findfirst(){
     firstandfellows.push(i);
   }
   allDrops.forEach((item) => {
-    if(!firstandfellows.includes(parseInt(item.getAttribute("data-this")))){
+    if(!firstandfellows.includes(parseInt(item.getAttribute("data-this"))) && item.style.backgroundColor != "pink"){
       item.style.opacity = "60%"
-      item.style.backgroundColor = "white";
     } else {
-      item.style.backgroundColor = "white";
       item.style.opacity = "100%"
     }
   });
@@ -528,7 +604,7 @@ function calcCap(){
 function drop(e){
   e.preventDefault();
   createNewElement();
-  calcCap();
+
 }
 //https://www.youtube.com/watch?v=jfYWwQrtzzY
 //https://www.youtube.com/watch?v=7HUCAYMylCQ

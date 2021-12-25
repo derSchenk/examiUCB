@@ -55,9 +55,9 @@ db.query(sql, function(err, results){
 	//console.log(results);
   results.forEach(result => {
   	const nOption = document.createElement('option');
-  	nOption.value = result["Prufung_Name"].toLowerCase().trim()+" | "+result["Standardsemester"]+" | "+result["Prüfungsstatus"]+" [T.: "+result["Teilnehmerzahl"]+"]";
-    allePrufungen.push(result["Prufung_Name"].toLowerCase().trim()+" | "+result["Standardsemester"]+" | "+result["Prüfungsstatus"]+" [T.: "+result["Teilnehmerzahl"]+"]");
-  	listprufungen.appendChild(nOption);
+  	nOption.value = result["Prufung_Name"].toLowerCase().trim()+" | "+result["Standardsemester"]+" | "+result["Prüfungsstatus"]+" [T.: "+result["Teilnehmerzahl"]+"]"+" [D.: "+result["Dauer"]+"]";
+    allePrufungen.push(result["Prufung_Name"].toLowerCase().trim()+" | "+result["Standardsemester"]+" | "+result["Prüfungsstatus"]+" [T.: "+result["Teilnehmerzahl"]+"]"+" [D.: "+result["Dauer"]+"]");
+    listprufungen.appendChild(nOption);
   });
 });
 
@@ -157,6 +157,14 @@ function addPrufung(e){
 		const neuerText = document.createTextNode(eingabe);
 		neueOption.appendChild(neuerText);
 		datalistPruf.appendChild(neueOption);
+
+    var dauer = eingabe.split("[D.: ");
+    dauer = dauer[1].split("]");
+    if(dauer[0] != "null"){
+      if(parseInt(dauer[0]) > parseInt(minutes.value)){
+        minutes.value = dauer[0];
+      }
+    }
 	}
 	prufungInput.value = "";
 }
@@ -262,7 +270,6 @@ function loadRooms(e){  //Funktion erstellt das Grid für das Drag'n'Drop
   db.query(sql3, function(err, results){   //Ergebnise werden in Array results zurückgeliefert
   	if(err) throw err;
     results.forEach(function(item){       //Für jede Ergebnis...
-      console.log(results)
         const outsidediv = document.createElement('div');  //...erstelle ein Outer-Div an das später die Div's für die Timeslots angehangen werde
         outsidediv.className = "outsidediv";
         const divName = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
@@ -461,7 +468,6 @@ function findfirst(){
   first = alldrags[0].parentElement.getAttribute("data-this");
   for(var i = parseInt(first); i < parseInt(first)+calcTimeSlots(); i++){
     firstandfellows.push(i);
-    console.log(i)
   }
   allDrops.forEach((item) => {
     if(!firstandfellows.includes(parseInt(item.getAttribute("data-this")))){
@@ -480,7 +486,7 @@ function getTeilnehmer(){
   prufungen.forEach((item) =>{
     if(item.selected){
       var temp = item.textContent.split("[T.: ");
-      var temp = temp[1].split("]");
+      var temp = temp[1].split("] [D");
       teilnehmer += parseInt(temp[0]);
     }
   })

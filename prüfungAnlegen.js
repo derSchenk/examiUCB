@@ -21,6 +21,7 @@ const inputAnwesenSelect = document.querySelector('#datalistanwesen');
 const inputBemerkungen = document.querySelector('#bemerkungen');
 const inputHilfsmittel = document.querySelector('#hilfsmittel');
 const inputpflichtcheck = document.querySelector('#pflichtprufcheck');
+const inputDauer = document.querySelector('#Dauer');
 
 const formulare = document.querySelectorAll('.formular')
 
@@ -153,9 +154,23 @@ var bemerkungen;
 var hilfsmittel;
 var checkboxpflicht;
 //------------------------------------------------------------------------
-//Sonstige globale Variablen----------------------------------------------
+//Ändern der Zeit auf 0 wenn Hausarbeit gewählt---------------------------
+var vorher;
+function changeTeilnehmer(e){
+  if(inputDauer.value != "0"){
+    vorher = inputDauer.value;
+  }
+  if(inputPrufart.value == "Hausarbeit"){
+    inputDauer.value = "0"
+  } else {
+    inputDauer.value = vorher;
+    }
+}
 
-//----------------------------------
+inputPrufart.addEventListener("change", changeTeilnehmer);
+//------------------------------------------------------------------------
+
+
 
 //Formulardaten laden und in die Datenbank schreiben--------------------------
 function loadFormData(e){
@@ -168,6 +183,8 @@ function loadFormData(e){
     prufungsart = inputPrufart.value;
     standardsemester = inputStandardsemester.value;
     checkboxpflicht = inputpflichtcheck.checked;
+    var dauer = inputDauer.value;
+
     if (checkboxpflicht === true){
       checkboxpflicht = 1;
     } else checkboxpflicht = 0;
@@ -190,7 +207,7 @@ function loadFormData(e){
     hilfsmittel = inputHilfsmittel.value.trim();
 
     //Formulardatenspeicher in Datenbank prufungen schreiben
-    var sql = "INSERT INTO prufungen (Prufung_Name, Teilnehmerzahl, Standardsemester, Prüfungsstatus, Bemerkung, Hilfsmittel, Prüfungsart, Pflichtprüfung) VALUES ('"+bezeichnungPruf+"','"+teilnehmer+"','"+standardsemester+"','"+prufungsstatus+"','"+bemerkungen+"','"+hilfsmittel+"','"+prufungsart+"','"+checkboxpflicht+"');";
+    var sql = "INSERT INTO prufungen (Prufung_Name, Teilnehmerzahl, Standardsemester, Prüfungsstatus, Bemerkung, Hilfsmittel, Prüfungsart, Pflichtprüfung, Dauer) VALUES ('"+bezeichnungPruf+"','"+teilnehmer+"','"+standardsemester+"','"+prufungsstatus+"','"+bemerkungen+"','"+hilfsmittel+"','"+prufungsart+"','"+checkboxpflicht+"','"+dauer+"');";
     db.query(sql, function(err, results){
     	if(err) throw err;
     	primaryKey = results["insertId"]; //sql Insert query liefert Primärschlüssel der einfügten Prüfung zurück

@@ -44,7 +44,7 @@
   		</div>
   		<div>
   			<label id="ZeitPrufung2">
-  				<input id="ZeitPrufung" step=30 name="ZeitPrufung2" placeholder="Dauer" value=0 title="Zeit der Prüfung in Min." min=0 max=600 type=number>
+  				<input id="ZeitPrufung" step=30 name="ZeitPrufung2" placeholder="Dauer" value="90" title="Zeit der Prüfung in Min." min=0 max=600 type=number>
   			</label>
   		</div>
   		<div>
@@ -80,10 +80,10 @@
   <hr>
   <div id="raumgrid" hidden></div>
   <div id="panel">
+    <div class="newdrag" id="papierkorb" draggable="false" hidden><span id="paperbin">Papierkorb</span></div>
     <div class="newdrag" hidden>
       <div draggable="true" class="dnd dragable" id="drag1" data-token="true" title="Token" hidden>3</div>
     </div>
-    <div class="newdrag" id="papierkorb" draggable="false" hidden><span id="paperbin">Papierkorb</span></div>
   <div>
   <hr>
   </body>

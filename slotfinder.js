@@ -347,14 +347,20 @@ function dragoverpapierkorb(e){ //Was passiert wenn ein Token über den Papierko
   const draggable = document.querySelector('.dragging'); //das gerade gezogene Element hat die Klasse .dragging. Dieses Selektieren wir...
   this.appendChild(draggable); //... und hängen es dem
   createNewElement();
-  findfirst();
+
+
+
   //colorize();
 }
 
 function droppapierkorb(){
+
   calcCap();
   if(this.lastChild.hasAttribute("data-token")){
     this.lastChild.remove();
+    empfehlung();
+    findfirst();
+    calcCap();
   }
 }
 
@@ -382,6 +388,7 @@ function listenershinzufügen(){
 
 function dragover(e){
   var lastDrops = 21 - (calcTimeSlots()-2);
+
   if(this.getAttribute("data-this") >= lastDrops){
     this.lastChild.style.display = none;
 
@@ -390,7 +397,9 @@ function dragover(e){
   e.preventDefault();
   const draggable = document.querySelector('.dragging');
 
-  this.appendChild(draggable);
+    this.appendChild(draggable);
+
+
 
 }
 
@@ -424,27 +433,31 @@ if(e.target.parentElement.classList.contains("insidediv")){
         }
 
             e.target.parentElement.style.backgroundColor = "white";
-            e.target.parentElement.setAttribute("data-besetzt", "false");
+            e.target.parentElement.setAttribute("data-hastoken", "false");
             e.target.parentElement.removeAttribute("setBy");
           }
 }
 
 
 }
+empfehlung();
 }
 
 function dragend(e) {
   e.target.classList.remove('dragging');
+try{
   if(e.target.parentElement.classList.contains("insidediv")){
     if(e.target.hasAttribute("data-token")){
 
-          var number = parseInt(e.target.lastChild.textContent);
+
+          number = parseInt(e.target.lastChild.textContent);
 
 
           if(!(e.target.parentElement.hasAttribute("setby"))){
           var item2 = e.target.parentElement;
           for(var i = 1; i < number; i++){
             console.log(!(item2.hasAttribute("setby")))
+//            allSpaces[parseInt(item2.getAttribute("data-this"))-1].textContent = String(parseInt(allSpaces[parseInt(item2.getAttribute("data-this"))-1].textContent) + parseInt(item.getAttribute("data-cap")));
             item2 = item2.nextSibling;
             if(!(item2.hasAttribute("setby"))){
               item2.setAttribute("setby", e.target.id);
@@ -457,14 +470,18 @@ function dragend(e) {
           if(calcTimeSlots() != 0){
 
             e.target.parentElement.style.backgroundColor = "pink";
-            e.target.parentElement.setAttribute("data-besetzt", "true");
+            e.target.parentElement.setAttribute("data-hastoken", "true");
             e.target.parentElement.setAttribute("setby", e.target.id);
           }
           }
+//     item2 = item2.nextSibling;
+
     calcCap();
     findfirst();
+
   }
 }
+} catch{}
 }
 function dragleave(e){
   //wird momentan nur benötigt, wenn Token in den Papierkorb verschoben wird.
@@ -478,21 +495,25 @@ function dragleave(e){
     //     item2.style.backgroundColor = "white";}
 }
 
+var timeslots;
 function calcTimeSlots(){
-  var duration = minutes.value;
-  if(duration == 0){
-    return 0;
+  var alldrags = document.querySelectorAll(".dnd")
+  if(alldrags.length <= 1){
+    var duration = minutes.value;
+    if(duration == 0){
+      return 0;
+    }
+    timeslots = parseInt(duration / 30);
+    if(duration%30 > 10){
+      timeslots += 1;
+    }
+    timeslots += 1; //nächste Prüfung nicht direkt im Anschluss#
   }
-  var timeslots = parseInt(duration / 30);
-  if(duration%30 > 10){
-    timeslots += 1;
-  }
-  timeslots += 1; //nächste Prüfung nicht direkt im Anschluss
   return timeslots;
 }
 
 function createNewElement(){
-  if(dragcontainer[0].childElementCount === 0){
+  if(dragcontainer[1].childElementCount === 0){
     const text = document.createTextNode(calcTimeSlots());
     const anotherDrag = document.createElement("div");
     dragID++;
@@ -505,7 +526,7 @@ function createNewElement(){
     anotherDrag.addEventListener("dragstart", dragstart);
     anotherDrag.addEventListener("dragend", dragend);
     anotherDrag.appendChild(text);
-    dragcontainer[0].appendChild(anotherDrag);
+    dragcontainer[1].appendChild(anotherDrag);
   }
 }
 
@@ -530,7 +551,7 @@ function createNewElement(){
 
 function findfirst(){
   const alldrags = document.querySelectorAll("#raumgrid .dnd");
-
+  try{
   alldrags[0].style.borderColor = "#2D9FFC"
   alldrags[0].style.color = "#2D9FFC"
   alldrags[0].setAttribute("title", "Mastertoken");
@@ -539,6 +560,7 @@ function findfirst(){
     alldrags[1].style.borderColor = "black";
     alldrags[1].setAttribute("title", "Token");
   }
+
   var allDrops = document.querySelectorAll(".insidediv");
   var first;
   var firstandfellows = [];
@@ -548,12 +570,13 @@ function findfirst(){
     firstandfellows.push(i);
   }
   allDrops.forEach((item) => {
-    if(!firstandfellows.includes(parseInt(item.getAttribute("data-this"))) && item.style.backgroundColor != "pink"){
+    if(!firstandfellows.includes(parseInt(item.getAttribute("data-this"))) && item.style.borderColor != "yellow"){
       item.style.opacity = "60%"
     } else {
       item.style.opacity = "100%"
     }
   });
+  }catch{}
 }
 
 function getTeilnehmer(){
@@ -606,5 +629,69 @@ function drop(e){
   createNewElement();
 
 }
+
+function empfehlung(){
+  const allDrops = document.querySelectorAll(".insidediv");
+  const capEmpfehlungen = [];
+  allDrops.forEach((element) => {
+    if(element.style.borderColor == "yellow"){
+      element.style.borderColor = "black";
+    }
+  })
+  const allDrags = document.querySelectorAll("#raumgrid .dnd")
+  var a = "allDrops[item].getAttribute('data-state') == 'free' && (21 - (calcTimeSlots()-2)) >= parseInt(allDrops[item].getAttribute('data-this'))"
+  var b = "parseInt(allDrops[item].getAttribute('data-cap')) "
+  var c = "allDrops[item2].getAttribute('data-state') != 'free' || !((21 - (calcTimeSlots()-2)) >= parseInt(allDrops[item2].getAttribute('data-this'))) "
+  var d = "allDrops[item2] = allDrops[item2].nextSibling; "
+  var e = "allDrops[item].style.borderColor = 'yellow'; capEmpfehlungen.push(parseInt(allDrops[item].getAttribute('data-cap'))); "
+
+  if(allDrags.length > 1){
+    for (var i = 2; i <= allDrags.length; i++){
+      var p = (i-1) * 21;
+      a = a + "&& allDrops[parseInt(item)+"+p+"].getAttribute('data-state') == 'free' && (21 - (calcTimeSlots()-2)) >= parseInt(allDrops[parseInt(item)+"+p+"].getAttribute('data-this')) "
+      b = b + "+ parseInt(allDrops[parseInt(item)+"+p+"].getAttribute('data-cap')) "
+      c = c + " || allDrops[parseInt(item2)+"+p+"].getAttribute('data-state') != 'free' || !((21 - (calcTimeSlots()-2)) >= parseInt(allDrops[parseInt(item2)+"+p+"].getAttribute('data-this'))) "
+      d = d + " allDrops[parseInt(item2)+"+p+"] = allDrops[parseInt(item2)+"+p+"].nextSibling; "
+      e = e + " allDrops[parseInt(item)+"+p+"].style.borderColor = 'yellow'; capEmpfehlungen.push(parseInt(allDrops[parseInt(item)+"+p+"].getAttribute('data-cap')));"
+    }
+  }
+
+  for(item in allDrops){
+    console.log(allDrops[21]);
+    if(getTeilnehmer() - (eval(b)) <= 0){
+      if(eval(a)){
+        var checker = true;
+        var item2 = item;
+        for(var i = 1; i < calcTimeSlots(); i++){
+          //eval(d);
+          item2++;
+          if(eval(c)){
+            checker = false;
+            break;
+          } else console.log("jop")
+        }
+      console.log(checker)
+        if(checker == true){
+          eval(e)
+          break;
+        }
+      }
+    }
+  }
+  capEmpfehlungen.reverse()
+  var teilnehmer = getTeilnehmer();
+  var cap = 0;
+  for(var i = 0; i < capEmpfehlungen.length; i++){
+    cap = cap + capEmpfehlungen[i];
+    if(cap >= teilnehmer && i < capEmpfehlungen.length-1){
+      dialogs.alert("Hinweis: Diese Raumanzahl ist suboptimal. Falls möglich bitte einen entfernen oder hinzufügen. Die Empfehlungen sind sonst nicht mehr optimal");
+      break;
+    }
+  }
+
+
+}
+
+
 //https://www.youtube.com/watch?v=jfYWwQrtzzY
 //https://www.youtube.com/watch?v=7HUCAYMylCQ

@@ -440,7 +440,7 @@ if(e.target.parentElement.classList.contains("insidediv")){
 
 
 }
-empfehlung();
+
 }
 
 function dragend(e) {
@@ -475,10 +475,10 @@ try{
           }
           }
 //     item2 = item2.nextSibling;
-
+    empfehlung();
     calcCap();
     findfirst();
-
+    createNewElement();
   }
 }
 } catch{}
@@ -630,20 +630,33 @@ function drop(e){
 
 }
 
+var capEmpfehlungen = [];
+var itemsEmpfehlungen = [];
 function empfehlung(){
+  const allDrags = document.querySelectorAll("#raumgrid .dnd");
   const allDrops = document.querySelectorAll(".insidediv");
-  const capEmpfehlungen = [];
+  if(allDrags.length <= itemsEmpfehlungen.length){
+    capEmpfehlungen = [];
+  }
+  if(capEmpfehlungen.includes(parseInt(allDrops[0].getAttribute("data-cap")))){
+    return;
+  }
+
+  itemsEmpfehlungen = [];
+
+  capEmpfehlungen = [];
   allDrops.forEach((element) => {
     if(element.style.borderColor == "yellow"){
       element.style.borderColor = "black";
     }
   })
-  const allDrags = document.querySelectorAll("#raumgrid .dnd")
+  var firstAdvice;
+
   var a = "allDrops[item].getAttribute('data-state') == 'free' && (21 - (calcTimeSlots()-2)) >= parseInt(allDrops[item].getAttribute('data-this'))"
   var b = "parseInt(allDrops[item].getAttribute('data-cap')) "
   var c = "allDrops[item2].getAttribute('data-state') != 'free' || !((21 - (calcTimeSlots()-2)) >= parseInt(allDrops[item2].getAttribute('data-this'))) "
   var d = "allDrops[item2] = allDrops[item2].nextSibling; "
-  var e = "allDrops[item].style.borderColor = 'yellow'; capEmpfehlungen.push(parseInt(allDrops[item].getAttribute('data-cap'))); "
+  var e = "capEmpfehlungen.push(parseInt(allDrops[item].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[item]);"
 
   if(allDrags.length > 1){
     for (var i = 2; i <= allDrags.length; i++){
@@ -652,12 +665,11 @@ function empfehlung(){
       b = b + "+ parseInt(allDrops[parseInt(item)+"+p+"].getAttribute('data-cap')) "
       c = c + " || allDrops[parseInt(item2)+"+p+"].getAttribute('data-state') != 'free' || !((21 - (calcTimeSlots()-2)) >= parseInt(allDrops[parseInt(item2)+"+p+"].getAttribute('data-this'))) "
       d = d + " allDrops[parseInt(item2)+"+p+"] = allDrops[parseInt(item2)+"+p+"].nextSibling; "
-      e = e + " allDrops[parseInt(item)+"+p+"].style.borderColor = 'yellow'; capEmpfehlungen.push(parseInt(allDrops[parseInt(item)+"+p+"].getAttribute('data-cap')));"
+      e = e + "capEmpfehlungen.push(parseInt(allDrops[parseInt(item)+"+p+"].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[parseInt(item)+"+p+"]);"
     }
   }
 
   for(item in allDrops){
-    console.log(allDrops[21]);
     if(getTeilnehmer() - (eval(b)) <= 0){
       if(eval(a)){
         var checker = true;
@@ -670,27 +682,45 @@ function empfehlung(){
             break;
           } else console.log("jop")
         }
-      console.log(checker)
         if(checker == true){
-          eval(e)
+          console.log(capEmpfehlungen);
+          eval(e);
+          console.log(capEmpfehlungen);
           break;
         }
       }
     }
   }
+
   capEmpfehlungen.reverse()
   var teilnehmer = getTeilnehmer();
   var cap = 0;
+  console.log(itemsEmpfehlungen);
   for(var i = 0; i < capEmpfehlungen.length; i++){
     cap = cap + capEmpfehlungen[i];
+
     if(cap >= teilnehmer && i < capEmpfehlungen.length-1){
-      dialogs.alert("Hinweis: Diese Raumanzahl ist suboptimal. Falls möglich bitte einen entfernen oder hinzufügen. Die Empfehlungen sind sonst nicht mehr optimal");
-      break;
+      console.log("jetz isses soweit")
+      console.log(itemsEmpfehlungen);
+      console.log(capEmpfehlungen);
+      itemsEmpfehlungen.shift();
+      console.log(itemsEmpfehlungen);
+
+
+
+
     }
   }
+  // if(capEmpfehlungen.includes(parseInt(allDrops[0].getAttribute("data-cap")))){
+  //   dialogs.alert("Ende")
+  //   itemsEmpfehlungen.pop();
+  // }
 
+  itemsEmpfehlungen.forEach((element) => {
+    element.style.borderColor = "yellow";
+  })
 
-}
+  }
 
 
 //https://www.youtube.com/watch?v=jfYWwQrtzzY

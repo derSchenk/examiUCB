@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>examiUCB</title>
+	<link rel="stylesheet" href="AbwesenheitAnlegen.css">
+  <link rel="stylesheet" href="commonStyle.css">
+  <script src="commonJS.js" async></script>
+	<script src="AbwesenheitAnlegen.js" async></script>
+  </head>
+  <body>
+  <nav id="nav">
+    <a href="index.html"><div class="navitem" id="navitemeins"><span  class="menutext">Slotfinder</span></div></a>
+    <a href="prüfungAnlegen.html"><div class="navitem" id="navitemeins"><span  class="menutext">Prüfungen</span></div></a>
+    <a href="StudsemAnlegen.html"><div class="navitem" id="navitemeins"><span class="menutext">StudSem</span></div></a>
+    <a href="AnwesenAnlegen.html"><div class="navitem" id="navitemeins"><span class="menutext">Anwesende</span></div></a>
+    <a href="RaumAnlegen.html"><div class="navitem" id="navitemeins"><span class="menutext">Räume</span></div></a>
+    <a href="AbwesenheitAnlegen.html"><div class="navitem" id="navitemeins"><span style="color:#F46EBE;" class="menutext">Abwesenheit</span></div></a>
+	</nav>
+  <h2>Abwesenheit hinzufügen:</h2>
+  <div class="zent">
+  	<form class="formular">
+
+        <div>
+          <select class="auswahl" id="typ" title="Raumkategorie">
+            <option value="Saal" selected>Anwesender</option>
+            <option value="Besprechungsraum">StudSem</option>
+          </select>
+        </div>
+        <div>
+          <select class="auswahl" id="objekt">
+
+            <!-- <option value="Saal" selected>Saal</option>
+            <option value="Besprechungsraum">Besprechungsraum</option>
+            <option value="PC-Pool">PC-Pool</option>
+            <option value="Cat XY">Cat XY</option> -->
+          </select>
+        </div>
+        <div>
+          <input type="date" id="vonDate" placeholder="von">
+        </div>
+        <div>
+          <input type="date" id="bisDate" placeholder="bis">
+        </div>
+
+      <div>
+        <input id="tage" placeholder="Tage" value="1 2 3 4 5">
+      </div>
+      <select class="auswahl" id="vonSlot" title="Raumkategorie">
+        <option value="1" selected>09:00</option>
+        <option value="2">09:30</option>
+        <option value="3">10:00</option>
+        <option value="4">10:30</option>
+        <option value="5">11:00</option>
+        <option value="6">11:30</option>
+        <option value="7">12:00</option>
+        <option value="8">12:30</option>
+        <option value="9">13:00</option>
+        <option value="10">13:30</option>
+        <option value="11">14:00</option>
+        <option value="12">14:30</option>
+        <option value="13">15:00</option>
+        <option value="14">15:30</option>
+        <option value="15">16:00</option>
+        <option value="16">16:30</option>
+        <option value="17">17:00</option>
+        <option value="18">17:30</option>
+        <option value="19">18:00</option>
+        <option value="20">18:30</option>
+        <option value="21">19:00</option>
+      </select>
+      <select class="auswahl" id="bisSlot" title="Raumkategorie">
+        <option value="1" >09:30</option>
+        <option value="2">10:00</option>
+        <option value="3">10:30</option>
+        <option value="4">11:00</option>
+        <option value="5">11:30</option>
+        <option value="6">12:00</option>
+        <option value="7">12:30</option>
+        <option value="8">13:00</option>
+        <option value="9">13:30</option>
+        <option value="10">14:00</option>
+        <option value="11">14:30</option>
+        <option value="12">15:00</option>
+        <option value="13">15:30</option>
+        <option value="14">16:00</option>
+        <option value="15">16:30</option>
+        <option value="16">17:00</option>
+        <option value="17">17:30</option>
+        <option value="18">18:00</option>
+        <option value="19">18:30</option>
+        <option value="20">19:00</option>
+        <option value="21" selected>19:30</option>
+      </select>
+  		<div>
+  			<input id="buttonEintragen" type="submit" value="Abwesenh. eintragen" >
+		</div>
+
+  	</form>
+  </div>
+  <hr>
+  <h2>Raum entfernen:</h2>
+  <div class="zent">
+  	<form class="formular">
+      <div>
+        <input autocomplete="off" id="löschen" list="alleElemente" placeholder="Zu löschendes Element wählen" title="Zu löschendes Element wählen">
+        <datalist id="alleElemente"></datalist>
+      </div>
+  		<div>
+  			<input id="buttonLöschen" type="submit" value="Element löschen" >
+  		</div>
+  	</form>
+
+  </div>
+  <hr>
+  <div id="footer">
+    <form>
+      <div>
+        <span>Datum:</span>
+        <input type="date" id="date">
+        <span style="margin-left: 2vw;">KW / Wochentag / Jahr:</span>
+        <input type="number" min="1" max="53" id="ergebnis" title="KW" placeholder="KW*">
+        <span>/</span>
+        <input type="number" min="1" max="7" id="ergebnis2" title="Tag 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr, 6=Sa, 7=So" placeholder="Tag">
+        <span>/</span>
+        <input type="number" min="2021" id="ergebnis3" title="Falls keine Angabe wird dieses Jahr oder das nächste Jahr angenommen. Das nächste Jahr wird angenommen wenn die angegebene KW in diesem Jahr bereits mehr als 2 Monate in der Vergangenheit liegt." placeholder="JJJJ">
+      </div>
+    </form>
+  </div>
+  </body>
+  <script>
+	require('./renderer.js');
+  </script>
+</html>

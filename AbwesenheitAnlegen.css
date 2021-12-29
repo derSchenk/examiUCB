@@ -1,0 +1,31 @@
+
+/*------------------------------FORM-----------------------------------------------------------------------*/
+
+form{
+	margin: 1vh;
+	margin-top: 5vh;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1vw;
+}
+
+textarea{
+	width: 15.3vw;
+	border-radius: 3px;
+	border-color: white;
+	border-style: none;
+	font-family: arial;
+}
+
+#buttonEintragen, #buttonLöschen{
+	height: 2.8vh;
+	min-height: 1.5em;
+	width: 8vw;
+	background-color: black;
+	color: white;
+}
+
+#buttonEintragen:hover, #buttonLöschen:hover{
+	border: 1px solid #F46EBE;
+	color: #F46EBE;
+}

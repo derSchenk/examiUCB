@@ -23,13 +23,15 @@
 
         <div>
           <select class="auswahl" id="typ" title="Raumkategorie">
-            <option value="Saal" selected>Anwesender</option>
-            <option value="Besprechungsraum">StudSem</option>
+            <option value="Anwesender" selected>Anwesender</option>
+            <option value="StudSem">StudSem</option>
           </select>
         </div>
         <div>
-          <select class="auswahl" id="objekt">
-
+          <input autocomplete="off" class="auswahl" list="objektliste" id="objekt">
+            <datalist id="objektliste">
+              //Hier kommen eintäge
+            </datalist>
             <!-- <option value="Saal" selected>Saal</option>
             <option value="Besprechungsraum">Besprechungsraum</option>
             <option value="PC-Pool">PC-Pool</option>

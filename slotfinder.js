@@ -185,21 +185,21 @@ minutes.addEventListener('change', changeRaumkat)
 
 //Verhinderungen abfragen-------------------------------------------------------------
 //Wird noch nicht verwendet. Kommentare folgen, sobald genutzt
-var exam = "algebrastat";
-sql = "SELECT anwesende.Nachname, anwesende_belegung.jahr, anwesende_belegung.tag, anwesende_belegung.kw, anwesende_belegung.tslot FROM prufungen, prufunganwesendeverbindung, anwesende, anwesendebelegungverbindung, anwesende_belegung WHERE prufungen.Prufung_Name = '" + exam + "' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID AND anwesende.Anwesende_ID = anwesendebelegungverbindung.Anwesende_ID AND anwesendebelegungverbindung.Belegungs_ID = anwesende_belegung.Belegungs_ID"
-sql2 = "SELECT studiengangssemester.Studiengang, studiengangssemester_belegung.jahr, studiengangssemester_belegung.tag, studiengangssemester_belegung.kw, studiengangssemester_belegung.tslot FROM prufungen, prufungstudsemverbindung, studiengangssemester, studsembelegungverbindung, studiengangssemester_belegung WHERE prufungen.Prufung_Name = '" + exam + "' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID AND studiengangssemester.Studiengangssemester_ID = studsembelegungverbindung.Studiengangssemester_ID AND studsembelegungverbindung.Belegungs_ID = studiengangssemester_belegung.Belegungs_ID"
-var verhinderungen = [];
-var verhinderungen2 = [];
-db.query(sql, function(err, results) {
-  if (err) throw err;
-  verhinderungen2 = results;
-});
-db.query(sql2, function(err, results) {
-  if (err) throw err;
-  verhinderungen = results;
-  verhinderungen = verhinderungen.concat(verhinderungen2);
-  console.log(verhinderungen);
-});
+// var exam = "algebrastat";
+// sql = "SELECT anwesende.Nachname, anwesende_belegung.jahr, anwesende_belegung.tag, anwesende_belegung.kw, anwesende_belegung.tslot FROM prufungen, prufunganwesendeverbindung, anwesende, anwesendebelegungverbindung, anwesende_belegung WHERE prufungen.Prufung_Name = '" + exam + "' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID AND anwesende.Anwesende_ID = anwesendebelegungverbindung.Anwesende_ID AND anwesendebelegungverbindung.Belegungs_ID = anwesende_belegung.Belegungs_ID"
+// sql2 = "SELECT studiengangssemester.Studiengang, studiengangssemester_belegung.jahr, studiengangssemester_belegung.tag, studiengangssemester_belegung.kw, studiengangssemester_belegung.tslot FROM prufungen, prufungstudsemverbindung, studiengangssemester, studsembelegungverbindung, studiengangssemester_belegung WHERE prufungen.Prufung_Name = '" + exam + "' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID AND studiengangssemester.Studiengangssemester_ID = studsembelegungverbindung.Studiengangssemester_ID AND studsembelegungverbindung.Belegungs_ID = studiengangssemester_belegung.Belegungs_ID"
+// var verhinderungen = [];
+// var verhinderungen2 = [];
+// db.query(sql, function(err, results) {
+//   if (err) throw err;
+//   verhinderungen2 = results;
+// });
+// db.query(sql2, function(err, results) {
+//   if (err) throw err;
+//   verhinderungen = results;
+//   verhinderungen = verhinderungen.concat(verhinderungen2);
+//   console.log(verhinderungen);
+// });
 //---------------------------------------
 
 function getTime(number) { //Die Funktion liefert einen String mit der zum Timeslot korespondierenden Uhrzeit zurück.

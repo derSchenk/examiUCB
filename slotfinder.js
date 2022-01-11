@@ -1,5 +1,6 @@
 var Dialogs = require('dialogs');
 var dialogs = Dialogs(opts = {});
+const lodash = require("lodash");
 
 const formular = document.querySelectorAll('#formular');
 const buttonSend = document.querySelector('input[type="submit"]');
@@ -56,8 +57,9 @@ db.query(sql, function(err, results) {
   //console.log(results);
   results.forEach(result => {
     const nOption = document.createElement('option');
-    nOption.value = result["Prufung_Name"].toLowerCase().trim() + " | " + result["Standardsemester"] + " | " + result["Prüfungsstatus"] + " [T.: " + result["Teilnehmerzahl"] + "]" + " [D.: " + result["Dauer"] + "]";
-    allePrufungen.push(result["Prufung_Name"].toLowerCase().trim() + " | " + result["Standardsemester"] + " | " + result["Prüfungsstatus"] + " [T.: " + result["Teilnehmerzahl"] + "]" + " [D.: " + result["Dauer"] + "]");
+    var inhalt = result["Prufung_Name"].toLowerCase().trim() + " | " + result["Standardsemester"] + " | " + result["Prüfungsstatus"] + " [T.: " + result["Teilnehmerzahl"] + "]" + " [D.: " + result["Dauer"] + "]" + " [ID.: " + result["Prufung_ID"] + "]"
+    nOption.value = inhalt;
+    allePrufungen.push(inhalt);
     listprufungen.appendChild(nOption);
   });
 });
@@ -158,7 +160,7 @@ function addPrufung(e) {
     datalistPruf.appendChild(neueOption);
 
     var dauer = eingabe.split("[D.: ");
-    dauer = dauer[1].split("]");
+    dauer = dauer[1].split("] [ID.");
     if (dauer[0] != "null") {
       if (parseInt(dauer[0]) >= parseInt(minutes.value)) {
         minutes.value = dauer[0];
@@ -256,6 +258,8 @@ function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
   while (raumgrid.firstChild) { //Falls das Grid durch vorherige Abfrage bereits gefüllt. Lösche diese Einträge.
     raumgrid.firstChild.remove()
   }
+
+  ladeBelegungen();
 
   //Oberer Teilnehmer: siehe unterer Teilnehmer-Counter für Erläuterungen (weiter unten)
   const capcounterOuter = document.createElement("div");
@@ -554,6 +558,13 @@ function createNewElement() {
 //     }
 //   })
 // }
+var arr = [];
+for(var i = 0; i <= 9; i++){
+  var p = 0;
+  arr.push(p);
+}
+console.log(arr)
+
 
 function findfirst() {
   const alldrags = document.querySelectorAll("#raumgrid .dnd");
@@ -598,6 +609,50 @@ function getTeilnehmer() {
   })
   return teilnehmer;
 }
+
+function ladeBelegungen(){
+  var prufungen = document.querySelectorAll("#datalistpruf option");
+  prufungen.forEach((item) => {
+    if(item.selected){
+      var temp = item.textContent.split("[ID.: ");
+      var temp = temp[1].split("]");
+      var id = temp[0];
+      console.log(id)
+
+      var sql = "SELECT * FROM prufungen, prufunganwesendeverbindung, anwesende, anwesendebelegungverbindung, anwesende_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID AND anwesende.Anwesende_ID = anwesendebelegungverbindung.Anwesende_ID AND anwesendebelegungverbindung.Belegungs_ID = anwesende_belegung.Belegungs_ID";
+      db.query(sql, function(err, results) {
+        if (err) throw err;
+        //console.log(results);
+        var ergebnisse = [];
+        for (result of results){
+          var dateOne = result["Datum"];
+          var dateTwo = result["DatumBis"];
+          for (var i = dateOne; i <= dateTwo; i.setDate(i.getDate() + 1)){
+
+            var teilergebnis = [];
+
+            teilergebnis.push(i);
+            console.log(i);
+            for(var j = 1; j <= 21; j++){
+              teilergebnis.push(result["TS"+j])
+            }
+            ergebnisse.push(lodash.cloneDeep(teilergebnis));
+          }
+
+        }
+        console.log(ergebnisse)
+
+      });
+
+
+
+
+    }
+  })
+}
+
+
+
 
 
 function calcCap() {

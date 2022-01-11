@@ -190,3 +190,8 @@ form{
 	margin-left: 0.5vw;
 	font-size: x-small
 }
+
+#paperbin{
+	background-color: rgba(149, 240, 182, 0.7);
+	border-radius: 10px;
+}

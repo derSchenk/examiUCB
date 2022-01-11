@@ -115,13 +115,98 @@ function loadObjects(e) {
 inputTyp.addEventListener('change', loadObjects, false);
 
 
+function weekdayabfragen(i){
+var p;
+  if (i.getDay() == 0) {
+    p = 7;
+  } else p = i.getDay();
+return p;
+}
 
 
+function dateToString(i){
+
+  if(i instanceof Date){
+
+
+    var month = i.getMonth() + 1
+    var tage = i.getDate();
+    if (month < 10) {
+      month = "0" + month;
+    }
+    if (tage < 10) {
+      tage = "0" + tage;
+    }
+    return i.getFullYear() + "-" + month + "-" + tage;
+  }
+}
+
+
+function objektIDabfragen(){
+  try {
+    var objektID = inputObjekt.value.trim().split("[");
+    var objektID = objektID[1].split("]");
+    var objektID = objektID[0];
+    return objektID;
+  } catch {
+    dialogs.alert("Hoppla, möglicherweise liegt das Objekt nicht in der Form '...[ID]' vor. Bitte die eckigen Klammern mit der ID nicht entfernen.");
+    //return;
+  }
+}
+
+
+function sqlabfragen(datumVon, datumBis, timeslots){
+  if (inputTyp.value == "Anwesender") {
+    var sql = "INSERT INTO anwesende_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + datumVon + "','" + datumBis + "','" + timeslots[0] + "','" + timeslots[1] + "','" + timeslots[2] + "','" + timeslots[3] + "','" + timeslots[4] + "','" + timeslots[5] + "','" + timeslots[6] + "','" + timeslots[7] + "','" + timeslots[8] + "','" + timeslots[9] + "','" + timeslots[10] + "','" + timeslots[11] + "','" + timeslots[12] + "','" + timeslots[13] + "','" + timeslots[14] + "','" + timeslots[15] + "','" + timeslots[16] + "','" + timeslots[17] + "','" + timeslots[18] + "','" + timeslots[19] + "','" + timeslots[20] + "')"
+
+  } else var sql = "INSERT INTO studiengangssemester_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + datumVon + "','" + datumBis + "','" + timeslots[0] + "','" + timeslots[1] + "','" + timeslots[2] + "','" + timeslots[3] + "','" + timeslots[4] + "','" + timeslots[5] + "','" + timeslots[6] + "','" + timeslots[7] + "','" + timeslots[8] + "','" + timeslots[9] + "','" + timeslots[10] + "','" + timeslots[11] + "','" + timeslots[12] + "','" + timeslots[13] + "','" + timeslots[14] + "','" + timeslots[15] + "','" + timeslots[16] + "','" + timeslots[17] + "','" + timeslots[18] + "','" + timeslots[19] + "','" + timeslots[20] + "')"
+  return sql;
+}
+
+
+function sql2abfragen(objektID, primaryKey){
+  if (inputTyp.value == "Anwesender") {
+    var sql2 = "INSERT INTO anwesendebelegungverbindung (Anwesende_ID, Belegungs_ID) VALUES ('" + objektID + "','" + primaryKey + "')";
+  } else var sql2 = "INSERT INTO studsembelegungverbindung (Studiengangssemester_ID, Belegungs_ID) VALUES ('" + objektID + "','" + primaryKey + "')";
+  return sql2;
+}
+
+
+function datenbank(sql, objektID, gehortZu){
+  db.query(sql, function(err, results) {
+    try {
+      if (err) throw err;
+    } catch {
+      dialogs.alert("Hoppla, das Objekt konnte nicht in die Datenbank eingetragen werden ");
+      console.log(err);
+      return;
+    }
+
+    var primaryKey = results["insertId"];
+
+    if(typeof gehortZu !== 'undefined'){
+      gehortZu = primaryKey;
+    }
+
+    sql2 = sql2abfragen(objektID, primaryKey);
+
+    console.log(sql2);
+    db.query(sql2, function(err2, results2) {
+      try {
+        if (err2) throw err2;
+      } catch {
+        dialogs.alert("Möglicherweise existiert dieses Objekt nicht oder ein anderer Fehler ist aufgetreten");
+        console.log(err2);
+        return
+      }
+    })
+  });
+}
 
 
 //----------------------------------------------------------
 function loadFormData(e) {
-  try {
+
     e.preventDefault();
     if (inputObjekt.value.trim() == "" || inputVonDate.value == "") {
       dialogs.alert("Objekt und Start-Datum müssen gewählt sein");
@@ -163,79 +248,34 @@ function loadFormData(e) {
       timeslots[i] = 1;
     }
 
-    console.log(days);
 
-    var p;
-    for (var i = dateOne; i <= dateTwo; i.setDate(i.getDate() + 1)) {
+    var objektID = objektIDabfragen();
 
-      if (i.getDay() == 0) {
-        p = 7;
-      } else p = i.getDay();
+    if(days.includes("1") && days.includes("2") && days.includes("3") && days.includes("4") && days.includes("5")){
+      var datumVon = dateToString(dateOne);
+      var datumBis = dateToString(dateTwo);
+      var sql = sqlabfragen(datumVon, datumBis, timeslots);
+      datenbank(sql, objektID);
+    } else{
+      for (var i = dateOne; i <= dateTwo; i.setDate(i.getDate() + 1)) {
 
-      var month = i.getMonth() + 1
-      var tage = i.getDate();
-      if (month < 10) {
-        month = "0" + month;
-      }
-      if (tage < 10) {
-        tage = "0" + tage;
-      }
-      var datumFull = i.getFullYear() + "-" + month + "-" + tage;
+        var datumFull = dateToString(i);
 
-      //https://stackoverflow.com/questions/41015307/sql-server-if-exists-then-1-else-2
-      try {
-        var objektID = inputObjekt.value.trim().split("[");
-        var objektID = objektID[1].split("]");
-        var objektID = objektID[0];
-      } catch {
-        dialogs.alert("Hoppla, möglicherweise liegt das Objekt nicht in der Form '...[ID]' vor. Bitte die eckigen Klammern mit der ID nicht entfernen.");
-        return;
-      }
+        //https://stackoverflow.com/questions/41015307/sql-server-if-exists-then-1-else-2
+        var gehortZu;
+        var sql = sqlabfragen(datumFull, datumFull, timeslots, gehortZu);
 
-      if (inputTyp.value == "Anwesender") {
-        var sql = "INSERT INTO anwesende_belegung (Datum, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + datumFull + "','" + timeslots[0] + "','" + timeslots[1] + "','" + timeslots[2] + "','" + timeslots[3] + "','" + timeslots[4] + "','" + timeslots[5] + "','" + timeslots[6] + "','" + timeslots[7] + "','" + timeslots[8] + "','" + timeslots[9] + "','" + timeslots[10] + "','" + timeslots[11] + "','" + timeslots[12] + "','" + timeslots[13] + "','" + timeslots[14] + "','" + timeslots[15] + "','" + timeslots[16] + "','" + timeslots[17] + "','" + timeslots[18] + "','" + timeslots[19] + "','" + timeslots[20] + "')"
+        if (days.includes(String(weekdayabfragen(i)))) {
+          console.log(i.getDate());
 
-      } else var sql = "INSERT INTO studiengangssemester_belegung (Datum, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + datumFull + "','" + timeslots[0] + "','" + timeslots[1] + "','" + timeslots[2] + "','" + timeslots[3] + "','" + timeslots[4] + "','" + timeslots[5] + "','" + timeslots[6] + "','" + timeslots[7] + "','" + timeslots[8] + "','" + timeslots[9] + "','" + timeslots[10] + "','" + timeslots[11] + "','" + timeslots[12] + "','" + timeslots[13] + "','" + timeslots[14] + "','" + timeslots[15] + "','" + timeslots[16] + "','" + timeslots[17] + "','" + timeslots[18] + "','" + timeslots[19] + "','" + timeslots[20] + "')"
+          console.log(sql);
+          gehortZu = datenbank(sql, objektID, gehortZu);
 
-      if (days.includes(String(p))) {
-        console.log(i.getDate());
-
-        console.log(sql);
-        db.query(sql, function(err, results) {
-          try {
-            if (err) throw err;
-          } catch {
-            dialogs.alert("Hoppla, das Objekt konnte nicht in die Datenbank eingetragen werden ");
-            console.log(err);
-            return;
-          }
-
-          var primaryKey = results["insertId"];
-
-          if (inputTyp.value == "Anwesender") {
-            var sql2 = "INSERT INTO anwesendebelegungverbindung (Anwesende_ID, Belegungs_ID) VALUES ('" + objektID + "','" + primaryKey + "')";
-          } else var sql2 = "INSERT INTO studsembelegungverbindung (Studiengangssemester_ID, Belegungs_ID) VALUES ('" + objektID + "','" + primaryKey + "')";
-
-          console.log(sql2);
-          db.query(sql2, function(err2, results2) {
-            try {
-              if (err2) throw err2;
-              dialogs.alert("Abwesenheit erfolgreich eingetragen")
-            } catch {
-              dialogs.alert("Möglicherweise existiert dieses Objekt nicht oder ein anderer Fehler ist aufgetreten");
-              console.log(err2);
-              return
-            }
-
-
-
-          })
-        });
+        }
       }
     }
-  } catch {
-    dialogs.alert("Ein unbekanner Fehler ist aufgetreten");
-  }
+    dialogs.alert("Abwesenheit erfolgreich eingetragen")
+
 
 }
 

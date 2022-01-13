@@ -88,48 +88,48 @@ function getDataForm(e) {
   e.preventDefault();
   setVisible(); //siehe Funktion
 
-  prufungen = [];
-  days = [];
-  kalenderwochen = [];
-
-  var formData = new FormData(formular[0]);
-  //Auslesen des Formulas mit .get/.getAll. Besser/schlechter als .value oder egal?
-  var prufungenVar = formData.getAll('datalistpruf2');
-  var timeString = formData.get('ZeitPrufung2');
-  var kalenderwochen3 = formData.get('kws2').trim(); //trim() entfernt Leerzeichen am Anfang und Ende --> Nur Leerzeichen werden als leere Eingabe erkannt.
-  var kalenderwochen2 = kalenderwochen3.split(" "); //KWs werden leerzeichen-separiert vom User angegeben
-  var daysdrei = formData.get('days2').trim();
-  var dayszwei = daysdrei.split(" ");
-  var timeVar = parseInt(timeString);
-
-  if (prufungenVar.length > 0 && kalenderwochen3.localeCompare("") != 0 && daysdrei.localeCompare("") != 0 && timeVar >= 0) {
-    //Prüft nicht sämtliche Fehleingaben, sondern nur wahrscheinlichste
-    roomcat = formData.get('selectroomcat2');
-    kalenderwochen2.forEach(function(item) {
-      var a = parseInt(item);
-      if (a > 0 && a <= 53 && !kalenderwochen.includes(a)) {
-        kalenderwochen.push(a);
-      }
-    });
-    kalenderwochen.sort();
-
-    dayszwei.forEach(function(item) {
-      var a = parseInt(item);
-      if (a == 6 || a == 7) {
-        if (confirm("Soll die Prüfung wirklich an einem Samstag bzw. Sonntag stattfinden dürfen?")) {
-          if (!days.includes(a)) {
-            days.push(a);
-          }
-        }
-      } else {
-        if (a > 0 && a <= 5 && !days.includes(a)) {
-          days.push(a);
-        }
-      }
-    });
-    days.sort();
-
-  } else dialogs.alert("Erforderliche Eingabe fehlt");
+  // prufungen = [];
+  // days = [];
+  // kalenderwochen = [];
+  //
+  // var formData = new FormData(formular[0]);
+  // //Auslesen des Formulas mit .get/.getAll. Besser/schlechter als .value oder egal?
+  // var prufungenVar = formData.getAll('datalistpruf2');
+  // var timeString = formData.get('ZeitPrufung2');
+  // var kalenderwochen3 = formData.get('kws2').trim(); //trim() entfernt Leerzeichen am Anfang und Ende --> Nur Leerzeichen werden als leere Eingabe erkannt.
+  // var kalenderwochen2 = kalenderwochen3.split(" "); //KWs werden leerzeichen-separiert vom User angegeben
+  // var daysdrei = formData.get('days2').trim();
+  // var dayszwei = daysdrei.split(" ");
+  // var timeVar = parseInt(timeString);
+  //
+  // if (prufungenVar.length > 0 && kalenderwochen3.localeCompare("") != 0 && daysdrei.localeCompare("") != 0 && timeVar >= 0) {
+  //   //Prüft nicht sämtliche Fehleingaben, sondern nur wahrscheinlichste
+  //   roomcat = formData.get('selectroomcat2');
+  //   kalenderwochen2.forEach(function(item) {
+  //     var a = parseInt(item);
+  //     if (a > 0 && a <= 53 && !kalenderwochen.includes(a)) {
+  //       kalenderwochen.push(a);
+  //     }
+  //   });
+  //   kalenderwochen.sort();
+  //
+  //   dayszwei.forEach(function(item) {
+  //     var a = parseInt(item);
+  //     if (a == 6 || a == 7) {
+  //       if (confirm("Soll die Prüfung wirklich an einem Samstag bzw. Sonntag stattfinden dürfen?")) {
+  //         if (!days.includes(a)) {
+  //           days.push(a);
+  //         }
+  //       }
+  //     } else {
+  //       if (a > 0 && a <= 5 && !days.includes(a)) {
+  //         days.push(a);
+  //       }
+  //     }
+  //   });
+  //   days.sort();
+  //
+  // } else dialogs.alert("Erforderliche Eingabe fehlt");
 }
 
 buttonSend.addEventListener('click', getDataForm, false);
@@ -259,7 +259,7 @@ function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
     raumgrid.firstChild.remove()
   }
 
-  ladeBelegungen();
+
 
   //Oberer Teilnehmer: siehe unterer Teilnehmer-Counter für Erläuterungen (weiter unten)
   const capcounterOuter = document.createElement("div");
@@ -339,11 +339,29 @@ function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
 
   });
   //----------------------------------------------------------------------------
+  ladeBelegungen();
+
 }
 
 buttonSend.addEventListener("click", loadRooms, false);
 
 //----------DRAG AND DROP-----------------------------------------------------
+
+function setzeVerboteneDrops(){
+
+  const allDrops = document.querySelectorAll(".insidediv");
+  console.log(allDrops.length)
+  allDrops.forEach((item) => {
+    if(parseInt(item.getAttribute("data-this")) > 21 - (calcTimeSlots()-1)){
+      item.setAttribute("data-empfehlung", "verboten");
+    }
+  })
+}
+
+
+
+
+
 
 function dragoverpapierkorb(e) { //Was passiert wenn ein Token über den Papierkorb gezogen wird
   e.preventDefault(); //Elemente sind von Default nicht droppabel. Durch e.preventDefault() wirde dies aufgehoben
@@ -361,9 +379,11 @@ function droppapierkorb() {
   calcCap();
   if (this.lastChild.hasAttribute("data-token")) {
     this.lastChild.remove();
+
+
+    calcCap();
     empfehlung();
     findfirst();
-    calcCap();
   }
 }
 
@@ -375,6 +395,7 @@ drags.forEach(item => {
 
 
 function listenershinzufügen() {
+  setzeVerboteneDrops();
   const papierkorb = document.querySelector("#papierkorb");
   papierkorb.addEventListener("dragover", dragoverpapierkorb);
   papierkorb.addEventListener("drop", droppapierkorb);
@@ -390,17 +411,14 @@ function listenershinzufügen() {
 }
 
 function dragover(e) {
-  var lastDrops = 21 - (calcTimeSlots() - 2);
 
-  if (this.getAttribute("data-this") >= lastDrops) {
-    this.lastChild.style.display = none;
-
-  } //Schmeißt eien Fehler da none statt "none" und verhindert somit das Setzen des Token. Wie geht es anders???
-
+if(!(this.getAttribute("data-empfehlung") == "verboten")){
   e.preventDefault();
   const draggable = document.querySelector('.dragging');
 
   this.appendChild(draggable);
+}
+
 
 
 
@@ -478,10 +496,12 @@ function dragend(e) {
           }
         }
         //     item2 = item2.nextSibling;
-        empfehlung();
-        findfirst();
+
+
         calcCap();
         createNewElement();
+          empfehlung();
+          findfirst();
 
       }
     }
@@ -588,7 +608,7 @@ function findfirst() {
       firstandfellows.push(i);
     }
     allDrops.forEach((item) => {
-      if (!firstandfellows.includes(parseInt(item.getAttribute("data-this"))) && item.style.borderColor != "orange") {
+      if (!firstandfellows.includes(parseInt(item.getAttribute("data-this"))) && item.style.borderColor != "fuchsia") {
         item.style.opacity = "60%"
       } else {
         item.style.opacity = "100%"
@@ -610,6 +630,9 @@ function getTeilnehmer() {
   return teilnehmer;
 }
 
+
+
+
 function ladeBelegungen(){
   var prufungen = document.querySelectorAll("#datalistpruf option");
   prufungen.forEach((item) => {
@@ -619,11 +642,13 @@ function ladeBelegungen(){
       var id = temp[0];
       console.log(id)
 
-      var sql = "SELECT * FROM prufungen, prufunganwesendeverbindung, anwesende, anwesendebelegungverbindung, anwesende_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID AND anwesende.Anwesende_ID = anwesendebelegungverbindung.Anwesende_ID AND anwesendebelegungverbindung.Belegungs_ID = anwesende_belegung.Belegungs_ID";
+      var sql = "SELECT * FROM prufungen, prufunganwesendeverbindung, anwesende, anwesendebelegungverbindung, anwesende_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID AND anwesende.Anwesende_ID = anwesendebelegungverbindung.Anwesende_ID AND anwesendebelegungverbindung.Belegungs_ID = anwesende_belegung.Belegungs_ID UNION SELECT * FROM prufungen, prufungstudsemverbindung, studiengangssemester, studsembelegungverbindung, studiengangssemester_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID AND studiengangssemester.Studiengangssemester_ID = studsembelegungverbindung.Studiengangssemester_ID AND studsembelegungverbindung.Belegungs_ID = studiengangssemester_belegung.Belegungs_ID";
+
       db.query(sql, function(err, results) {
+        var ergebnisse = [];
         if (err) throw err;
         //console.log(results);
-        var ergebnisse = [];
+
         for (result of results){
           var dateOne = result["Datum"];
           var dateTwo = result["DatumBis"];
@@ -632,7 +657,7 @@ function ladeBelegungen(){
             var teilergebnis = [];
 
             teilergebnis.push(i);
-            console.log(i);
+            //console.log(i);
             for(var j = 1; j <= 21; j++){
               teilergebnis.push(result["TS"+j])
             }
@@ -640,7 +665,32 @@ function ladeBelegungen(){
           }
 
         }
-        console.log(ergebnisse)
+
+        const datumTag = document.querySelector("#kws");
+        var betrachtetesDatum = new Date(datumTag.value)
+        betrachtetesDatum.setHours(0);
+        var belegung = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        for (item of ergebnisse){
+          if(item[0].getTime() == betrachtetesDatum.getTime()){
+
+            for(var u = 1; u <= 21; u++){
+              if(item[u] == 1){
+                belegung[u-1] = 1;
+              }
+            }
+          }
+        }
+        console.log("this is: "+belegung);
+        var allDrops = document.querySelectorAll(".insidediv");
+        for(drop of allDrops){
+         if(belegung[parseInt(drop.getAttribute("data-this"))-1] == 1){
+           console.log("drin");
+           drop.style.borderColor = "#F7665E";
+           drop.style.color = "black";
+           drop.setAttribute("data-state", "oc")
+         }
+        }
+
 
       });
 
@@ -650,6 +700,9 @@ function ladeBelegungen(){
     }
   })
 }
+
+
+
 
 
 
@@ -675,8 +728,8 @@ function calcCap() {
     allSpaces[i].textContent = arr[i];
     allSpaces2[i].textContent = arr[i];
     if (arr[i] <= 0) {
-      allSpaces[i].parentElement.style.backgroundColor = "#DFBD6E";
-      allSpaces2[i].parentElement.style.backgroundColor = "#DFBD6E";
+      allSpaces[i].parentElement.style.backgroundColor = "#F9E6AE";
+      allSpaces2[i].parentElement.style.backgroundColor = "#F9E6AE";
       //allSpaces[i].parentElement.style.borderColor = "#37F72E";
     } else {
       allSpaces[i].parentElement.style.backgroundColor = "#A9CAEB";
@@ -687,7 +740,7 @@ function calcCap() {
 }
 
 function drop(e) {
-  e.preventDefault();
+  //e.preventDefault();
   createNewElement();
 
 }
@@ -711,8 +764,9 @@ function empfehlung() {
   capEmpfehlungen = [];
 
   allDrops.forEach((element) => {
-    if (element.style.borderColor == "orange") {
+    if (element.style.borderColor == "fuchsia") {
       element.style.borderColor = "black";
+      element.style.color = "black";
       element.style.borderStyle = "solid";
       element.removeAttribute("title");
     }
@@ -720,23 +774,31 @@ function empfehlung() {
 
 //  var firstAdvice;
 
-  var a = "allDrops[item].getAttribute('data-state') == 'free' && (21 - (calcTimeSlots()-2)) >= parseInt(allDrops[item].getAttribute('data-this'))"
+  var a = "allDrops[item].getAttribute('data-state') == 'free' && (21 - 0 ) >= parseInt(allDrops[item].getAttribute('data-this'))"
   var b = "parseInt(allDrops[item].getAttribute('data-cap')) "
-  var c = "allDrops[item2].getAttribute('data-state') != 'free' || !((21 - (calcTimeSlots()-2)) >= parseInt(allDrops[item2].getAttribute('data-this'))) "
+  var c = "allDrops[item2].getAttribute('data-state') != 'free' || !((21 - 0) >= parseInt(allDrops[item2].getAttribute('data-this'))) "
   var d = "allDrops[item2] = allDrops[item2].nextSibling; "
   var e = "capEmpfehlungen.push(parseInt(allDrops[item].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[item]);"
+
+
+
+  // var a = "allDrops[item].getAttribute('data-state') == 'free' && (21 - (calcTimeSlots()-2)) >= parseInt(allDrops[item].getAttribute('data-this'))"
+  // var b = "parseInt(allDrops[item].getAttribute('data-cap')) "
+  // var c = "allDrops[item2].getAttribute('data-state') != 'free' || !((21 - (calcTimeSlots()-2)) >= parseInt(allDrops[item2].getAttribute('data-this'))) "
+  // var d = "allDrops[item2] = allDrops[item2].nextSibling; "
+  // var e = "capEmpfehlungen.push(parseInt(allDrops[item].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[item]);"
 
   if (allDrags.length > 1) {
     for (var i = 2; i <= allDrags.length; i++) {
       var p = (i - 1) * 21;
-      a = a + "&& allDrops[parseInt(item)+" + p + "].getAttribute('data-state') == 'free' && (21 - (calcTimeSlots()-2)) >= parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-this')) "
+      a = a + "&& allDrops[parseInt(item)+" + p + "].getAttribute('data-state') == 'free' && (21 - 0) >= parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-this')) "
       b = b + "+ parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-cap')) "
-      c = c + " || allDrops[parseInt(item2)+" + p + "].getAttribute('data-state') != 'free' || !((21 - (calcTimeSlots()-2)) >= parseInt(allDrops[parseInt(item2)+" + p + "].getAttribute('data-this'))) "
+      c = c + " || allDrops[parseInt(item2)+" + p + "].getAttribute('data-state') != 'free' || !((21 - 0) >= parseInt(allDrops[parseInt(item2)+" + p + "].getAttribute('data-this'))) "
       d = d + " allDrops[parseInt(item2)+" + p + "] = allDrops[parseInt(item2)+" + p + "].nextSibling; "
       e = e + "capEmpfehlungen.push(parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[parseInt(item)+" + p + "]);"
     }
   }
-
+try{
   for (item in allDrops) {
     if (getTeilnehmer() - (eval(b)) <= 0) {
       if (eval(a)) {
@@ -759,6 +821,10 @@ function empfehlung() {
       }
     }
   }
+} catch{
+ console.log("keine Empfehlung möglich?")
+}
+
 
   capEmpfehlungen.reverse()
   var teilnehmer = getTeilnehmer();
@@ -781,12 +847,17 @@ function empfehlung() {
   // }
 
   itemsEmpfehlungen.forEach((element) => {
-    element.style.borderColor = "orange";
+
+    if(element.getAttribute("data-empfehlung") != "verboten"){
+      element.style.borderColor = "fuchsia";
+      element.style.color = "fuchsia"
+      if(itemsEmpfehlungen.length > 1){
+        itemsEmpfehlungen[0].style.borderStyle = "dashed";
+        itemsEmpfehlungen[0].setAttribute("title", "Dieser Slot muss nicht unbedingt der beste sein, probiere auch mal die Slots darüber aus (falls frei).");
+      }
+    }
   })
-  if(itemsEmpfehlungen.length > 1){
-    itemsEmpfehlungen[0].style.borderStyle = "dashed";
-    itemsEmpfehlungen[0].setAttribute("title", "Dieser Slot muss nicht unbedingt der beste sein, probiere auch mal die Slots darüber aus (falls frei).");
-  }
+
 
 
 }

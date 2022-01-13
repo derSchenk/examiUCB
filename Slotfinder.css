@@ -59,10 +59,25 @@ form{
 	color: white;
 }
 
-#buttonSuchen:hover{
+#buttonSuchen:hover, #plus:hover, #minus:hover{
 	border: 1px solid #F46EBE;
 	color: #F46EBE;
 }
+
+#plus, #minus{
+	width: 2em;
+	color: white;
+	background-color: black;
+}
+
+#plus{
+	margin-left: -0.8vw;
+}
+
+#minus{
+	margin-right: -0.8vw;
+}
+
 
 /*GRID---------------------------------------------*/
 
@@ -98,7 +113,7 @@ form{
 	border-bottom: 3px solid gray;
 }
 
-.nameDiv{
+.nameDiv, .nameDivTwo{
 	flex:0 0 15vw;
 	position: sticky;
 	left: 0;
@@ -107,6 +122,13 @@ form{
 	opacity: 100%;
 	/*vertical-align: sub;*/
 	z-index: 1;
+	padding-left: 0.2vw;
+}
+
+.nameDivTwo{
+	font-weight: bold;
+	text-align: center;
+	padding-top: 1.5vh;
 }
 
 #raumgrid{
@@ -150,6 +172,17 @@ form{
 /*Drag and Drop ELemmt*/
 
 
+
+
+.belegt{
+	border-color: #F7665E;
+	color: #F7665E;
+}
+
+.belegt span{
+	text-decoration: line-through;
+}
+
 .dnd{
 	width: 4.5vw;
 	height: 4.5vh;
@@ -163,13 +196,6 @@ form{
 
 }
 
-.dropable{
-
-}
-
-.dragable{
-
-}
 
 #panel{
 	display:flex;

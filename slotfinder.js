@@ -16,7 +16,7 @@ const raumkat = document.querySelector('#selectroomcat')
 const drags = document.querySelectorAll(".dragable");
 const dnd = document.querySelector(".dnd");
 const dragcontainer = document.querySelectorAll(".newdrag");
-
+const datumInput2 = document.querySelector("#kws");
 
 
 
@@ -32,6 +32,9 @@ var days = [];
 var allePrufungen = [];
 var dragID = 1;
 //--------------------------------------------
+
+const datumInput = document.querySelector("#kws");
+datumInput.value = transformDateToHTML(new Date());
 
 //Datenbankverbindung herstellen---------------
 
@@ -50,6 +53,8 @@ db.connect(function(err) {
 
 //----------------------------------------------------------
 
+
+
 //Laden der Vorschläge für die Prüfungen--------------------
 var sql = 'SELECT * FROM prufungen ORDER BY Prufung_Name ASC';
 db.query(sql, function(err, results) {
@@ -65,6 +70,57 @@ db.query(sql, function(err, results) {
 });
 
 //-----------------------------------------------------------------
+
+function transformDateToHTML(datum){
+  var day = datum.getDate();
+  var month = datum.getMonth()+1;
+  if(day < 10){
+    day = "0"+day;
+  }
+  if(month < 10){
+    month = "0"+month;
+  }
+  datumstring = datum.getFullYear()+'-'+month+'-'+day;
+  return datumstring
+}
+
+
+const plus = document.querySelector("#plus");
+function addDate(){
+
+  if(datumInput2.value == ""){
+    datumInput2.value = transformDateToHTML(new Date());
+  }
+  var datum = new Date(datumInput2.value)
+  if(datum.getDay() == 5){
+    datum.setDate(datum.getDate()+3);
+  } else if(datum.getDay() == 6){
+    datum.setDate(datum.getDate()+2);
+  } else datum.setDate(datum.getDate()+1);
+
+  datumInput2.value = transformDateToHTML(datum);
+}
+plus.addEventListener("click", addDate);
+
+
+const minus = document.querySelector("#minus");
+function subDate(){
+  if(datumInput2.value == ""){
+    datumInput2.value = transformDateToHTML(new Date());
+  }
+  var datum = new Date(datumInput2.value)
+  if(datum.getDay() == 1){
+    datum.setDate(datum.getDate()-3);
+  } else if(datum.getDay() == 0){
+    datum.setDate(datum.getDate()-2);
+  } else datum.setDate(datum.getDate()-1);
+  datumInput2.value = transformDateToHTML(datum);
+}
+minus.addEventListener("click", subDate);
+
+
+//------------------------------------------------------------
+
 
 function setVisible() {
   //Das Panel (Mit Papierkorb und Tokenquelle) soll erst sichbar sein, sobald auf "Slot suchen" gedrückt wird
@@ -259,13 +315,29 @@ function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
     raumgrid.firstChild.remove()
   }
 
-
+  function returnWeekdayString(datum){
+    if(datum.getDay() == 0){
+      return "So"
+    }else if(datum.getDay() == 1){
+      return "Mo"
+    }else if(datum.getDay() == 2){
+      return "Di"
+    }else if(datum.getDay() == 3){
+      return "Mi"
+    }else if(datum.getDay() == 4){
+      return "Do"
+    }else if (datum.getDay() == 5){
+      return "Fr"
+    } else return "Sa"
+  }
 
   //Oberer Teilnehmer: siehe unterer Teilnehmer-Counter für Erläuterungen (weiter unten)
   const capcounterOuter = document.createElement("div");
   capcounterOuter.classList.add("outsidediv")
   const seitlicherPlatzhalter = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
-  seitlicherPlatzhalter.className = "nameDiv";
+  seitlicherPlatzhalter.className = "nameDivTwo";
+  const datum = document.createTextNode(returnWeekdayString(new Date(datumInput2.value))+", "+datumInput2.value);
+  seitlicherPlatzhalter.appendChild(datum);
   capcounterOuter.appendChild(seitlicherPlatzhalter);
   for (var i = 1; i <= 21; i++) {
     const capcounterInner = document.createElement("div");
@@ -348,6 +420,9 @@ buttonSend.addEventListener("click", loadRooms, false);
 //----------DRAG AND DROP-----------------------------------------------------
 
 function setzeVerboteneDrops(){
+  //Diese Funktion itteriert durch alle Timeslot-Divs und gibt den letzten Timeslots das Attibut data-empfehlung="veboten ",
+  //Dauert ein Prüfung zb. 4 Timeslots lang, kann der Token der Prüfung nicht auf die letzten drei Timeslots gestzt werden,
+  //Sonst würde die Prüfung über 19:30 Uhr hinaus andauern.
 
   const allDrops = document.querySelectorAll(".insidediv");
   console.log(allDrops.length)
@@ -364,26 +439,20 @@ function setzeVerboteneDrops(){
 
 
 function dragoverpapierkorb(e) { //Was passiert wenn ein Token über den Papierkorb gezogen wird
-  e.preventDefault(); //Elemente sind von Default nicht droppabel. Durch e.preventDefault() wirde dies aufgehoben
+  e.preventDefault();
   const draggable = document.querySelector('.dragging'); //das gerade gezogene Element hat die Klasse .dragging. Dieses Selektieren wir...
-  this.appendChild(draggable); //... und hängen es dem
+  this.appendChild(draggable); //... und hängen es dem Papierkorb an
   createNewElement();
-
-
-
-  //colorize();
 }
 
+
 function droppapierkorb() {
+  calcCap();    //kalkuliere die verwendeten Kapazitäten neu, da jetzt weniger Token existieren
+  if (this.lastChild.hasAttribute("data-token")) {  //falls das dem Papierkorb anghängte Element ein Token ist...
+    this.lastChild.remove();  //lösche den Token
 
-  calcCap();
-  if (this.lastChild.hasAttribute("data-token")) {
-    this.lastChild.remove();
-
-
-    calcCap();
-    empfehlung();
-    findfirst();
+    empfehlung();      //weniger Token -> andere Empfehlung nötig
+    findfirst();       //es könnte der vorherige Mastertoken gelöscht worden sein -> finde einen neuen Mastertoken
   }
 }
 
@@ -395,101 +464,62 @@ drags.forEach(item => {
 
 
 function listenershinzufügen() {
+  //Diese Funktion fügt den Timeslot-Divs die für das Drag and Drop nötigen eventlistener hinzu
   setzeVerboteneDrops();
   const papierkorb = document.querySelector("#papierkorb");
-  papierkorb.addEventListener("dragover", dragoverpapierkorb);
-  papierkorb.addEventListener("drop", droppapierkorb);
+  papierkorb.addEventListener("dragover", dragoverpapierkorb);    //wenn sich ein Token über den Papierkorb gezogen wird, führe die Funktion dragoverpapierkorb aus
+  papierkorb.addEventListener("drop", droppapierkorb);            //wenn der Token über dem Papierkorb losgelassen wird, führ die Funktion ...  aus
 
-  const drops = document.querySelectorAll(".dropable");
+  const drops = document.querySelectorAll(".dropable");         //füge jedem Timeslot...
   drops.forEach(item => {
-    item.addEventListener("dragover", dragover);
+    item.addEventListener("dragover", dragover);              //den Eventlister fürs drüber ziehen
 
-    item.addEventListener("drop", drop);
+    item.addEventListener("drop", drop);                      //den Eventlister fürs loslassen
     //  item.addEventListener("dragenter",);
-    item.addEventListener("dragleave", dragleave);
+    item.addEventListener("dragleave", dragleave);            // den Evetnlistener falls ein Token ein Timesot wieder verlässt
   })
 }
 
+
+
+
 function dragover(e) {
-
-if(!(this.getAttribute("data-empfehlung") == "verboten")){
+//Die Funktion definiert was passiert wenn ein Token über einen Timeslot gezogen wird
+if(!(this.getAttribute("data-empfehlung") == "verboten")){ //falls es sich nicht, um ein in setzeVerboteneDrops() definierten verbotetenen Timeslot handelt,...
   e.preventDefault();
-  const draggable = document.querySelector('.dragging');
+  const draggable = document.querySelector('.dragging');   //...selektiere das gerade gezogene Element und...
 
-  this.appendChild(draggable);
+  this.appendChild(draggable);  //...hänge es dem Timeslot als kindelement an
+}
 }
 
 
-
-
-}
-
-function dragstart(e) {
-  console.log(this.parentElement);
-  if (this.parentElement.classList.contains("newdrag")) {
-    listenershinzufügen();
-  }
-
-  this.classList.add('dragging');
-  if (e.target.parentElement.classList.contains("insidediv")) {
-    if (e.target.hasAttribute("data-token")) {
-
-
-
-
-      var number = parseInt(e.target.lastChild.textContent);
-
-      if (e.target.parentElement.getAttribute("setby") == e.target.id) {
-        var item2 = e.target.parentElement;
-        for (var i = 1; i < number; i++) {
-          item2 = item2.nextSibling;
-          if (item2.getAttribute("setby") == e.target.id) {
-            item2.removeAttribute("setBy");
-            item2.style.backgroundColor = "white";
-            if (i == number - 1) {
-              item2.removeAttribute("setby");
-            }
-          }
-
-        }
-
-        e.target.parentElement.style.backgroundColor = "white";
-        e.target.parentElement.setAttribute("data-hastoken", "false");
-        e.target.parentElement.removeAttribute("setBy");
-      }
-    }
-
-
-  }
-
-}
 
 function dragend(e) {
-  e.target.classList.remove('dragging');
+  //Die Funktion definiert was passiert wenn ein Token aufgehörtz wird zuziehen
+  e.target.classList.remove('dragging');  //Die Klasse dragging wird entfernt
   try {
-    if (e.target.parentElement.classList.contains("insidediv")) {
-      if (e.target.hasAttribute("data-token")) {
+    if (e.target.parentElement.classList.contains("insidediv")) {  //Wenn das Parentelement des Token nun ein Timeslot ist...
+      if (e.target.hasAttribute("data-token")) { //...und es sich auch tatsächlich um einen Token handelt...
 
 
-        number = parseInt(e.target.lastChild.textContent);
+        number = parseInt(e.target.lastChild.textContent);    //Entnehme die Timeslotanzahl aus dem Token
 
-
-        if (!(e.target.parentElement.hasAttribute("setby"))) {
-          var item2 = e.target.parentElement;
+//Im folgenden werden die  Timeslots, die von einem Token belegt werden, rot eingefärbt.
+        if (!(e.target.parentElement.hasAttribute("setby"))) {      //Falls der Timeslot nicht schon von einem anderen Token besetzt wurde, dann...
+          var item2 = e.target.parentElement;   //Setze eine Referenz (item2) auf den timeslot des Tokens
           for (var i = 1; i < number; i++) {
-            console.log(!(item2.hasAttribute("setby")))
-            //            allSpaces[parseInt(item2.getAttribute("data-this"))-1].textContent = String(parseInt(allSpaces[parseInt(item2.getAttribute("data-this"))-1].textContent) + parseInt(item.getAttribute("data-cap")));
-            item2 = item2.nextSibling;
-            if (!(item2.hasAttribute("setby"))) {
-              item2.setAttribute("setby", e.target.id);
-              item2.style.backgroundColor = "pink";
-              if (i == number - 1) {
+            item2 = item2.nextSibling;      //verschiebe item2 auf den rechten benachbarten Timeslots und prüfe...
+            if (!(item2.hasAttribute("setby"))) { //ob dieser nicht schon von einem anderen Token gesetzt wurde...
+              item2.setAttribute("setby", e.target.id); //falls er noch nicht von einem andern gesetzt wurde, dann setze du ihn mit der ID des Token
+              item2.style.backgroundColor = "pink"; //und färbe ihn rot
+              if (i == number - 1) {   //gerade selbst nicht sicher warum das muss
                 item2.setAttribute("setby", e.target.id);
               }
             }
           }
-          if (calcTimeSlots() != 0) {
-
+          if (number != 0) {
+            //Nachdem nun die benachbarten Timeslots des Tokentimeslots erfogreich gefärbt wurden, muss nun der Timeslot des Token selbst gefärbt werden
             e.target.parentElement.style.backgroundColor = "pink";
             e.target.parentElement.setAttribute("data-hastoken", "true");
             e.target.parentElement.setAttribute("setby", e.target.id);
@@ -500,50 +530,86 @@ function dragend(e) {
 
         calcCap();
         createNewElement();
-          empfehlung();
-          findfirst();
+        empfehlung();
+        findfirst();
 
       }
     }
   } catch {}
 }
 
-function dragleave(e) {
-  //wird momentan nur benötigt, wenn Token in den Papierkorb verschoben wird.
-  //ziemlich unnötig für alle anderen Dragleaves, vllt bessere Methode?
-  // var number = parseInt(this.lastChild.textContent);
-  // var item2 = this;
-  // this.style.backgroundColor = "white";
-  // this.removeAttribute("data-besetzt");
-  // for(var i = 1; i < number; i++){
-  //     item2 = item2.nextSibling;
-  //     item2.style.backgroundColor = "white";}
+
+
+function dragstart(e) {
+// Die Funktion definiert was passiert wenn ein Token bekonnen wird zu ziehen
+  console.log(this.parentElement);
+  if (this.parentElement.classList.contains("newdrag")) {      //Falls das Parentelement des zuziehen begonnen Token die Tokenquelle war....
+    listenershinzufügen();      //...füge die Eventlister hinzu (Eigentlich nur beim, ersten Token nötig, wird aber einfachheitshalber bei jedem neuen Token gemacht -> Stört nicht)
+  }
+
+  this.classList.add('dragging');     //bei Dragstart bekommt der zu ziehen begonne Token die Klasse dragging
+
+//Im fogenden müssen die timeslots des verlasssenden Tokens wieder entfärbt werden
+  if (e.target.parentElement.classList.contains("insidediv")) {    //Falls das Parentelement des zuziehen begonnen Elements ein Timeslot ist (und nicht zum beispiel die Tokenquelle)
+    if (e.target.hasAttribute("data-token")) {                     //...und es sich auch tatsächlich um einen Token handelt...
+
+      var number = parseInt(e.target.lastChild.textContent);      //Entnehme die Timeslotanzahl aus dem Token
+
+      if (e.target.parentElement.getAttribute("setby") == e.target.id) {       //Prüfe ob der Timeslot von diesem token gesetzt wurde und nicht von einem anderen Token. Wenn von einem andern Token gesetzt, darf nicht von diesem entfärbt werden
+        var item2 = e.target.parentElement; //Setze eine Referenz (item2) auf den timeslot des Tokens
+        for (var i = 1; i < number; i++) {
+          item2 = item2.nextSibling; //verschiebe item2 auf den rechten benachbarten Timeslots und prüfe...
+          if (item2.getAttribute("setby") == e.target.id) {   // prüfe auch die benachbarten Timeslots ob auch diese nicht von einem anderen geseetzt
+            item2.removeAttribute("setBy");  //entferne das Attribut "setby". Der Timeslot ist nun nicht mehr besetzt
+            item2.style.backgroundColor = "white";  //färbe den Timeslot wieder weiß
+            if (i == number - 1) {  //kein Plan -> Prüfen
+              item2.removeAttribute("setby");
+            }
+          }
+
+        }
+  //Nachdem nun die benachbarten Timeslots des Tokentimeslots erfogreich entfärbt wurden, muss nun der Timeslot des Token selbst enfärbt werden
+        e.target.parentElement.style.backgroundColor = "white";
+        e.target.parentElement.setAttribute("data-hastoken", "false");
+        e.target.parentElement.removeAttribute("setBy");
+      }
+    }
+}
 }
 
-var timeslots;
 
+function dragleave(e) {
+//noch nicht gebraucht
+}
+
+
+
+var timeslots;
 function calcTimeSlots() {
-  var alldrags = document.querySelectorAll(".dnd")
-  //  if(alldrags.length <= 1){
-  var duration = minutes.value;
-  if (duration == 0) {
+  //Diese Funktion berechnet die benötigten Timeslots aus der angegebenen Prüfungsdauer
+  var duration = minutes.value;   //Ziehe die Zeit aus der Formelement
+  if (duration == 0) {            //Wenn Zeit in Minuten = 0, dann auch keien Timeslots benötigt
     return 0;
   }
-  timeslots = parseInt(duration / 30);
-  if (duration % 30 > 10) {
+  timeslots = parseInt(duration / 30);        //Teile
+  if (duration % 30 > 10) {    //falls es bei der Teilung durch 30 einen Rest gibt und dieser größer 10 (minuten) ist, so rechne noch ein Timslot drauf. Beispiel: (45 Minuten / 30 = 1 Timslot) + 1 Timslot weil 45 % 30 = 15; 15 > 10
     timeslots += 1;
   }
-  timeslots += 1; //nächste Prüfung nicht direkt im Anschluss#
+  timeslots += 1; //nächste Prüfung nicht direkt im Anschluss, deswegen pauschal 1 drauf
 
   return timeslots;
 }
 
+
+
+
+
 function createNewElement() {
-  if (dragcontainer[1].childElementCount === 0) {
-    const text = document.createTextNode(calcTimeSlots());
-    const anotherDrag = document.createElement("div");
-    dragID++;
-    anotherDrag.id = "drag" + dragID;
+  if (dragcontainer[1].childElementCount === 0) {             //falls sich in der Tokenquelle kein Token befindet...
+    const text = document.createTextNode(calcTimeSlots());    //erstelle ein Textknoten mit der berechneten Timeslotanzahl
+    const anotherDrag = document.createElement("div");       //erstelle ein Div für den Token
+    dragID++;           //globale Variable, siehe ganz oben
+    anotherDrag.id = "drag" + dragID;                       //gebe jedem Token eine eindeutige ID
     anotherDrag.style.display = "table-cell"
     anotherDrag.classList.add("dnd");
     anotherDrag.setAttribute("draggable", "true"); //Brauch ich das noch?
@@ -553,58 +619,30 @@ function createNewElement() {
     anotherDrag.addEventListener("dragend", dragend);
     anotherDrag.appendChild(text);
     dragcontainer[1].appendChild(anotherDrag);
-    allDrags = document.querySelectorAll(".dnd");
-    allDrags.forEach((item) => {
-      item.textContent = calcTimeSlots();
-    })
   }
 }
 
 
-// function colorize(){
-//   var allDrops = document.querySelectorAll(".insidediv");
-//   allDrops.forEach( element => {
-//     if(element.lastChild.hasAttribute("data-token")){
-//       if(calcTimeSlots() != 0){
-//       element.style.backgroundColor = "pink";
-//       element.setAttribute("data-besetzt", "true");
-//       }
-//       var number = parseInt(element.lastChild.textContent);
-//       var item2 = element;
-//       for(var i = 1; i < number; i++){
-//         item2 = item2.nextSibling;
-//         item2.style.backgroundColor = "pink";
-//       }
-//     }
-//   })
-// }
-var arr = [];
-for(var i = 0; i <= 9; i++){
-  var p = 0;
-  arr.push(p);
-}
-console.log(arr)
-
 
 function findfirst() {
-  const alldrags = document.querySelectorAll("#raumgrid .dnd");
+  const alldrags = document.querySelectorAll("#raumgrid .dnd");    //selektiere alle Tokens
   try {
-    for(item of alldrags){
+    for(item of alldrags){   //Mache ersteinaml alle Tokens zu normalen Token
       item.style.color = "black";
       item.style.borderColor = "black";
       item.setAttribute("title", "Token");
     }
-
+//jetzt nimm den ersten Token und betimm ihn als Mastertoken
     alldrags[0].style.borderColor = "#2D9FFC"
     alldrags[0].style.color = "#2D9FFC"
     alldrags[0].setAttribute("title", "Mastertoken");
 
-    var allDrops = document.querySelectorAll(".insidediv");
-    var first;
-    var firstandfellows = [];
+    var allDrops = document.querySelectorAll(".insidediv");   //Selektiere alle Timeslots
 
-    first = alldrags[0].parentElement.getAttribute("data-this");
-    for (var i = parseInt(first); i < parseInt(first) + calcTimeSlots(); i++) {
+    var firstandfellows = [];
+    var first = parseInt(alldrags[0].parentElement.getAttribute("data-this"));
+
+    for (var i = first; i < first + calcTimeSlots(); i++) {
       firstandfellows.push(i);
     }
     allDrops.forEach((item) => {
@@ -616,6 +654,8 @@ function findfirst() {
     });
   } catch {console.log("nicht geklappt")}
 }
+
+
 
 function getTeilnehmer() {
   var prufungen = document.querySelectorAll("#datalistpruf option");
@@ -685,8 +725,7 @@ function ladeBelegungen(){
         for(drop of allDrops){
          if(belegung[parseInt(drop.getAttribute("data-this"))-1] == 1){
            console.log("drin");
-           drop.style.borderColor = "#F7665E";
-           drop.style.color = "black";
+           drop.classList.add("belegt")
            drop.setAttribute("data-state", "oc")
          }
         }
@@ -694,18 +733,9 @@ function ladeBelegungen(){
 
       });
 
-
-
-
     }
   })
 }
-
-
-
-
-
-
 
 
 function calcCap() {
@@ -715,13 +745,13 @@ function calcCap() {
 
 
   alldrops.forEach((item) => {
-    if (item.lastChild.hasAttribute("data-token")) {
-      var thisItem = item.getAttribute("data-this");
-      for (var i = 0; i < calcTimeSlots(); i++) {
-        arr[parseInt(thisItem) - 1 + i] = arr[parseInt(thisItem) - 1 + i] - parseInt(item.getAttribute("data-cap"));
-      }
+    if(item.hasAttribute("setBy")){
+      var thisItem = parseInt(item.getAttribute("data-this"));
+      arr[thisItem - 1] = arr[thisItem - 1] - parseInt(item.getAttribute("data-cap"));
     }
   });
+
+
   var allSpaces = document.querySelectorAll(".space");
   var allSpaces2 = document.querySelectorAll(".space2");
   for (var i = 0; i < 21; i++) {
@@ -738,6 +768,8 @@ function calcCap() {
     }
   }
 }
+
+
 
 function drop(e) {
   //e.preventDefault();
@@ -779,14 +811,6 @@ function empfehlung() {
   var c = "allDrops[item2].getAttribute('data-state') != 'free' || !((21 - 0) >= parseInt(allDrops[item2].getAttribute('data-this'))) "
   var d = "allDrops[item2] = allDrops[item2].nextSibling; "
   var e = "capEmpfehlungen.push(parseInt(allDrops[item].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[item]);"
-
-
-
-  // var a = "allDrops[item].getAttribute('data-state') == 'free' && (21 - (calcTimeSlots()-2)) >= parseInt(allDrops[item].getAttribute('data-this'))"
-  // var b = "parseInt(allDrops[item].getAttribute('data-cap')) "
-  // var c = "allDrops[item2].getAttribute('data-state') != 'free' || !((21 - (calcTimeSlots()-2)) >= parseInt(allDrops[item2].getAttribute('data-this'))) "
-  // var d = "allDrops[item2] = allDrops[item2].nextSibling; "
-  // var e = "capEmpfehlungen.push(parseInt(allDrops[item].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[item]);"
 
   if (allDrags.length > 1) {
     for (var i = 2; i <= allDrags.length; i++) {

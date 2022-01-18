@@ -18,7 +18,7 @@ const dnd = document.querySelector(".dnd");
 const dragcontainer = document.querySelectorAll(".newdrag");
 const datumInput2 = document.querySelector("#kws");
 
-
+const buttonEintragen = document.querySelector("#buttonEintragen")
 
 //----------Formular-Datenspeicher--------- //Unnutz
 var prufungen;
@@ -94,8 +94,6 @@ function addDate(){
   var datum = new Date(datumInput2.value)
   if(datum.getDay() == 5){
     datum.setDate(datum.getDate()+3);
-  } else if(datum.getDay() == 6){
-    datum.setDate(datum.getDate()+2);
   } else datum.setDate(datum.getDate()+1);
 
   datumInput2.value = transformDateToHTML(datum);
@@ -111,8 +109,6 @@ function subDate(){
   var datum = new Date(datumInput2.value)
   if(datum.getDay() == 1){
     datum.setDate(datum.getDate()-3);
-  } else if(datum.getDay() == 0){
-    datum.setDate(datum.getDate()-2);
   } else datum.setDate(datum.getDate()-1);
   datumInput2.value = transformDateToHTML(datum);
 }
@@ -122,9 +118,10 @@ minus.addEventListener("click", subDate);
 //------------------------------------------------------------
 
 
-function setVisible() {
+function setVisible(e) {
   //Das Panel (Mit Papierkorb und Tokenquelle) soll erst sichbar sein, sobald auf "Slot suchen" gedrückt wird
   //hierfür hidden entfernen und display eigenschaft (flex, table-cell) hinzufügen. Display direkt ins CSS-Sheet zuschreiben ist nicht möglich, da dann hidden nicht mehr funktioniert
+  e.preventDefault();
   dnd.removeAttribute("hidden");
   dnd.style.display = "table-cell";
   dnd2 = document.querySelector(".newdrag .dnd")
@@ -133,62 +130,11 @@ function setVisible() {
     item.removeAttribute("hidden")
     item.style.display = "flex";
   })
+  buttonEintragen.removeAttribute("hidden");
   //Statt hidden könnte auch Display = none gesetzt werden? Besser?
 }
 
-//Formular Daten abrufen und Format anpassen-----------------------
-function getDataForm(e) {
-  //Funktion macht in diesem Zustand noch keinen Sinn, da die globalen Variablen,die durch diese Funtion initialisiert werden, können später nicht von anderen Funktionen gelesen werden. Strikte Trennung...
-  //...der Funktionen -> Macht Sinn, da zum Zeitpunkt in dem die lesende Funktion durch ein Event ausgelöst wird, noch nicht gesagt ist, ob die schreibende Funktion bereits ausgelöst wurde.
-
-  e.preventDefault();
-  setVisible(); //siehe Funktion
-
-  // prufungen = [];
-  // days = [];
-  // kalenderwochen = [];
-  //
-  // var formData = new FormData(formular[0]);
-  // //Auslesen des Formulas mit .get/.getAll. Besser/schlechter als .value oder egal?
-  // var prufungenVar = formData.getAll('datalistpruf2');
-  // var timeString = formData.get('ZeitPrufung2');
-  // var kalenderwochen3 = formData.get('kws2').trim(); //trim() entfernt Leerzeichen am Anfang und Ende --> Nur Leerzeichen werden als leere Eingabe erkannt.
-  // var kalenderwochen2 = kalenderwochen3.split(" "); //KWs werden leerzeichen-separiert vom User angegeben
-  // var daysdrei = formData.get('days2').trim();
-  // var dayszwei = daysdrei.split(" ");
-  // var timeVar = parseInt(timeString);
-  //
-  // if (prufungenVar.length > 0 && kalenderwochen3.localeCompare("") != 0 && daysdrei.localeCompare("") != 0 && timeVar >= 0) {
-  //   //Prüft nicht sämtliche Fehleingaben, sondern nur wahrscheinlichste
-  //   roomcat = formData.get('selectroomcat2');
-  //   kalenderwochen2.forEach(function(item) {
-  //     var a = parseInt(item);
-  //     if (a > 0 && a <= 53 && !kalenderwochen.includes(a)) {
-  //       kalenderwochen.push(a);
-  //     }
-  //   });
-  //   kalenderwochen.sort();
-  //
-  //   dayszwei.forEach(function(item) {
-  //     var a = parseInt(item);
-  //     if (a == 6 || a == 7) {
-  //       if (confirm("Soll die Prüfung wirklich an einem Samstag bzw. Sonntag stattfinden dürfen?")) {
-  //         if (!days.includes(a)) {
-  //           days.push(a);
-  //         }
-  //       }
-  //     } else {
-  //       if (a > 0 && a <= 5 && !days.includes(a)) {
-  //         days.push(a);
-  //       }
-  //     }
-  //   });
-  //   days.sort();
-  //
-  // } else dialogs.alert("Erforderliche Eingabe fehlt");
-}
-
-buttonSend.addEventListener('click', getDataForm, false);
+buttonSend.addEventListener('click', setVisible, false);
 //---------------------------------------------------
 
 
@@ -317,18 +263,20 @@ function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
 
   function returnWeekdayString(datum){
     if(datum.getDay() == 0){
-      return "So"
+      return "So,"
     }else if(datum.getDay() == 1){
-      return "Mo"
+      return "Mo,"
     }else if(datum.getDay() == 2){
-      return "Di"
+      return "Di,"
     }else if(datum.getDay() == 3){
-      return "Mi"
+      return "Mi,"
     }else if(datum.getDay() == 4){
-      return "Do"
+      return "Do,"
     }else if (datum.getDay() == 5){
-      return "Fr"
-    } else return "Sa"
+      return "Fr,"
+    } else if (datum.getDay() == 6){
+      return "Sa,"
+    }
   }
 
   //Oberer Teilnehmer: siehe unterer Teilnehmer-Counter für Erläuterungen (weiter unten)
@@ -336,8 +284,9 @@ function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
   capcounterOuter.classList.add("outsidediv")
   const seitlicherPlatzhalter = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
   seitlicherPlatzhalter.className = "nameDivTwo";
-  const datum = document.createTextNode(returnWeekdayString(new Date(datumInput2.value))+", "+datumInput2.value);
+  const datum = document.createTextNode(returnWeekdayString(new Date(datumInput2.value))+" "+datumInput2.value);
   seitlicherPlatzhalter.appendChild(datum);
+  seitlicherPlatzhalter.setAttribute("data-datum", datumInput2.value);
   capcounterOuter.appendChild(seitlicherPlatzhalter);
   for (var i = 1; i <= 21; i++) {
     const capcounterInner = document.createElement("div");
@@ -646,7 +595,7 @@ function findfirst() {
       firstandfellows.push(i);
     }
     allDrops.forEach((item) => {
-      if (!firstandfellows.includes(parseInt(item.getAttribute("data-this"))) && item.style.borderColor != "fuchsia") {
+      if (!firstandfellows.includes(parseInt(item.getAttribute("data-this"))) && item.style.borderColor != "deepskyblue") {
         item.style.opacity = "60%"
       } else {
         item.style.opacity = "100%"
@@ -796,10 +745,11 @@ function empfehlung() {
   capEmpfehlungen = [];
 
   allDrops.forEach((element) => {
-    if (element.style.borderColor == "fuchsia") {
+    if (element.style.borderColor == "deepskyblue") {
       element.style.borderColor = "black";
       element.style.color = "black";
       element.style.borderStyle = "solid";
+      element.style.fontWeight = "normal";
       element.removeAttribute("title");
     }
   })
@@ -873,18 +823,100 @@ try{
   itemsEmpfehlungen.forEach((element) => {
 
     if(element.getAttribute("data-empfehlung") != "verboten"){
-      element.style.borderColor = "fuchsia";
-      element.style.color = "fuchsia"
+      element.style.borderColor = "deepskyblue";
+      element.style.color = "deepskyblue"
+      element.style.fontWeight = "bold";
       if(itemsEmpfehlungen.length > 1){
         itemsEmpfehlungen[0].style.borderStyle = "dashed";
         itemsEmpfehlungen[0].setAttribute("title", "Dieser Slot muss nicht unbedingt der beste sein, probiere auch mal die Slots darüber aus (falls frei).");
       }
     }
   })
-
-
-
 }
+
+
+
+function eintragen(e){
+  e.preventDefault();
+
+  var prufungen = document.querySelectorAll("#datalistpruf option");
+
+  //Datum ermitteln
+  const namediv = document.querySelectorAll(".nameDivTwo");
+  var datum = namediv[0].getAttribute("data-datum")
+  console.log(datum)
+
+  //Beginn der Klausur durch Mastertoken ermitteln
+    const allDrags = document.querySelectorAll("#raumgrid .dnd")
+    var beginn = allDrags[0].parentElement.getAttribute("data-this");
+    var beginnString = getTime(parseInt(beginn));
+    var mastertokenId = allDrags[0].id;
+    console.log(beginnString)
+
+    //timeslots ermitteln
+    var timeslots = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    const allDrops = document.querySelectorAll(".insidediv");
+    allDrops.forEach((item) => {
+      if(item.getAttribute("setby") == mastertokenId){
+        timeslots[parseInt(item.getAttribute("data-this"))-1] = 1;
+      }
+    })
+    console.log(timeslots);
+
+
+var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + beginnString + "','" + datum + "','" + timeslots[0] + "','" + timeslots[1] + "','" + timeslots[2] + "','" + timeslots[3] + "','" + timeslots[4] + "','" + timeslots[5] + "','" + timeslots[6] + "','" + timeslots[7] + "','" + timeslots[8] + "','" + timeslots[9] + "','" + timeslots[10] + "','" + timeslots[11] + "','" + timeslots[12] + "','" + timeslots[13] + "','" + timeslots[14] + "','" + timeslots[15] + "','" + timeslots[16] + "','" + timeslots[17] + "','" + timeslots[18] + "','" + timeslots[19] + "','" + timeslots[20] + "')"
+    db.query(sql, function(err, results) {
+  var alreadyset = false;
+  prufungen.forEach((item) => {
+//id ermitteln
+  if(item.selected){
+      var temp = item.textContent.split("[ID.: ");
+      var temp = temp[1].split("]");
+      var id = temp[0];
+      console.log(id);
+
+      var sql2 = "INSERT INTO prunfung_termin_verb (Prufung_ID, Termin_ID) VALUES ('"+id+"','"+results["insertId"]+"')"
+      db.query(sql2, function(err, results2) {
+      });
+
+
+
+      const allDrags = document.querySelectorAll("#raumgrid .dnd")
+      if(!alreadyset){
+        for(item2 of allDrags){
+          console.log(item2.parentElement.getAttribute("data-parent"))
+          console.log(results["insertId"])
+          var sql4 = "SELECT * FROM raum WHERE Bezeichnung='"+item2.parentElement.getAttribute("data-parent")+"'"
+          db.query(sql4, function(err, results4) {
+            console.log(results4)
+            for(result of results4){
+              var sql3 = "INSERT INTO prufung_termin_raumverb (Termin_ID, Raum_ID) VALUES ('"+results["insertId"]+"','"+result["Raum_ID"]+"')"
+              db.query(sql3, function(err, results3) {
+              });
+              break;
+            }
+
+          });
+
+          alreadyset = true;
+        }
+      }
+}
+})
+})
+
+
+
+
+//verwendete Räume ermitteln
+
+
+
+
+dialogs.alert("Prüfungen eingetragen")
+}
+
+buttonEintragen.addEventListener("click", eintragen)
 
 
 //https://www.youtube.com/watch?v=jfYWwQrtzzY

@@ -51,15 +51,16 @@ form{
 	border-style: none;
 }
 
-#buttonSuchen{
+#buttonSuchen, #buttonEintragen{
 	height: 2.8vh;
 	min-height: 1.5em;
-	width: 8vw;
+	width: 12em;
 	background-color: black;
 	color: white;
+	font-weight: bold;
 }
 
-#buttonSuchen:hover, #plus:hover, #minus:hover{
+#buttonSuchen:hover, #plus:hover, #minus:hover, #buttonEintragen:hover{
 	border: 1px solid #F46EBE;
 	color: #F46EBE;
 }
@@ -175,8 +176,8 @@ form{
 
 
 .belegt{
-	border-color: #F7665E;
-	color: #F7665E;
+	border-color: #C82311;
+	color: #C82311;
 }
 
 .belegt span{
@@ -220,4 +221,11 @@ form{
 #paperbin{
 	background-color: rgba(149, 240, 182, 0.7);
 	border-radius: 10px;
+}
+
+#eintragen{
+	float: right;
+	margin-bottom: 13vh;
+	margin-top: -3vh;
+	margin-right: 1vw;
 }

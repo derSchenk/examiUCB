@@ -605,8 +605,10 @@ function findfirst() {
     allDrops.forEach((item) => {
       if (!firstandfellows.includes(parseInt(item.getAttribute("data-this"))) && item.style.borderColor != "deepskyblue") {
         item.style.opacity = "60%"
+        item.setAttribute("data-gegraut", "true")
       } else {
         item.style.opacity = "100%"
+        item.removeAttribute("data-gegraut")
       }
     });
   } catch {console.log("nicht geklappt")}
@@ -918,14 +920,28 @@ function loadRoomBelegung(){
 
 
 
-
-
-
+function falschePosition(){
+  var checker = false;
+  var allDrops = document.querySelectorAll(".insidediv");
+  for(drop of allDrops){
+    if(drop.hasAttribute("setBy")){
+      if(drop.getAttribute("data-state") == "oc" || drop.hasAttribute("data-gegraut")){
+        checker = true;
+      }
+    }
+  }
+  return checker;
+}
 
 
 
 function eintragen(e){
   e.preventDefault();
+
+  if(falschePosition()){
+    dialogs.alert("Fehlerhafte Positionierung eines Tokens. Keine Eintragung möglich.");
+    return;
+  }
 
   var prufungen = document.querySelectorAll("#datalistpruf option");
 

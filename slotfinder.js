@@ -128,9 +128,12 @@ function setVisible(e) {
   dnd2.textContent = calcTimeSlots();
   dragcontainer.forEach((item) => {
     item.removeAttribute("hidden")
-    item.style.display = "flex";
+    item.style.display = "flex"
   })
   buttonEintragen.removeAttribute("hidden");
+
+  loadRooms()
+
   //Statt hidden könnte auch Display = none gesetzt werden? Besser?
 }
 
@@ -254,29 +257,28 @@ function getTime(number) { //Die Funktion liefert einen String mit der zum Times
   return time;
 }
 
+function returnWeekdayString(datum){
+  if(datum.getDay() == 0){
+    return "So,"
+  }else if(datum.getDay() == 1){
+    return "Mo,"
+  }else if(datum.getDay() == 2){
+    return "Di,"
+  }else if(datum.getDay() == 3){
+    return "Mi,"
+  }else if(datum.getDay() == 4){
+    return "Do,"
+  }else if (datum.getDay() == 5){
+    return "Fr,"
+  } else if (datum.getDay() == 6){
+    return "Sa,"
+  }
+}
 
 function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
-  e.preventDefault();
+
   while (raumgrid.firstChild) { //Falls das Grid durch vorherige Abfrage bereits gefüllt. Lösche diese Einträge.
     raumgrid.firstChild.remove()
-  }
-
-  function returnWeekdayString(datum){
-    if(datum.getDay() == 0){
-      return "So,"
-    }else if(datum.getDay() == 1){
-      return "Mo,"
-    }else if(datum.getDay() == 2){
-      return "Di,"
-    }else if(datum.getDay() == 3){
-      return "Mi,"
-    }else if(datum.getDay() == 4){
-      return "Do,"
-    }else if (datum.getDay() == 5){
-      return "Fr,"
-    } else if (datum.getDay() == 6){
-      return "Sa,"
-    }
   }
 
   //Oberer Teilnehmer: siehe unterer Teilnehmer-Counter für Erläuterungen (weiter unten)
@@ -309,7 +311,10 @@ function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
     if (err) throw err;
     results.forEach(function(item) { //Für jede Ergebnis...
       const outsidediv = document.createElement('div'); //...erstelle ein Outer-Div an das später die Div's für die Timeslots angehangen werde
-      outsidediv.className = "outsidediv";
+      outsidediv.classList.add("outsidediv");
+      outsidediv.classList.add("roomdiv")
+      console.log("erledigt")
+      outsidediv.setAttribute("data-room",item["Bezeichnung"])
       const divName = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
       divName.className = "nameDiv";
       divName.setAttribute("title", item["Extras"]);
@@ -358,13 +363,16 @@ function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
     capcounterOuter2.classList.add("capcounterOuter2");
     raumgrid.appendChild(capcounterOuter2); //Hänge äußeren Container an Raumgrid
 
+    loadRoomBelegung();
   });
   //----------------------------------------------------------------------------
+
   ladeBelegungen();
+  empfehlung(0)
 
 }
 
-buttonSend.addEventListener("click", loadRooms, false);
+
 
 //----------DRAG AND DROP-----------------------------------------------------
 
@@ -676,6 +684,7 @@ function ladeBelegungen(){
            console.log("drin");
            drop.classList.add("belegt")
            drop.setAttribute("data-state", "oc")
+           drop.setAttribute("title", "eingetragene Abwesenheit")
          }
         }
 
@@ -728,23 +737,41 @@ function drop(e) {
 
 
 
-
+var marker = true;
+var laenge = 0;
 var capEmpfehlungen = [];
 var itemsEmpfehlungen = [];
-function empfehlung() {
+function empfehlung(restart) {
+
+if(restart != undefined){
+  laenge = restart;
+}
+
   const allDrags = document.querySelectorAll("#raumgrid .dnd");
   const allDrops = document.querySelectorAll(".insidediv");
   if (allDrags.length <= itemsEmpfehlungen.length) {
     capEmpfehlungen = [];
+    marker = true;
+    console.log("in1")
   }
+
   if (capEmpfehlungen.includes(parseInt(allDrops[0].getAttribute("data-cap")))) {
     return;
   }
 
+  // if(itemsEmpfehlungen[0].getAttribute("data-state") == "oc"){
+  //
+  // }
+
   itemsEmpfehlungen = [];
+
+
   capEmpfehlungen = [];
 
   allDrops.forEach((element) => {
+
+
+
     if (element.style.borderColor == "deepskyblue") {
       element.style.borderColor = "black";
       element.style.color = "black";
@@ -784,7 +811,7 @@ try{
           if (eval(c)) {
             checker = false;
             break;
-          } else console.log("jop")
+          }// else console.log("jop")
         }
         if (checker == true) {
           //console.log(capEmpfehlungen);
@@ -799,7 +826,12 @@ try{
  console.log("keine Empfehlung möglich?")
 }
 
+console.log("Hier:")
+console.log(itemsEmpfehlungen);
 
+
+
+console.log(capEmpfehlungen);
   capEmpfehlungen.reverse()
   var teilnehmer = getTeilnehmer();
   var cap = 0;
@@ -809,17 +841,31 @@ try{
 
     if (cap >= teilnehmer && i < capEmpfehlungen.length - 1) {
       console.log("jetz isses soweit")
-      //console.log(itemsEmpfehlungen);
+      marker = false;
+
+
+      console.log(itemsEmpfehlungen);
       //console.log(capEmpfehlungen);
       itemsEmpfehlungen.shift();
       //console.log(itemsEmpfehlungen);
     }
   }
+  console.log("länge"+laenge);
+  console.log("empfehlungen:"+itemsEmpfehlungen.length)
+  if(itemsEmpfehlungen.length > laenge){
+    console.log("in2")
+    marker = true
+    laenge = itemsEmpfehlungen.length;
+  }
   // if(capEmpfehlungen.includes(parseInt(allDrops[0].getAttribute("data-cap")))){
   //   dialogs.alert("Ende")
   //   itemsEmpfehlungen.pop();
   // }
+  console.log(marker)
 
+
+
+if(marker){
   itemsEmpfehlungen.forEach((element) => {
 
     if(element.getAttribute("data-empfehlung") != "verboten"){
@@ -833,6 +879,48 @@ try{
     }
   })
 }
+}
+
+
+function loadRoomBelegung(){
+  const rooms = document.querySelectorAll(".roomdiv");
+  nameDivTwo = document.querySelector(".nameDivTwo");
+  datumsangabe = nameDivTwo.getAttribute("data-datum");
+  rooms.forEach((room) => {
+    console.log(datumsangabe)
+    console.log(room.getAttribute("data-room"))
+    var sql = "SELECT * FROM raum, prufung_termin_raumverb, prufung_termin WHERE raum.Bezeichnung = '"+room.getAttribute("data-room")+"' AND raum.Raum_ID = prufung_termin_raumverb.Raum_ID AND prufung_termin_raumverb.Termin_ID = prufung_termin.Termin_ID AND prufung_termin.Datum='"+datumsangabe+"'"
+    db.query(sql, function(err, results) {
+      console.log(results)
+      console.log(room);
+      if(results.length > 0){
+        console.log(results)
+
+        var roomslots = room.children;
+        console.log(roomslots)
+        for(roomslot of roomslots){
+          if(roomslot.hasAttribute("data-this")){
+            var temp = "TS"+roomslot.getAttribute("data-this");
+            for(result of results){
+              if(result[temp] == "1"){
+                roomslot.classList.add("belegt")
+                roomslot.setAttribute("title", "gesetzt durch Raum")
+                roomslot.setAttribute("data-state", "oc")
+              }
+            }
+          }
+        }
+      }
+    });
+
+  });
+}
+
+
+
+
+
+
 
 
 

@@ -327,14 +327,21 @@ function terminlösen(e){
   db.query(sql, function(err, results){
     if(err) throw err;
   });
+  dialogs.alert("Prüfung wurde vom Termin gelöst. Bitte Seite neu Laden zum aktualisieren(strg + r)")
   this.parentElement.parentElement.remove();
+
+
 
   sql2 = "DELETE FROM prufung_termin WHERE NOT EXISTS(SELECT 1 FROM prunfung_termin_verb WHERE prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID)"
   db.query(sql2, function(err, results){
     if(err) throw err;
+    if(results["affectedRows"]>0){
+      dialogs.alert("Termin wurde gelöscht")
+    }
   });
 
-  dialogs.alert("Prüfung wurde vom Termin gelöst. Bitte Seite neu Laden zum aktualisieren(strg + r)")
+
+
 }
 
 function prufungsUbersicht(){
@@ -342,7 +349,7 @@ function prufungsUbersicht(){
   sql = "SELECT * FROM prufungen, prunfung_termin_verb, prufung_termin WHERE prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID ORDER BY Datum, Beginn, prufung_termin.Termin_ID, Prufung_Name"
   db.query(sql, function(err, results){
     if(err) throw err;
-      for(result of results){
+      results.forEach((result)=>{
         const zeile = document.createElement("tr");
 
         var spalte = document.createElement("td");
@@ -409,11 +416,24 @@ function prufungsUbersicht(){
         spalte.appendChild(knopf);
         zeile.appendChild(spalte);
 
+        sql3 = "SELECT raum.Bezeichnung FROM prufung_termin, prufung_termin_raumverb, raum WHERE prufung_termin.Termin_ID = '"+result["Termin_ID"]+"' AND prufung_termin.Termin_ID = prufung_termin_raumverb.Termin_ID AND prufung_termin_raumverb.Raum_ID = raum.Raum_ID"
+        db.query(sql3, function(err, results2){
+        spalte = document.createElement("td");
+          console.log("ngsl", results2);
+          var text2 = "";
+          for(result of results2){
+            text2 = text2 + result["Bezeichnung"]+" "
+          }
+        text = document.createTextNode(text2);
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+      });
+
         tk.appendChild(zeile)
-      }
+      });
     });
 
-  sql2 = "SELECT * FROM prufungen WHERE NOT EXISTS (SELECT 1 FROM prunfung_termin_verb WHERE prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID) ORDER BY Prufung_Name"
+  sql2 = "SELECT * FROM prufungen WHERE NOT EXISTS (SELECT 1 FROM prunfung_termin_verb WHERE prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID) ORDER BY Standardsemester, Prufung_Name"
   db.query(sql2, function(err, results){
     if(err) throw err;
 for (result of results){
@@ -473,6 +493,10 @@ for (result of results){
   zeile.appendChild(spalte);
   spalte = document.createElement("td");
   text = document.createTextNode("")
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode("k.A.")
   spalte.appendChild(text);
   zeile.appendChild(spalte);
 

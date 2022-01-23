@@ -1094,7 +1094,7 @@ function falschePosition(){
 
 function deleteOldies(){
   var thisdate = new Date();
-  thisdate.setDate(thisdate.getDate()-7);
+  thisdate.setDate(thisdate.getDate()-1);
 
   console.log("Oldies gelöscht bis: ", thisdate);
   var sql = "DELETE FROM prufung_termin WHERE prufung_termin.Datum < '"+transformDateToHTML(thisdate)+"'"

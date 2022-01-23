@@ -22,7 +22,7 @@
   	<form class="formular">
 
     		<div>
-          <input id="raum" title="Raum anlegen (z.B. 9907-121)" placeholder="Raumbezeichnung*">
+          <input spellcheck="false" id="raum" title="Raum anlegen (z.B. 9907-121)" placeholder="Raumbezeichnung*">
         </div>
         <div>
           <select class="auswahl" id="selectroomcat" title="Raumkategorie">
@@ -33,15 +33,15 @@
           </select>
         </div>
         <div>
-          <input type="number" min=0 id="Kapazität"  title="Raum anlegen (z.B. 9907-121)" placeholder="Kapazität*">
+          <input spellcheck="false" type="number" min=0 id="Kapazität"  title="Raum anlegen (z.B. 9907-121)" placeholder="Kapazität*">
         </div>
 
 
       <div>
-        <textarea id="extras" rows="4" cols="50" placeholder="Extras (optional)" title="Bemerkungen"></textarea>
+        <textarea spellcheck="false" id="extras" rows="4" cols="50" placeholder="Extras (optional)" title="Bemerkungen"></textarea>
       </div>
   		<div>
-  			<input id="buttonEintragen" type="submit" value="Raum eintragen" >
+  			<input spellcheck="false" id="buttonEintragen" type="submit" value="Raum eintragen" >
 		</div>
 
   	</form>
@@ -51,11 +51,11 @@
   <div class="zent">
   	<form class="formular">
       <div>
-        <input autocomplete="off" id="löschen" list="alleElemente" placeholder="Zu löschendes Element wählen" title="Zu löschendes Element wählen">
+        <input spellcheck="false" autocomplete="off" id="löschen" list="alleElemente" placeholder="Zu löschendes Element wählen" title="Zu löschendes Element wählen">
         <datalist id="alleElemente"></datalist>
       </div>
   		<div>
-  			<input id="buttonLöschen" type="submit" value="Element löschen" >
+  			<input spellcheck="false" id="buttonLöschen" type="submit" value="Element löschen" >
   		</div>
   	</form>
 
@@ -65,13 +65,13 @@
     <form>
       <div>
         <span>Datum:</span>
-        <input type="date" id="date">
+        <input spellcheck="false" type="date" id="date">
         <span style="margin-left: 2vw;">KW / Wochentag / Jahr:</span>
-        <input type="number" min="1" max="53" id="ergebnis" title="KW" placeholder="KW*">
+        <input spellcheck="false" type="number" min="1" max="53" id="ergebnis" title="KW" placeholder="KW*">
         <span>/</span>
-        <input type="number" min="1" max="7" id="ergebnis2" title="Tag 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr, 6=Sa, 7=So" placeholder="Tag">
+        <input spellcheck="false" type="number" min="1" max="7" id="ergebnis2" title="Tag 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr, 6=Sa, 7=So" placeholder="Tag">
         <span>/</span>
-        <input type="number" min="2021" id="ergebnis3" title="Falls keine Angabe wird dieses Jahr oder das nächste Jahr angenommen. Das nächste Jahr wird angenommen wenn die angegebene KW in diesem Jahr bereits mehr als 2 Monate in der Vergangenheit liegt." placeholder="JJJJ">
+        <input spellcheck="false" type="number" min="2021" id="ergebnis3" title="Falls keine Angabe wird dieses Jahr oder das nächste Jahr angenommen. Das nächste Jahr wird angenommen wenn die angegebene KW in diesem Jahr bereits mehr als 2 Monate in der Vergangenheit liegt." placeholder="JJJJ">
       </div>
     </form>
   </div>

@@ -139,36 +139,7 @@ form{
 	margin-bottom: 7vh;
 }
 
-::-webkit-scrollbar {
-  width: 10px;
-	background: white;
-	height: 1vh;
-}
 
-/* Track */
-::-webkit-scrollbar-track {
-  background: black;
-	border-radius: 100px;
-}
-
-::-webkit-scrollbar-track-piece{
-	background:#E7E9EB;
-}
-
-::-webkit-scrollbar-track-piece:hover{
-	background: #E7E9EB;
-}
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: #black;
-		border-radius: 100px;
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb{
-  background: black;
-		border-radius: 100px;
-}
 
 /*Drag and Drop ELemmt*/
 

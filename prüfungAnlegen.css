@@ -93,6 +93,9 @@ th, td{
 
 table{
 	margin-top: 5vh;
+}
+#tablediv{
+	width: 100%;
 	overflow-x: scroll;
 }
 

@@ -25,14 +25,14 @@
   	<form class="formular">
       <div class="wrapper">
         <div>
-    				<input name="inputlistpruf" autocomplete="off" id="inputlistprufinput" list="listprufungen" placeholder="Bezeichnung d. Prüfung*" title="Prüfung zum Slot hinzufügen">
+    				<input spellcheck="false" name="inputlistpruf" autocomplete="off" id="inputlistprufinput" list="listprufungen" placeholder="Bezeichnung d. Prüfung*" title="Prüfung zum Slot hinzufügen">
     		</div>
         <div>
-            <input type="number" min="0" step="10" placeholder="Teilnehmer" id="teilnehmer" title="Erwartete Teilnehmer">
+            <input spellcheck="false" type="number" min="0" step="10" placeholder="Teilnehmer" id="teilnehmer" title="Erwartete Teilnehmer">
         </div>
 
           <div id="pp">Pflichtprüfung:</div>
-          <input name="pp" id="pflichtprufcheck"type="checkbox" title="Pflichtprüfung:" checked>
+          <input spellcheck="false" name="pp" id="pflichtprufcheck"type="checkbox" title="Pflichtprüfung:" checked>
 
       </div><br>
       <div class="wrapper">
@@ -65,7 +65,7 @@
       <div class="wrapper">
         <div>
           <label id="inputliststudsem">
-            <input name="inputliststudsem" autocomplete="off" id="inputliststudseminput" list="liststudsem" placeholder="Studiengangsemester eintragen" title="Prüfung zum Slot hinzufügen">
+            <input spellcheck="false" name="inputliststudsem" autocomplete="off" id="inputliststudseminput" list="liststudsem" placeholder="Studiengangsemester eintragen" title="Prüfung zum Slot hinzufügen">
           </label>
           <datalist id="liststudsem"></datalist>
           <button id="buttonaddstudsem">add</button><br>
@@ -75,7 +75,7 @@
         </div>
         <div>
           <label id="inputlistanwesen">
-            <input name="inputlistanwesen" autocomplete="off" id="inputlistanweseninput" list="listanwesen" placeholder="Anwesende eintragen" title="Prüfung zum Slot hinzufügen">
+            <input spellcheck="false" name="inputlistanwesen" autocomplete="off" id="inputlistanweseninput" list="listanwesen" placeholder="Anwesende eintragen" title="Prüfung zum Slot hinzufügen">
           </label>
           <datalist id="listanwesen"></datalist>
           <button id="buttonaddanwesen">add</button><br>
@@ -90,8 +90,8 @@
       </div>
       <div class="wrapper">
         <div>
-          <input type="number" min=0 step="30" max="600" id="Dauer"  title="Dauer der Prüfung in Minuten" placeholder="Dauer der Prüfung">
-          <input id="buttonAddPruf" type="submit" value="Prüfung eintragen" >
+          <input spellcheck="false" type="number" min=0 step="30" max="600" id="Dauer"  title="Dauer der Prüfung in Minuten" placeholder="Dauer der Prüfung">
+          <input spellcheck="false" id="buttonAddPruf" type="submit" value="Prüfung eintragen" >
         </div>
       </div>
   	</form>
@@ -102,7 +102,7 @@
     <form class="formular">
       <div class="wrapper">
       <div>
-        <input autocomplete="off" id="löschen" list="alleElemente" placeholder="Zu löschendes Element wählen" title="Zu löschendes Element wählen">
+        <input spellcheck="false" autocomplete="off" id="löschen" list="alleElemente" placeholder="Zu löschendes Element wählen" title="Zu löschendes Element wählen">
         <datalist id="alleElemente"></datalist>
       </div>
       <div>
@@ -113,7 +113,7 @@
   </div>
   <hr>
   <h2>Prüfungen in der Übersicht:</h2>
-  <div class="zent">
+  <div id=tablediv>
     <table>
       <thead>
         <tr>
@@ -130,7 +130,8 @@
           <th>Prüfungsart</th>
           <th>Pflicht?</th>
           <th>TerminID</th>
-          <th>von Termin lösen?</th>
+          <th>Prüfung lösen?</th>
+          <th>Räume</th>
         </tr>
       </thead>
       <tbody id="tabellenkörper">
@@ -142,13 +143,13 @@
     <form>
       <div>
         <span>Datum:</span>
-        <input type="date" id="date">
+        <input spellcheck="false" type="date" id="date">
         <span style="margin-left: 3vw;">KW / Wochentag / Jahr:</span>
-        <input type="number" min="1" max="53" id="ergebnis" title="KW" placeholder="KW*">
+        <input spellcheck="false" type="number" min="1" max="53" id="ergebnis" title="KW" placeholder="KW*">
         <span>/</span>
-        <input type="number" min="1" max="7" id="ergebnis2" title="Tag 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr, 6=Sa, 7=So" placeholder="Tag">
+        <input spellcheck="false" type="number" min="1" max="7" id="ergebnis2" title="Tag 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr, 6=Sa, 7=So" placeholder="Tag">
         <span>/</span>
-        <input type="number" min="2021" id="ergebnis3" title="Falls keine Angabe wird dieses Jahr oder das nächste Jahr angenommen. Das nächste Jahr wird angenommen wenn die angegebene KW in diesem Jahr bereits mehr als 2 Monate in der Vergangenheit liegt." placeholder="JJJJ">
+        <input spellcheck="false" type="number" min="2021" id="ergebnis3" title="Falls keine Angabe wird dieses Jahr oder das nächste Jahr angenommen. Das nächste Jahr wird angenommen wenn die angegebene KW in diesem Jahr bereits mehr als 2 Monate in der Vergangenheit liegt." placeholder="JJJJ">
       </div>
     </form>
   </div>

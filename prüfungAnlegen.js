@@ -283,3 +283,202 @@ function deleteElement(e){
   }
 
 buttonLöschen.addEventListener("click", deleteElement, false);
+
+function returnWeekdayString(datum){
+  if(datum.getDay() == 0){
+    return "So,"
+  }else if(datum.getDay() == 1){
+    return "Mo,"
+  }else if(datum.getDay() == 2){
+    return "Di,"
+  }else if(datum.getDay() == 3){
+    return "Mi,"
+  }else if(datum.getDay() == 4){
+    return "Do,"
+  }else if (datum.getDay() == 5){
+    return "Fr,"
+  } else if (datum.getDay() == 6){
+    return "Sa,"
+  }
+}
+
+function transformDateToHTML(datum){
+  var day = datum.getDate();
+  var month = datum.getMonth()+1;
+  if(day < 10){
+    day = "0"+day;
+  }
+  if(month < 10){
+    month = "0"+month;
+  }
+  datumstring = day+'.'+month+'.'+datum.getFullYear();
+  return datumstring
+}
+
+function janein(para){
+  if(para === 1){
+    return "Ja"
+  }else return "Nein"
+}
+
+function terminlösen(e){
+  e.preventDefault();
+  sql = "DELETE FROM prunfung_termin_verb WHERE Prufung_ID = '"+this.getAttribute("data-prufID")+"' AND Termin_ID = '"+this.getAttribute("data-terminID")+"'"
+  db.query(sql, function(err, results){
+    if(err) throw err;
+  });
+  this.parentElement.parentElement.remove();
+
+  sql2 = "DELETE FROM prufung_termin WHERE NOT EXISTS(SELECT 1 FROM prunfung_termin_verb WHERE prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID)"
+  db.query(sql2, function(err, results){
+    if(err) throw err;
+  });
+
+  dialogs.alert("Prüfung wurde vom Termin gelöst. Bitte Seite neu Laden zum aktualisieren(strg + r)")
+}
+
+function prufungsUbersicht(){
+  tk = document.querySelector("#tabellenkörper");
+  sql = "SELECT * FROM prufungen, prunfung_termin_verb, prufung_termin WHERE prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID ORDER BY Datum, Beginn, prufung_termin.Termin_ID, Prufung_Name"
+  db.query(sql, function(err, results){
+    if(err) throw err;
+      for(result of results){
+        const zeile = document.createElement("tr");
+
+        var spalte = document.createElement("td");
+        var text = document.createTextNode(result["Prufung_ID"])
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(result["Prufung_Name"])
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(returnWeekdayString(result["Datum"])+" "+transformDateToHTML(result["Datum"]))
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(result["Beginn"])
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(result["Dauer"])
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(result["Teilnehmerzahl"])
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(result["Standardsemester"])
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(result["Prüfungsstatus"])
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(result["Bemerkung"])
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(result["Hilfsmittel"])
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(result["Prüfungsart"])
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(janein(result["Pflichtprüfung"]))
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        text = document.createTextNode(result["Termin_ID"])
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
+        var knopf = document.createElement("button")
+        knopf.setAttribute("data-prufID", result["Prufung_ID"]);
+        knopf.setAttribute("data-terminID", result["Termin_ID"]);
+        knopf.setAttribute("title", "Prüfung von Termin lösen?")
+        knopf.addEventListener("click", terminlösen);
+        knopf.classList.add("löschknopf");
+        text = document.createTextNode("x")
+        knopf.appendChild(text);
+        spalte.appendChild(knopf);
+        zeile.appendChild(spalte);
+
+        tk.appendChild(zeile)
+      }
+    });
+
+  sql2 = "SELECT * FROM prufungen WHERE NOT EXISTS (SELECT 1 FROM prunfung_termin_verb WHERE prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID) ORDER BY Prufung_Name"
+  db.query(sql2, function(err, results){
+    if(err) throw err;
+for (result of results){
+    const zeile = document.createElement("tr");
+
+  var spalte = document.createElement("td");
+  var text = document.createTextNode(result["Prufung_ID"])
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode(result["Prufung_Name"])
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode("k.A.")
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode("k.A.")
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode(result["Dauer"])
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode(result["Teilnehmerzahl"])
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode(result["Standardsemester"])
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode(result["Prüfungsstatus"])
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode(result["Bemerkung"])
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode(result["Hilfsmittel"])
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode(result["Prüfungsart"])
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode(janein(result["Pflichtprüfung"]))
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode("k.A.")
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode("")
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+
+  tk.appendChild(zeile)
+}
+
+    });
+}
+prufungsUbersicht();

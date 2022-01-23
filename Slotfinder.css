@@ -183,6 +183,14 @@ form{
 .belegt span{
 	text-decoration: line-through;
 }
+.belegt2{
+	border-color: #FBA15A;
+	color: #FBA15A;
+}
+
+.belegt2 span{
+	text-decoration: line-through;
+}
 
 .dnd{
 	width: 4.5vw;

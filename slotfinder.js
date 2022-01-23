@@ -463,15 +463,15 @@ function dragend(e) {
         number = parseInt(e.target.lastChild.textContent);    //Entnehme die Timeslotanzahl aus dem Token
 
 //Im folgenden werden die  Timeslots, die von einem Token belegt werden, rot eingefärbt.
-        if (!(e.target.parentElement.hasAttribute("setby"))) {      //Falls der Timeslot nicht schon von einem anderen Token besetzt wurde, dann...
+        if (!(e.target.parentElement.hasAttribute("data-setby"))) {      //Falls der Timeslot nicht schon von einem anderen Token besetzt wurde, dann...
           var item2 = e.target.parentElement;   //Setze eine Referenz (item2) auf den timeslot des Tokens
           for (var i = 1; i < number; i++) {
             item2 = item2.nextSibling;      //verschiebe item2 auf den rechten benachbarten Timeslots und prüfe...
-            if (!(item2.hasAttribute("setby"))) { //ob dieser nicht schon von einem anderen Token gesetzt wurde...
-              item2.setAttribute("setby", e.target.id); //falls er noch nicht von einem andern gesetzt wurde, dann setze du ihn mit der ID des Token
+            if (!(item2.hasAttribute("data-setby"))) { //ob dieser nicht schon von einem anderen Token gesetzt wurde...
+              item2.setAttribute("data-setby", e.target.id); //falls er noch nicht von einem andern gesetzt wurde, dann setze du ihn mit der ID des Token
               item2.style.backgroundColor = "pink"; //und färbe ihn rot
               if (i == number - 1) {   //gerade selbst nicht sicher warum das muss
-                item2.setAttribute("setby", e.target.id);
+                item2.setAttribute("data-setby", e.target.id);
               }
             }
           }
@@ -479,7 +479,7 @@ function dragend(e) {
             //Nachdem nun die benachbarten Timeslots des Tokentimeslots erfogreich gefärbt wurden, muss nun der Timeslot des Token selbst gefärbt werden
             e.target.parentElement.style.backgroundColor = "pink";
             e.target.parentElement.setAttribute("data-hastoken", "true");
-            e.target.parentElement.setAttribute("setby", e.target.id);
+            e.target.parentElement.setAttribute("data-setby", e.target.id);
           }
         }
         //     item2 = item2.nextSibling;
@@ -512,15 +512,15 @@ function dragstart(e) {
 
       var number = parseInt(e.target.lastChild.textContent);      //Entnehme die Timeslotanzahl aus dem Token
 
-      if (e.target.parentElement.getAttribute("setby") == e.target.id) {       //Prüfe ob der Timeslot von diesem token gesetzt wurde und nicht von einem anderen Token. Wenn von einem andern Token gesetzt, darf nicht von diesem entfärbt werden
+      if (e.target.parentElement.getAttribute("data-setby") == e.target.id) {       //Prüfe ob der Timeslot von diesem token gesetzt wurde und nicht von einem anderen Token. Wenn von einem andern Token gesetzt, darf nicht von diesem entfärbt werden
         var item2 = e.target.parentElement; //Setze eine Referenz (item2) auf den timeslot des Tokens
         for (var i = 1; i < number; i++) {
           item2 = item2.nextSibling; //verschiebe item2 auf den rechten benachbarten Timeslots und prüfe...
-          if (item2.getAttribute("setby") == e.target.id) {   // prüfe auch die benachbarten Timeslots ob auch diese nicht von einem anderen geseetzt
-            item2.removeAttribute("setBy");  //entferne das Attribut "setby". Der Timeslot ist nun nicht mehr besetzt
+          if (item2.getAttribute("data-setby") == e.target.id) {   // prüfe auch die benachbarten Timeslots ob auch diese nicht von einem anderen geseetzt
+            item2.removeAttribute("data-setby");  //entferne das Attribut "data-setby". Der Timeslot ist nun nicht mehr besetzt
             item2.style.backgroundColor = "white";  //färbe den Timeslot wieder weiß
             if (i == number - 1) {  //kein Plan -> Prüfen
-              item2.removeAttribute("setby");
+              item2.removeAttribute("data-setby");
             }
           }
 
@@ -528,7 +528,7 @@ function dragstart(e) {
   //Nachdem nun die benachbarten Timeslots des Tokentimeslots erfogreich entfärbt wurden, muss nun der Timeslot des Token selbst enfärbt werden
         e.target.parentElement.style.backgroundColor = "white";
         e.target.parentElement.setAttribute("data-hastoken", "false");
-        e.target.parentElement.removeAttribute("setBy");
+        e.target.parentElement.removeAttribute("data-setby");
       }
     }
 }
@@ -610,6 +610,9 @@ function findfirst() {
         item.style.opacity = "100%"
         item.removeAttribute("data-gegraut")
       }
+      if (!firstandfellows.includes(parseInt(item.getAttribute("data-this"))) && item.style.borderColor == "deepskyblue"){
+        item.setAttribute("data-gegraut", "true")   //verhindert, dass empfehlungen, die eigentlich gegraut sein müssten, belegt werden können
+      }
     });
   } catch {console.log("nicht geklappt")}
 }
@@ -642,6 +645,8 @@ function ladeBelegungen(){
       console.log(id)
 
       var sql = "SELECT * FROM prufungen, prufunganwesendeverbindung, anwesende, anwesendebelegungverbindung, anwesende_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID AND anwesende.Anwesende_ID = anwesendebelegungverbindung.Anwesende_ID AND anwesendebelegungverbindung.Belegungs_ID = anwesende_belegung.Belegungs_ID UNION SELECT * FROM prufungen, prufungstudsemverbindung, studiengangssemester, studsembelegungverbindung, studiengangssemester_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID AND studiengangssemester.Studiengangssemester_ID = studsembelegungverbindung.Studiengangssemester_ID AND studsembelegungverbindung.Belegungs_ID = studiengangssemester_belegung.Belegungs_ID";
+const datumTag = document.querySelector("#kws");
+var betrachtetesDatum = new Date(datumTag.value)
 
       db.query(sql, function(err, results) {
         var ergebnisse = [];
@@ -655,22 +660,28 @@ function ladeBelegungen(){
 
             var teilergebnis = [];
 
-            teilergebnis.push(i);
-            //console.log(i);
-            for(var j = 1; j <= 21; j++){
-              teilergebnis.push(result["TS"+j])
+            betrachteterTag = betrachtetesDatum.getDay()
+            if(betrachteterTag === 0){
+              betrachteterTag = 7;
             }
-            ergebnisse.push(lodash.cloneDeep(teilergebnis));
+
+            if(result["Wochentage"].includes(betrachteterTag.toString())){
+              teilergebnis.push(i);
+              for(var j = 1; j <= 21; j++){
+                teilergebnis.push(result["TS"+j])
+              }
+              ergebnisse.push(lodash.cloneDeep(teilergebnis));
+            }
+
+
           }
 
         }
 
-        const datumTag = document.querySelector("#kws");
-        var betrachtetesDatum = new Date(datumTag.value)
         betrachtetesDatum.setHours(0);
         var belegung = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
         for (item of ergebnisse){
-          if(item[0].getTime() == betrachtetesDatum.getTime()){
+          if(item[0].getTime() == betrachtetesDatum.getTime()){     //Hä was soll das?
 
             for(var u = 1; u <= 21; u++){
               if(item[u] == 1){
@@ -705,7 +716,7 @@ function calcCap() {
 
 
   alldrops.forEach((item) => {
-    if(item.hasAttribute("setBy")){
+    if(item.hasAttribute("data-setby")){
       var thisItem = parseInt(item.getAttribute("data-this"));
       arr[thisItem - 1] = arr[thisItem - 1] - parseInt(item.getAttribute("data-cap"));
     }
@@ -739,6 +750,9 @@ function drop(e) {
 
 
 
+
+
+
 var marker = true;
 var laenge = 0;
 var capEmpfehlungen = [];
@@ -747,6 +761,7 @@ function empfehlung(restart) {
 
 if(restart != undefined){
   laenge = restart;
+  return
 }
 
   const allDrags = document.querySelectorAll("#raumgrid .dnd");
@@ -785,18 +800,18 @@ if(restart != undefined){
 
 //  var firstAdvice;
 
-  var a = "allDrops[item].getAttribute('data-state') == 'free' && (21 - 0 ) >= parseInt(allDrops[item].getAttribute('data-this'))"
+  var a = "allDrops[item].getAttribute('data-state') == 'free' && allDrops[item].getAttribute('data-empfehlung') != 'verboten'"
   var b = "parseInt(allDrops[item].getAttribute('data-cap')) "
-  var c = "allDrops[item2].getAttribute('data-state') != 'free' || !((21 - 0) >= parseInt(allDrops[item2].getAttribute('data-this'))) "
+  var c = "allDrops[item2].getAttribute('data-state') != 'free'"
   var d = "allDrops[item2] = allDrops[item2].nextSibling; "
   var e = "capEmpfehlungen.push(parseInt(allDrops[item].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[item]);"
 
   if (allDrags.length > 1) {
     for (var i = 2; i <= allDrags.length; i++) {
       var p = (i - 1) * 21;
-      a = a + "&& allDrops[parseInt(item)+" + p + "].getAttribute('data-state') == 'free' && (21 - 0) >= parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-this')) "
+      a = a + "&& allDrops[parseInt(item)+" + p + "].getAttribute('data-state') == 'free' && allDrops[parseInt(item)+" + p + "].getAttribute('data-empfehlung') != 'verboten'  "
       b = b + "+ parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-cap')) "
-      c = c + " || allDrops[parseInt(item2)+" + p + "].getAttribute('data-state') != 'free' || !((21 - 0) >= parseInt(allDrops[parseInt(item2)+" + p + "].getAttribute('data-this'))) "
+      c = c + " || allDrops[parseInt(item2)+" + p + "].getAttribute('data-state') != 'free'"
       d = d + " allDrops[parseInt(item2)+" + p + "] = allDrops[parseInt(item2)+" + p + "].nextSibling; "
       e = e + "capEmpfehlungen.push(parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[parseInt(item)+" + p + "]);"
     }
@@ -883,6 +898,150 @@ if(marker){
 }
 }
 
+// var marker = true;
+// var laenge = 0;
+// var capEmpfehlungen = [];
+// var itemsEmpfehlungen = [];
+// function empfehlung(restart) {
+//
+// if(restart != undefined){
+//   laenge = restart;
+// }
+//
+//   const allDrags = document.querySelectorAll("#raumgrid .dnd");
+//   const allDrops = document.querySelectorAll(".insidediv");
+//   if (allDrags.length <= itemsEmpfehlungen.length) {
+//     capEmpfehlungen = [];
+//     marker = true;
+//     console.log("in1")
+//   }
+//
+//   if (capEmpfehlungen.includes(parseInt(allDrops[0].getAttribute("data-cap")))) {
+//     return;
+//   }
+//
+//   // if(itemsEmpfehlungen[0].getAttribute("data-state") == "oc"){
+//   //
+//   // }
+//
+//   itemsEmpfehlungen = [];
+//
+//
+//   capEmpfehlungen = [];
+//
+//   allDrops.forEach((element) => {
+//
+//
+//
+//     if (element.style.borderColor == "deepskyblue") {
+//       element.style.borderColor = "black";
+//       element.style.color = "black";
+//       element.style.borderStyle = "solid";
+//       element.style.fontWeight = "normal";
+//       element.removeAttribute("title");
+//     }
+//   })
+//
+// //  var firstAdvice;
+//
+//   var a = "allDrops[item].getAttribute('data-state') == 'free' && (21 - 0 ) >= parseInt(allDrops[item].getAttribute('data-this'))"
+//   var b = "parseInt(allDrops[item].getAttribute('data-cap')) "
+//   var c = "allDrops[item2].getAttribute('data-state') != 'free' || !((21 - 0) >= parseInt(allDrops[item2].getAttribute('data-this'))) "
+//   var d = "allDrops[item2] = allDrops[item2].nextSibling; "
+//   var e = "capEmpfehlungen.push(parseInt(allDrops[item].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[item]);"
+//
+//   if (allDrags.length > 1) {
+//     for (var i = 2; i <= allDrags.length; i++) {
+//       var p = (i - 1) * 21;
+//       a = a + "&& allDrops[parseInt(item)+" + p + "].getAttribute('data-state') == 'free' && (21 - 0) >= parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-this')) "
+//       b = b + "+ parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-cap')) "
+//       c = c + " || allDrops[parseInt(item2)+" + p + "].getAttribute('data-state') != 'free' || !((21 - 0) >= parseInt(allDrops[parseInt(item2)+" + p + "].getAttribute('data-this'))) "
+//       d = d + " allDrops[parseInt(item2)+" + p + "] = allDrops[parseInt(item2)+" + p + "].nextSibling; "
+//       e = e + "capEmpfehlungen.push(parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[parseInt(item)+" + p + "]);"
+//     }
+//   }
+// try{
+//   for (item in allDrops) {
+//     if (getTeilnehmer() - (eval(b)) <= 0) {
+//       if (eval(a)) {
+//         var checker = true;
+//         var item2 = item;
+//         for (var i = 1; i < calcTimeSlots(); i++) {
+//           //eval(d);
+//           item2++;
+//           if (eval(c)) {
+//             checker = false;
+//             break;
+//           }// else console.log("jop")
+//         }
+//         if (checker == true) {
+//           //console.log(capEmpfehlungen);
+//           eval(e);
+//           //console.log(capEmpfehlungen);
+//           break;
+//         }
+//       }
+//     }
+//   }
+// } catch{
+//  console.log("keine Empfehlung möglich?")
+// }
+//
+// console.log("Hier:")
+// console.log(itemsEmpfehlungen);
+//
+//
+//
+// console.log(capEmpfehlungen);
+//   capEmpfehlungen.reverse()
+//   var teilnehmer = getTeilnehmer();
+//   var cap = 0;
+//   console.log(itemsEmpfehlungen);
+//   for (var i = 0; i < capEmpfehlungen.length; i++) {
+//     cap = cap + capEmpfehlungen[i];
+//
+//     if (cap >= teilnehmer && i < capEmpfehlungen.length - 1) {
+//       console.log("jetz isses soweit")
+//       marker = false;
+//
+//
+//       console.log(itemsEmpfehlungen);
+//       //console.log(capEmpfehlungen);
+//       itemsEmpfehlungen.shift();
+//       //console.log(itemsEmpfehlungen);
+//     }
+//   }
+//   console.log("länge"+laenge);
+//   console.log("empfehlungen:"+itemsEmpfehlungen.length)
+//   if(itemsEmpfehlungen.length > laenge){
+//     console.log("in2")
+//     marker = true
+//     laenge = itemsEmpfehlungen.length;
+//   }
+//   // if(capEmpfehlungen.includes(parseInt(allDrops[0].getAttribute("data-cap")))){
+//   //   dialogs.alert("Ende")
+//   //   itemsEmpfehlungen.pop();
+//   // }
+//   console.log(marker)
+//
+//
+//
+// if(marker){
+//   itemsEmpfehlungen.forEach((element) => {
+//
+//     if(element.getAttribute("data-empfehlung") != "verboten"){
+//       element.style.borderColor = "deepskyblue";
+//       element.style.color = "deepskyblue"
+//       element.style.fontWeight = "bold";
+//       if(itemsEmpfehlungen.length > 1){
+//         itemsEmpfehlungen[0].style.borderStyle = "dashed";
+//         itemsEmpfehlungen[0].setAttribute("title", "Dieser Slot muss nicht unbedingt der beste sein, probiere auch mal die Slots darüber aus (falls frei).");
+//       }
+//     }
+//   })
+// }
+// }
+
 
 function loadRoomBelegung(){
   const rooms = document.querySelectorAll(".roomdiv");
@@ -905,8 +1064,8 @@ function loadRoomBelegung(){
             var temp = "TS"+roomslot.getAttribute("data-this");
             for(result of results){
               if(result[temp] == "1"){
-                roomslot.classList.add("belegt")
-                roomslot.setAttribute("title", "gesetzt durch Raum")
+                roomslot.classList.add("belegt2")
+                roomslot.setAttribute("title", "Dieser Raum ist belegt. Termin_ID: "+result["Termin_ID"])
                 roomslot.setAttribute("data-state", "oc")
               }
             }
@@ -924,7 +1083,7 @@ function falschePosition(){
   var checker = false;
   var allDrops = document.querySelectorAll(".insidediv");
   for(drop of allDrops){
-    if(drop.hasAttribute("setBy")){
+    if(drop.hasAttribute("data-setby")){
       if(drop.getAttribute("data-state") == "oc" || drop.hasAttribute("data-gegraut")){
         checker = true;
       }
@@ -932,6 +1091,17 @@ function falschePosition(){
   }
   return checker;
 }
+
+function deleteOldies(){
+  var thisdate = new Date();
+  thisdate.setDate(thisdate.getDate()-7);
+
+  console.log("Oldies gelöscht bis: ", thisdate);
+  var sql = "DELETE FROM prufung_termin WHERE prufung_termin.Datum < '"+transformDateToHTML(thisdate)+"'"
+  db.query(sql, function(err, results) {
+  });
+}
+deleteOldies();
 
 
 
@@ -961,7 +1131,7 @@ function eintragen(e){
     var timeslots = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
     const allDrops = document.querySelectorAll(".insidediv");
     allDrops.forEach((item) => {
-      if(item.getAttribute("setby") == mastertokenId){
+      if(item.getAttribute("data-setby") == mastertokenId){
         timeslots[parseInt(item.getAttribute("data-this"))-1] = 1;
       }
     })

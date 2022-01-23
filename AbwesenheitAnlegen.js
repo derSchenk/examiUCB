@@ -47,7 +47,7 @@ function checkDate2(e) {
 
 inputVonDate.addEventListener("change", checkDate2, false);
 // inputBisDate.addEventListener("change", checkDate2, false);
-console.log("this is: " + typeof inputBisDate.value);
+
 //--------------------------------------------
 //https://stackoverflow.com/questions/492994/compare-two-dates-with-javascript
 //stackoverflow.com/questions/9989382/how-can-i-add-1-day-to-current-date
@@ -155,11 +155,12 @@ function objektIDabfragen(){
 }
 
 
-function sqlabfragen(datumVon, datumBis, timeslots){
+function sqlabfragen(datumVon, datumBis, timeslots, daysnew){
+  var sql;
   if (inputTyp.value == "Anwesender") {
-    var sql = "INSERT INTO anwesende_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + datumVon + "','" + datumBis + "','" + timeslots[0] + "','" + timeslots[1] + "','" + timeslots[2] + "','" + timeslots[3] + "','" + timeslots[4] + "','" + timeslots[5] + "','" + timeslots[6] + "','" + timeslots[7] + "','" + timeslots[8] + "','" + timeslots[9] + "','" + timeslots[10] + "','" + timeslots[11] + "','" + timeslots[12] + "','" + timeslots[13] + "','" + timeslots[14] + "','" + timeslots[15] + "','" + timeslots[16] + "','" + timeslots[17] + "','" + timeslots[18] + "','" + timeslots[19] + "','" + timeslots[20] + "')"
+    sql = "INSERT INTO anwesende_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21, Wochentage) VALUES ('" + datumVon + "','" + datumBis + "','" + timeslots[0] + "','" + timeslots[1] + "','" + timeslots[2] + "','" + timeslots[3] + "','" + timeslots[4] + "','" + timeslots[5] + "','" + timeslots[6] + "','" + timeslots[7] + "','" + timeslots[8] + "','" + timeslots[9] + "','" + timeslots[10] + "','" + timeslots[11] + "','" + timeslots[12] + "','" + timeslots[13] + "','" + timeslots[14] + "','" + timeslots[15] + "','" + timeslots[16] + "','" + timeslots[17] + "','" + timeslots[18] + "','" + timeslots[19] + "','" + timeslots[20] + "','"+daysnew+"')"
 
-  } else var sql = "INSERT INTO studiengangssemester_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + datumVon + "','" + datumBis + "','" + timeslots[0] + "','" + timeslots[1] + "','" + timeslots[2] + "','" + timeslots[3] + "','" + timeslots[4] + "','" + timeslots[5] + "','" + timeslots[6] + "','" + timeslots[7] + "','" + timeslots[8] + "','" + timeslots[9] + "','" + timeslots[10] + "','" + timeslots[11] + "','" + timeslots[12] + "','" + timeslots[13] + "','" + timeslots[14] + "','" + timeslots[15] + "','" + timeslots[16] + "','" + timeslots[17] + "','" + timeslots[18] + "','" + timeslots[19] + "','" + timeslots[20] + "')"
+  } else sql = "INSERT INTO studiengangssemester_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21, Wochentage) VALUES ('" + datumVon + "','" + datumBis + "','" + timeslots[0] + "','" + timeslots[1] + "','" + timeslots[2] + "','" + timeslots[3] + "','" + timeslots[4] + "','" + timeslots[5] + "','" + timeslots[6] + "','" + timeslots[7] + "','" + timeslots[8] + "','" + timeslots[9] + "','" + timeslots[10] + "','" + timeslots[11] + "','" + timeslots[12] + "','" + timeslots[13] + "','" + timeslots[14] + "','" + timeslots[15] + "','" + timeslots[16] + "','" + timeslots[17] + "','" + timeslots[18] + "','" + timeslots[19] + "','" + timeslots[20] + "','"+daysnew+"')"
   return sql;
 }
 
@@ -172,7 +173,7 @@ function sql2abfragen(objektID, primaryKey){
 }
 
 
-function datenbank(sql, objektID, gehortZu){
+function datenbank(sql, objektID){
   db.query(sql, function(err, results) {
     try {
       if (err) throw err;
@@ -184,9 +185,6 @@ function datenbank(sql, objektID, gehortZu){
 
     var primaryKey = results["insertId"];
 
-    if(typeof gehortZu !== 'undefined'){
-      gehortZu = primaryKey;
-    }
 
     sql2 = sql2abfragen(objektID, primaryKey);
 
@@ -233,47 +231,30 @@ function loadFormData(e) {
       return;
     }
 
-    var days = inputTage.value.trim().split(" ");
 
-    for (item of days) {
-      if (item != "1" && item != "2" && item != "3" && item != "4" && item != "5" && item != "6" && item != "7") {
-        dialogs.alert("Kein gültige Eingabe der Wochentage");
-        return;
-      }
+    var daysnew = inputTage.value.trim();
+    if(!daysnew.includes("1") && !daysnew.includes("2") && !daysnew.includes("3") && !daysnew.includes("4") && !daysnew.includes("5") &&!daysnew.includes("6") &&!daysnew.includes("7")){
+      dialogs.alert("Ungültige Eingabe der Wochentage")
+      return;
     }
+
+
 
     var timeslots = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
 
     for (var i = parseInt(inputVonSlot.value) - 1; i <= parseInt(inputBisSlot.value) - 1; i++) {
-      timeslots[i] = 1;
+      timeslots[i] = "1";
     }
 
 
     var objektID = objektIDabfragen();
 
-    if(days.includes("1") && days.includes("2") && days.includes("3") && days.includes("4") && days.includes("5")){
+
       var datumVon = dateToString(dateOne);
       var datumBis = dateToString(dateTwo);
-      var sql = sqlabfragen(datumVon, datumBis, timeslots);
+      var sql = sqlabfragen(datumVon, datumBis, timeslots, daysnew);
       datenbank(sql, objektID);
-    } else{
-      for (var i = dateOne; i <= dateTwo; i.setDate(i.getDate() + 1)) {
 
-        var datumFull = dateToString(i);
-
-        //https://stackoverflow.com/questions/41015307/sql-server-if-exists-then-1-else-2
-        var gehortZu;
-        var sql = sqlabfragen(datumFull, datumFull, timeslots, gehortZu);
-
-        if (days.includes(String(weekdayabfragen(i)))) {
-          console.log(i.getDate());
-
-          console.log(sql);
-          gehortZu = datenbank(sql, objektID, gehortZu);
-
-        }
-      }
-    }
     dialogs.alert("Abwesenheit erfolgreich eingetragen")
 
 
@@ -284,26 +265,16 @@ buttonEintragen.addEventListener("click", loadFormData, false);
 
 
 
-// //----Berechne KW + Day aus Date
-// function dateTokw3(i){
-// //https://die-aktuelle-kalenderwoche.de/kalenderwochen-in-javascript
-//   var date = i;
-//   var day = date.getDay();
-//   if(day == 0){   //Amerikanische Wochen starten mit Sonntag
-//     day = day + 7;
-//   }
-// var currentThursday = new Date(date.getTime() +(3-((date.getDay()+6) % 7)) * 86400000);
-// // At the beginnig or end of a year the thursday could be in another year.
-// var yearOfThursday = currentThursday.getFullYear();
-// // Get first Thursday of the year
-// var firstThursday = new Date(new Date(yearOfThursday,0,4).getTime() +(3-((new Date(yearOfThursday,0,4).getDay()+6) % 7)) * 86400000);
-// // +1 we start with week number 1
-// // +0.5 an easy and dirty way to round result (in combinationen with Math.floor)
-// var weekNumber = Math.floor(1 + 0.5 + (currentThursday.getTime() - firstThursday.getTime()) / 86400000/7);
-//
-// var kwunddate = [];
-// kwunddate.push(weekNumber);
-// kwunddate.push(day);
-//
-// return kwunddate;
-// }
+
+function deleteOldies(){
+  var thisdate = new Date();
+  thisdate.setDate(thisdate.getDate()-731);   //löschen nach 2 Jahren
+  console.log("Oldies gelöscht bis: ",thisdate);
+  var sql = "DELETE FROM anwesende_belegung WHERE anwesende_belegung.DatumBis < '"+dateToString(thisdate)+"'"
+  db.query(sql, function(err, results) {
+  });
+  var sql2 = "DELETE FROM studiengangssemester_belegung WHERE studiengangssemester_belegung.DatumBis < '"+dateToString(thisdate)+"'"
+  db.query(sql2, function(err, results) {
+  });
+}
+deleteOldies();

@@ -86,3 +86,24 @@ textarea{
 	border: 1px solid #F46EBE;
 	color: #F46EBE;
 }
+
+th, td{
+	border: 1px solid black;
+}
+
+table{
+	margin-top: 5vh;
+	overflow-x: scroll;
+}
+
+.löschknopf:hover{
+	border: 1px solid #F46EBE;
+	color: #F46EBE;
+}
+
+.löschknopf{
+	width: 2em;
+	color: white;
+	background-color: black;
+	margin-left: 0.8vw;
+}

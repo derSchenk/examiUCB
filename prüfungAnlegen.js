@@ -278,6 +278,10 @@ function deleteElement(e){
     	dialogs.alert(toDelete1[0]+" gelöscht.");
 
       });
+    var sql2 = "DELETE FROM studiengangssemester_belegung WHERE Grund = '"+toDelete+"'"
+    db.query(sql2, function(err, results){
+      if(err) throw err;
+    });
     } else dialogs.alert("Kein Element gewählt")
     inputlöschen.value = "";
   }
@@ -323,8 +327,12 @@ function janein(para){
 
 function terminlösen(e){
   e.preventDefault();
-  sql = "DELETE FROM prunfung_termin_verb WHERE Prufung_ID = '"+this.getAttribute("data-prufID")+"' AND Termin_ID = '"+this.getAttribute("data-terminID")+"'"
+  var sql = "DELETE FROM prunfung_termin_verb WHERE Prufung_ID = '"+this.getAttribute("data-prufID")+"' AND Termin_ID = '"+this.getAttribute("data-terminID")+"'"
   db.query(sql, function(err, results){
+    if(err) throw err;
+  });
+  var sql2 = "DELETE FROM studiengangssemester_belegung WHERE Grund = '"+this.getAttribute("data-prufID")+"'"
+  db.query(sql2, function(err, results){
     if(err) throw err;
   });
   dialogs.alert("Prüfung wurde vom Termin gelöst. Bitte Seite neu Laden zum aktualisieren(strg + r)")
@@ -335,13 +343,38 @@ function terminlösen(e){
   sql2 = "DELETE FROM prufung_termin WHERE NOT EXISTS(SELECT 1 FROM prunfung_termin_verb WHERE prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID)"
   db.query(sql2, function(err, results){
     if(err) throw err;
-    if(results["affectedRows"]>0){
-      dialogs.alert("Termin wurde gelöscht")
-    }
   });
 
 
 
+}
+
+function dateHausarbeiten(e){
+  e.preventDefault();
+  if(this.parentElement.firstChild.value === ""){
+    dialogs.alert("Bitte Datum und Uhrzeit eingeben. Falls Abgabe ganztägig möglich, bitte 23:59 Uhr eintragen")
+    return;
+  }
+  var datum = this.parentElement.firstChild.value
+  if(new Date(datum) < new Date()){
+    dialogs.alert("Termin liegt in der Vergangenheit. Keine Eintragung vorgenommen");
+    return;
+  }
+  datum = datum.split("T");
+  sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + datum[1] + "','" + datum[0] + "','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0')"
+  var tempthis = this;
+  db.query(sql, function(err, results){
+    console.log(this);
+    if(err) throw err;
+    console.log(results)
+    sql2 = "INSERT INTO prunfung_termin_verb (Prufung_ID, Termin_ID) VALUES ('"+tempthis.getAttribute("data-prufid")+"','"+results["insertId"]+"')"
+    db.query(sql2, function(err, results){
+      if(err) throw err;
+      dialogs.alert("Termin erfolgreich der Hausarbeit zugeordnet")
+      tempthis.parentElement.firstChild.setAttribute("readonly", "readonly");
+      tempthis.remove();
+    })
+  });
 }
 
 function prufungsUbersicht(){
@@ -448,9 +481,30 @@ for (result of results){
   spalte.appendChild(text);
   zeile.appendChild(spalte);
   spalte = document.createElement("td");
-  text = document.createTextNode("k.A.")
-  spalte.appendChild(text);
+  if(result["Prüfungsart"] !== "Hausarbeit"){
+    text = document.createTextNode("k.A.")
+    spalte.appendChild(text);
+
+  }else{
+    var input =  document.createElement("input");
+    input.setAttribute("type", "datetime-local");
+    input.classList.add("datetimeHausarbeit");
+    spalte.appendChild(input);
+
+    var knopf = document.createElement("button")
+    knopf.setAttribute("data-prufID", result["Prufung_ID"]);
+    knopf.setAttribute("title", "Datum und Uhrzeit setzen")
+    knopf.addEventListener("click", dateHausarbeiten);
+    knopf.classList.add("dateknopf");
+    text = document.createTextNode("+")
+    knopf.appendChild(text);
+    spalte.appendChild(knopf);
+  }
   zeile.appendChild(spalte);
+
+
+
+
   spalte = document.createElement("td");
   text = document.createTextNode("k.A.")
   spalte.appendChild(text);

@@ -61,11 +61,13 @@ db.query(sql, function(err, results) {
   if (err) throw err;
   //console.log(results);
   results.forEach(result => {
-    const nOption = document.createElement('option');
-    var inhalt = result["Prufung_Name"].toLowerCase().trim() + " | " + result["Standardsemester"] + " | " + result["Prüfungsstatus"] + " [T.: " + result["Teilnehmerzahl"] + "]" + " [D.: " + result["Dauer"] + "]" + " [ID.: " + result["Prufung_ID"] + "]"
-    nOption.value = inhalt;
-    allePrufungen.push(inhalt);
-    listprufungen.appendChild(nOption);
+    if(result["Prüfungsart"] !== "Hausarbeit"){
+      const nOption = document.createElement('option');
+      var inhalt = result["Prufung_Name"].toLowerCase().trim() + " | " + result["Standardsemester"] + " | " + result["Prüfungsstatus"] + " [T.: " + result["Teilnehmerzahl"] + "]" + " [D.: " + result["Dauer"] + "]" + " [ID.: " + result["Prufung_ID"] + "]" + " [PP.: " + (result["Pflichtprüfung"] === 1 ? "J" : "N") + "]";
+      nOption.value = inhalt;
+      allePrufungen.push(inhalt);
+      listprufungen.appendChild(nOption);
+    }
   });
 });
 
@@ -637,6 +639,7 @@ function getTeilnehmer() {
 
 function ladeBelegungen(){
   var prufungen = document.querySelectorAll("#datalistpruf option");
+  var ids = [];
   prufungen.forEach((item) => {
     if(item.selected){
       var temp = item.textContent.split("[ID.: ");
@@ -644,9 +647,10 @@ function ladeBelegungen(){
       var id = temp[0];
       console.log(id)
 
-      var sql = "SELECT * FROM prufungen, prufunganwesendeverbindung, anwesende, anwesendebelegungverbindung, anwesende_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID AND anwesende.Anwesende_ID = anwesendebelegungverbindung.Anwesende_ID AND anwesendebelegungverbindung.Belegungs_ID = anwesende_belegung.Belegungs_ID UNION SELECT * FROM prufungen, prufungstudsemverbindung, studiengangssemester, studsembelegungverbindung, studiengangssemester_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID AND studiengangssemester.Studiengangssemester_ID = studsembelegungverbindung.Studiengangssemester_ID AND studsembelegungverbindung.Belegungs_ID = studiengangssemester_belegung.Belegungs_ID";
+      var sql = "SELECT * FROM prufungen, prufungstudsemverbindung, studiengangssemester, studsembelegungverbindung, studiengangssemester_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID AND studiengangssemester.Studiengangssemester_ID = studsembelegungverbindung.Studiengangssemester_ID AND studsembelegungverbindung.Belegungs_ID = studiengangssemester_belegung.Belegungs_ID UNION SELECT * FROM prufungen, prufunganwesendeverbindung, anwesende, anwesendebelegungverbindung, anwesende_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID AND anwesende.Anwesende_ID = anwesendebelegungverbindung.Anwesende_ID AND anwesendebelegungverbindung.Belegungs_ID = anwesende_belegung.Belegungs_ID";
 const datumTag = document.querySelector("#kws");
 var betrachtetesDatum = new Date(datumTag.value)
+betrachtetesDatum.setHours(0);
 
       db.query(sql, function(err, results) {
         var ergebnisse = [];
@@ -675,10 +679,17 @@ var betrachtetesDatum = new Date(datumTag.value)
 
 
           }
-
+          var tempdatum = new Date(betrachtetesDatum);
+          tempdatum.setDate(tempdatum.getDate()+1);
+          console.log(result["Datum"]);
+          console.log(result);
+            if(result["Grund"] !== null && tempdatum <= result["Datum"] && tempdatum >= result["DatumBis"]){
+              console.log("hupihupi")
+              ids.push(" "+result["Studiengang"]+" "+result["Semesternummer"])
+            }
         }
 
-        betrachtetesDatum.setHours(0);
+
         var belegung = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
         for (item of ergebnisse){
           if(item[0].getTime() == betrachtetesDatum.getTime()){     //Hä was soll das?
@@ -697,7 +708,9 @@ var betrachtetesDatum = new Date(datumTag.value)
            console.log("drin");
            drop.classList.add("belegt")
            drop.setAttribute("data-state", "oc")
-           drop.setAttribute("title", "eingetragene Abwesenheit")
+           if(ids.length > 0){
+             drop.setAttribute("title", "Ein oder mehrere Studsem haben heute bzw. gestern bereits eine Prüfung gehabt: "+ids.join());
+           } else drop.setAttribute("title", "eingetragene Abwesenheit");
          }
         }
 
@@ -1104,6 +1117,13 @@ function deleteOldies(){
 deleteOldies();
 
 
+function extractPP(item){
+  var temp = item.textContent.split("[PP.: ");
+  var temp = temp[1].split("]");
+  return temp[0];
+}
+
+
 
 function eintragen(e){
   e.preventDefault();
@@ -1118,7 +1138,6 @@ function eintragen(e){
   //Datum ermitteln
   const namediv = document.querySelectorAll(".nameDivTwo");
   var datum = namediv[0].getAttribute("data-datum")
-  console.log(datum)
 
   //Beginn der Klausur durch Mastertoken ermitteln
     const allDrags = document.querySelectorAll("#raumgrid .dnd")
@@ -1148,6 +1167,37 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
       var temp = temp[1].split("]");
       var id = temp[0];
       console.log(id);
+
+//Studsem tagesbelegungen eintragen ab hier
+      var daythis = new Date(datum);
+      var daynext = new Date(datum);
+      daynext.setDate(daynext.getDate()+1);
+
+      var sql234;
+      if(extractPP(item) === "J"){
+        sql234 = "INSERT INTO studiengangssemester_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21, Wochentage, vonTime, bisTime, Grund) VALUES ('" + transformDateToHTML(daythis) + "','" + transformDateToHTML(daynext) + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','"+"1 2 3 4 5 6 7"+"','"+"1"+"','"+"21"+"','"+id+"')"
+        } else {
+        sql234 = "INSERT INTO studiengangssemester_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21, Wochentage, vonTime, bisTime, Grund) VALUES ('" + transformDateToHTML(daythis) + "','" + transformDateToHTML(daythis) + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','"+"1 2 3 4 5 6 7"+"','"+"1"+"','"+"21"+"','"+id+"')"
+      }
+        var sql123 = "SELECT studiengangssemester.Studiengangssemester_ID FROM prufungen, prufungstudsemverbindung, studiengangssemester WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID";
+        db.query(sql123, function(err, results) {
+          if (err) throw err;
+          console.log(results);
+          results.forEach((result) => {
+            db.query(sql234, function(err, results2) {
+              if (err) throw err;
+              sql345 = "INSERT INTO studsembelegungverbindung (Studiengangssemester_ID, Belegungs_ID) VALUES ('"+result["Studiengangssemester_ID"]+"','"+results2["insertId"]+"')"
+              db.query(sql345, function(err, results3) {
+                if (err) throw err;
+                console.log("erfolgreich Eingetragen husthust")
+              })
+            })
+          })
+        });
+
+
+
+//bis hier
 
       var sql2 = "INSERT INTO prunfung_termin_verb (Prufung_ID, Termin_ID) VALUES ('"+id+"','"+results["insertId"]+"')"
       db.query(sql2, function(err, results2) {

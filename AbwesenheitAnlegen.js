@@ -97,6 +97,7 @@ function elementLöschen(e){
   while (vorhandeneAbwesenheiten.firstChild) {
     vorhandeneAbwesenheiten.firstChild.remove()
   }
+  loadAbwesenheiten()
 }
 buttonLöschen.addEventListener("click", elementLöschen)
 
@@ -450,7 +451,7 @@ buttonEintragen.addEventListener("click", loadFormData, false);
 
 function deleteOldies(){
   var thisdate = new Date();
-  thisdate.setDate(thisdate.getDate()-731);   //löschen nach 2 Jahren
+  thisdate.setDate(thisdate.getDate()-31);
   console.log("Oldies gelöscht bis: ",thisdate);
   var sql = "DELETE FROM anwesende_belegung WHERE anwesende_belegung.DatumBis < '"+dateToString(thisdate)+"'"
   db.query(sql, function(err, results) {

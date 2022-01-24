@@ -89,6 +89,13 @@ textarea{
 
 th, td{
 	border: 1px solid black;
+	border-radius: 3px;
+}
+
+th{
+	background-color: black;
+	color: white;
+	font-weight: normal;
 }
 
 table{
@@ -99,14 +106,27 @@ table{
 	overflow-x: scroll;
 }
 
-.löschknopf:hover{
+.datetimeHausarbeit{
+	width: 10vw;
+}
+
+.löschknopf:hover, .dateknopf:hover{
 	border: 1px solid #F46EBE;
 	color: #F46EBE;
 }
 
-.löschknopf{
+.löschknopf, .dateknopf{
 	width: 2em;
 	color: white;
 	background-color: black;
+
+}
+
+.dateknopf{
+	margin-left: 4vw;
+	margin-top: 0.2vh;
+}
+
+.löschknopf{
 	margin-left: 0.8vw;
 }

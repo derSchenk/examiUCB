@@ -685,7 +685,7 @@ betrachtetesDatum.setHours(0);
           console.log(result);
             if(result["Grund"] !== null && tempdatum <= result["Datum"] && tempdatum >= result["DatumBis"]){
               console.log("hupihupi")
-              ids.push(" "+result["Studiengang"]+" "+result["Semesternummer"])
+              ids.push(" "+ result["Studiengang"]+" "+result["Semesternummer"])
             }
         }
 
@@ -1168,6 +1168,12 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
       var id = temp[0];
       console.log(id);
 
+      var sqltest = "SELECT * FROM prufungen, prunfung_termin_verb, prufung_termin WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID"
+      console.log(sqltest);
+      db.query(sqltest, function(err, results000) {
+        if (err) throw err;
+        console.log("hopsi", results000.length)
+      if(results000.length === 0){
 //Studsem tagesbelegungen eintragen ab hier
       var daythis = new Date(datum);
       var daynext = new Date(datum);
@@ -1225,9 +1231,12 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
           alreadyset = true;
         }
       }
-}
-})
-})
+      dialogs.alert("Prüfungen eingetragen")
+} else dialogs.alert("Für eine Prüfung gibt es schon einen Termin. "+"(PrüfungsID: "+id+")") //if results.length
+}); //slect query
+}   //if selected
+}); //Prufung-for each
+}); //erste insert into query
 
 
 
@@ -1237,8 +1246,8 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
 
 
 
-dialogs.alert("Prüfungen eingetragen")
-}
+
+} //komplette funktion
 
 buttonEintragen.addEventListener("click", eintragen)
 

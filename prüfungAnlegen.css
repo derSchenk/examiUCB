@@ -100,6 +100,7 @@ th{
 
 table{
 	margin-top: 5vh;
+	font-size: 0.65rem;
 }
 #tablediv{
 	width: 100%;
@@ -107,7 +108,8 @@ table{
 }
 
 .datetimeHausarbeit{
-	width: 10vw;
+	width: 11vw;
+	font-size: 0.7rem;
 }
 
 .löschknopf:hover, .dateknopf:hover{

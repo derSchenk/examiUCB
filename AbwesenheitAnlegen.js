@@ -220,16 +220,18 @@ function loadAbwesenheiten(){
   db.query(sql, function(err, results) {
     if(err) throw err;
     for(result of results){
-      var text;
-      if(inputTyp2.value === "Anwesender"){
-      text = result["Nachname"]+" "+result["Vorname"]+"  |  " + dateToString(result["Datum"]) + " bis " + dateToString(result["DatumBis"]) + "  |  Wochentage: " + result["Wochentage"] + "  |  Uhrzeit: " + getTime(parseInt(result["vonTime"])) + " - " + getTime(parseInt(result["bisTime"])+1);
-    } else text = result["Studiengang"]+" "+result["Semesternummer"]+"  |  " + dateToString(result["Datum"]) + " bis " + dateToString(result["DatumBis"]) + "  |  Wochentage: " + result["Wochentage"] + "  |  Uhrzeit: " + getTime(parseInt(result["vonTime"])) + " - " + getTime(parseInt(result["bisTime"])+1);
-      var option = document.createElement("option");
-      option.value = result["Belegungs_ID"];
-      var textknoten = document.createTextNode(text);
-      option.appendChild(textknoten);
-
-      optionList.appendChild(option);
+      console.log(result);
+      if(result["Grund"] === null){
+        var text;
+        if(inputTyp2.value === "Anwesender"){
+        text = result["Nachname"]+" "+result["Vorname"]+"  |  " + dateToString(result["Datum"]) + " bis " + dateToString(result["DatumBis"]) + "  |  Wochentage: " + result["Wochentage"] + "  |  Uhrzeit: " + getTime(parseInt(result["vonTime"])) + " - " + getTime(parseInt(result["bisTime"])+1);
+      } else text = result["Studiengang"]+" "+result["Semesternummer"]+"  |  " + dateToString(result["Datum"]) + " bis " + dateToString(result["DatumBis"]) + "  |  Wochentage: " + result["Wochentage"] + "  |  Uhrzeit: " + getTime(parseInt(result["vonTime"])) + " - " + getTime(parseInt(result["bisTime"])+1);
+        var option = document.createElement("option");
+        option.value = result["Belegungs_ID"];
+        var textknoten = document.createTextNode(text);
+        option.appendChild(textknoten);
+        optionList.appendChild(option);
+      }
     }
   });
 }

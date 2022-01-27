@@ -278,10 +278,10 @@ function deleteElement(e){
     	dialogs.alert(toDelete1[0]+" gelöscht.");
 
       });
-    var sql2 = "DELETE FROM studiengangssemester_belegung WHERE Grund = '"+toDelete+"'"
-    db.query(sql2, function(err, results){
-      if(err) throw err;
-    });
+    // var sql2 = "DELETE FROM studiengangssemester_belegung WHERE Grund = '"+toDelete+"'"
+    // db.query(sql2, function(err, results){
+    //   if(err) throw err;
+    // });
     } else dialogs.alert("Kein Element gewählt")
     inputlöschen.value = "";
   }
@@ -331,16 +331,16 @@ function terminlösen(e){
   db.query(sql, function(err, results){
     if(err) throw err;
   });
-  var sql2 = "DELETE FROM studiengangssemester_belegung WHERE Grund = '"+this.getAttribute("data-prufID")+"'"
-  db.query(sql2, function(err, results){
-    if(err) throw err;
-  });
+  // var sql2 = "DELETE FROM studiengangssemester_belegung WHERE Grund = '"+this.getAttribute("data-prufID")+"'"
+  // db.query(sql2, function(err, results){
+  //   if(err) throw err;
+  // });
   dialogs.alert("Prüfung wurde vom Termin gelöst. Bitte Seite neu Laden zum aktualisieren(strg + r)")
   this.parentElement.parentElement.remove();
 
 
 
-  sql2 = "DELETE FROM prufung_termin WHERE NOT EXISTS(SELECT 1 FROM prunfung_termin_verb WHERE prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID)"
+  var sql2 = "DELETE FROM prufung_termin WHERE NOT EXISTS(SELECT 1 FROM prunfung_termin_verb WHERE prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID)"
   db.query(sql2, function(err, results){
     if(err) throw err;
   });

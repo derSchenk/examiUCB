@@ -163,6 +163,15 @@ form{
 	text-decoration: line-through;
 }
 
+.belegt3{
+	border-color: #EB9EDB;
+	color: #EB9EDB;
+}
+
+.belegt3 span{
+	text-decoration: line-through;
+}
+
 .dnd{
 	width: 4.5vw;
 	height: 4.5vh;

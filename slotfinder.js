@@ -134,7 +134,8 @@ function setVisible(e) {
   })
   buttonEintragen.removeAttribute("hidden");
 
-  loadRooms()
+
+  loadRooms();
 
   //Statt hidden könnte auch Display = none gesetzt werden? Besser?
 }
@@ -365,6 +366,7 @@ function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
     capcounterOuter2.classList.add("capcounterOuter2");
     raumgrid.appendChild(capcounterOuter2); //Hänge äußeren Container an Raumgrid
 
+    schonPrufung();
     loadRoomBelegung();
   });
   //----------------------------------------------------------------------------
@@ -642,20 +644,17 @@ function ladeBelegungen(){
   var ids = [];
   prufungen.forEach((item) => {
     if(item.selected){
-      var temp = item.textContent.split("[ID.: ");
-      var temp = temp[1].split("]");
-      var id = temp[0];
-      console.log(id)
+      var id = extractID(item);
 
       var sql = "SELECT * FROM prufungen, prufungstudsemverbindung, studiengangssemester, studsembelegungverbindung, studiengangssemester_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID AND studiengangssemester.Studiengangssemester_ID = studsembelegungverbindung.Studiengangssemester_ID AND studsembelegungverbindung.Belegungs_ID = studiengangssemester_belegung.Belegungs_ID UNION SELECT * FROM prufungen, prufunganwesendeverbindung, anwesende, anwesendebelegungverbindung, anwesende_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID AND anwesende.Anwesende_ID = anwesendebelegungverbindung.Anwesende_ID AND anwesendebelegungverbindung.Belegungs_ID = anwesende_belegung.Belegungs_ID";
-const datumTag = document.querySelector("#kws");
-var betrachtetesDatum = new Date(datumTag.value)
-betrachtetesDatum.setHours(0);
+      const datumTag = document.querySelector("#kws");
+      var betrachtetesDatum = new Date(datumTag.value)
+      betrachtetesDatum.setHours(0);
 
       db.query(sql, function(err, results) {
         var ergebnisse = [];
         if (err) throw err;
-        //console.log(results);
+        console.log("hier bin ich jetzt",results);
 
         for (result of results){
           var dateOne = result["Datum"];
@@ -674,20 +673,21 @@ betrachtetesDatum.setHours(0);
               for(var j = 1; j <= 21; j++){
                 teilergebnis.push(result["TS"+j])
               }
+              teilergebnis.push(" "+result["Studiengang"]+" "+result["Semesternummer"])
               ergebnisse.push(lodash.cloneDeep(teilergebnis));
             }
 
 
           }
-          var tempdatum = new Date(betrachtetesDatum);
-          tempdatum.setDate(tempdatum.getDate()+1);
-          console.log(result["Datum"]);
-          console.log(result);
-            if(result["Grund"] !== null && tempdatum <= result["Datum"] && tempdatum >= result["DatumBis"]){
-              console.log("hupihupi")
-              ids.push(" "+ result["Studiengang"]+" "+result["Semesternummer"])
-            }
-        }
+        //   var tempdatum = new Date(betrachtetesDatum);
+        //   tempdatum.setDate(tempdatum.getDate()+1);
+        //   console.log(result["Datum"]);
+        //   console.log(result);
+        //     if(result["Grund"] !== null && tempdatum <= result["Datum"] && tempdatum >= result["DatumBis"]){
+        //       console.log("hupihupi")
+        //       ids.push(" "+ result["Studiengang"]+" "+result["Semesternummer"])
+        //     }
+          }
 
 
         var belegung = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -696,7 +696,7 @@ betrachtetesDatum.setHours(0);
 
             for(var u = 1; u <= 21; u++){
               if(item[u] == 1){
-                belegung[u-1] = 1;
+                belegung[u-1] = item[22];
               }
             }
           }
@@ -704,13 +704,14 @@ betrachtetesDatum.setHours(0);
         console.log("this is: "+belegung);
         var allDrops = document.querySelectorAll(".insidediv");
         for(drop of allDrops){
-         if(belegung[parseInt(drop.getAttribute("data-this"))-1] == 1){
+         if(belegung[parseInt(drop.getAttribute("data-this"))-1] !== 0){
            console.log("drin");
-           drop.classList.add("belegt")
+           drop.classList.add("belegt3")
            drop.setAttribute("data-state", "oc")
-           if(ids.length > 0){
-             drop.setAttribute("title", "Ein oder mehrere Studsem haben heute bzw. gestern bereits eine Prüfung gehabt: "+ids.join());
-           } else drop.setAttribute("title", "eingetragene Abwesenheit");
+           drop.setAttribute("title", "eingetragene Abwesenheit:"+belegung[parseInt(drop.getAttribute("data-this"))-1]);
+           // if(ids.length > 0){
+           //   drop.setAttribute("title", "Ein oder mehrere Studsem haben heute bzw. gestern bereits eine Prüfung gehabt: "+ids.join());
+           // } else drop.setAttribute("title", "eingetragene Abwesenheit");
          }
         }
 
@@ -1107,7 +1108,7 @@ function falschePosition(){
 
 function deleteOldies(){
   var thisdate = new Date();
-  thisdate.setDate(thisdate.getDate()-1);
+  thisdate.setDate(thisdate.getDate()-2);
 
   console.log("Oldies gelöscht bis: ", thisdate);
   var sql = "DELETE FROM prufung_termin WHERE prufung_termin.Datum < '"+transformDateToHTML(thisdate)+"'"
@@ -1122,6 +1123,77 @@ function extractPP(item){
   var temp = temp[1].split("]");
   return temp[0];
 }
+
+function extractID(item){
+  var temp = item.textContent.split("[ID.: ");
+  var temp = temp[1].split("]");
+  return temp[0];
+}
+
+
+
+function schonPrufung(){
+  var thisdate = new Date(datumInput2.value);
+  var nextdate = new Date()
+  nextdate.setDate(thisdate.getDate()+1)
+  var prevdate = new Date()
+  prevdate.setDate(thisdate.getDate()-1)
+
+  var prufungen = document.querySelectorAll("#datalistpruf option");
+
+
+  prufungen.forEach((pruf) => {
+    var pp = extractPP(pruf);
+    var id = extractID(pruf);
+    var sql;
+
+var sql0 = "SELECT * FROM prufungen, prufungstudsemverbindung, studiengangssemester WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID"
+db.query(sql0, function(err, results0) {
+  if (err) throw err;
+  console.log("jo das sind die semseter der prüfung",results0);
+    results0.forEach((result0)=>{
+
+      if(pp === "N"){
+        sql = "SELECT * FROM studiengangssemester, prufungstudsemverbindung, prufungen, prunfung_termin_verb, prufung_termin WHERE studiengangssemester.Studiengangssemester_ID = prufungstudsemverbindung.Studiengangssemester_ID AND prufungstudsemverbindung.Prufung_ID = prufungen.Prufung_ID AND studiengangssemester.Studiengangssemester_ID = '"+result0["Studiengangssemester_ID"]+"' AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID AND prufung_termin.Datum = '"+transformDateToHTML(thisdate)+"'"
+      } else{
+        sql = "SELECT * FROM studiengangssemester, prufungstudsemverbindung, prufungen, prunfung_termin_verb, prufung_termin WHERE studiengangssemester.Studiengangssemester_ID = prufungstudsemverbindung.Studiengangssemester_ID AND prufungstudsemverbindung.Prufung_ID = prufungen.Prufung_ID AND studiengangssemester.Studiengangssemester_ID = '"+result0["Studiengangssemester_ID"]+"' AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID AND (prufung_termin.Datum = '"+transformDateToHTML(thisdate)+"' OR prufung_termin.Datum ='"+transformDateToHTML(nextdate)+"' OR prufung_termin.Datum ='"+transformDateToHTML(prevdate)+"')"
+      }
+
+      db.query(sql, function(err, results) {
+        if (err) throw err;
+        console.log("so siehts aus", results)
+        if(results.length > 0){
+          console.log("Es gibt mehr als 0")
+          var studsem = [];
+          var prufIds = [];
+          for(result of results){
+            if(result["Prüfungsart"] !== "Hausarbeit"){
+              studsem.push(" "+result["Studiengang"]+" "+result["Semesternummer"]);
+              prufIds.push(" "+result["Prufung_ID"]);
+              var allDropsxy = document.querySelectorAll(".insidediv");
+              console.log("Es gibt soviele Drops:", allDropsxy.lenth)
+              allDropsxy.forEach((drop) => {
+                drop.setAttribute("data-state", "oc");
+                drop.classList.add("belegt");
+                drop.setAttribute("title", "Studiengangssemester stehen nicht zur Verfügug: "+studsem.join()+"; Durch diese Prüfungen belegt:"+prufIds.join());
+              })
+            }
+          }
+
+        }
+      })
+
+
+
+    })
+
+});
+
+
+  })
+}
+
+
 
 
 
@@ -1175,31 +1247,31 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
         console.log("hopsi", results000.length)
       if(results000.length === 0){
 //Studsem tagesbelegungen eintragen ab hier
-      var daythis = new Date(datum);
-      var daynext = new Date(datum);
-      daynext.setDate(daynext.getDate()+1);
+      // var daythis = new Date(datum);
+      // var daynext = new Date(datum);
+      // daynext.setDate(daynext.getDate()+1);
 
-      var sql234;
-      if(extractPP(item) === "J"){
-        sql234 = "INSERT INTO studiengangssemester_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21, Wochentage, vonTime, bisTime, Grund) VALUES ('" + transformDateToHTML(daythis) + "','" + transformDateToHTML(daynext) + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','"+"1 2 3 4 5 6 7"+"','"+"1"+"','"+"21"+"','"+id+"')"
-        } else {
-        sql234 = "INSERT INTO studiengangssemester_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21, Wochentage, vonTime, bisTime, Grund) VALUES ('" + transformDateToHTML(daythis) + "','" + transformDateToHTML(daythis) + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','"+"1 2 3 4 5 6 7"+"','"+"1"+"','"+"21"+"','"+id+"')"
-      }
-        var sql123 = "SELECT studiengangssemester.Studiengangssemester_ID FROM prufungen, prufungstudsemverbindung, studiengangssemester WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID";
-        db.query(sql123, function(err, results) {
-          if (err) throw err;
-          console.log(results);
-          results.forEach((result) => {
-            db.query(sql234, function(err, results2) {
-              if (err) throw err;
-              sql345 = "INSERT INTO studsembelegungverbindung (Studiengangssemester_ID, Belegungs_ID) VALUES ('"+result["Studiengangssemester_ID"]+"','"+results2["insertId"]+"')"
-              db.query(sql345, function(err, results3) {
-                if (err) throw err;
-                console.log("erfolgreich Eingetragen husthust")
-              })
-            })
-          })
-        });
+      // var sql234;
+      // if(extractPP(item) === "J"){
+      //   sql234 = "INSERT INTO studiengangssemester_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21, Wochentage, vonTime, bisTime, Grund) VALUES ('" + transformDateToHTML(daythis) + "','" + transformDateToHTML(daynext) + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','"+"1 2 3 4 5 6 7"+"','"+"1"+"','"+"21"+"','"+id+"')"
+      //   } else {
+      //   sql234 = "INSERT INTO studiengangssemester_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21, Wochentage, vonTime, bisTime, Grund) VALUES ('" + transformDateToHTML(daythis) + "','" + transformDateToHTML(daythis) + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','"+"1 2 3 4 5 6 7"+"','"+"1"+"','"+"21"+"','"+id+"')"
+      // }
+      //   var sql123 = "SELECT studiengangssemester.Studiengangssemester_ID FROM prufungen, prufungstudsemverbindung, studiengangssemester WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID";
+      //   db.query(sql123, function(err, results) {
+      //     if (err) throw err;
+      //     console.log(results);
+      //     results.forEach((result) => {
+      //       db.query(sql234, function(err, results2) {
+      //         if (err) throw err;
+      //         sql345 = "INSERT INTO studsembelegungverbindung (Studiengangssemester_ID, Belegungs_ID) VALUES ('"+result["Studiengangssemester_ID"]+"','"+results2["insertId"]+"')"
+      //         db.query(sql345, function(err, results3) {
+      //           if (err) throw err;
+      //           console.log("erfolgreich Eingetragen husthust")
+      //         })
+      //       })
+      //     })
+      //   });
 
 
 
@@ -1232,7 +1304,7 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
         }
       }
       dialogs.alert("Prüfungen eingetragen")
-} else dialogs.alert("Für eine Prüfung gibt es schon einen Termin. "+"(PrüfungsID: "+id+")") //if results.length
+} else dialogs.alert("Für diese Prüfung gibt es schon einen Termin: PrüfungsID "+id+"") //if results.length
 }); //slect query
 }   //if selected
 }); //Prufung-for each

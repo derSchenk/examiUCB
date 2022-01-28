@@ -172,6 +172,15 @@ form{
 	text-decoration: line-through;
 }
 
+.belegt4{
+	border-color: #A500F7;
+	color: #A500F7;
+}
+
+.belegt4 span{
+	text-decoration: line-through;
+}
+
 .dnd{
 	width: 4.5vw;
 	height: 4.5vh;

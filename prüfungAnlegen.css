@@ -100,7 +100,7 @@ th{
 
 table{
 	margin-top: 5vh;
-	font-size: 0.65rem;
+	font-size: 0.8vw;
 }
 #tablediv{
 	width: 100%;
@@ -131,4 +131,12 @@ table{
 
 .löschknopf{
 	margin-left: 0.8vw;
+}
+
+.bearbeitenbutton{
+	cursor: pointer;
+}
+.bearbeitenbutton:hover{
+	color: #F46EBE;
+	border-color: #F46EBE;
 }

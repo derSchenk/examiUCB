@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>examiUCB</title>
+	<script src="bearbeiten.js" async></script>
+  <!-- <script src="commonJS.js" async></script> -->
+  <link rel="stylesheet" href="commonStyle.css">
+  <link rel="stylesheet" href="prüfungAnlegen.css">
+  <link rel="stylesheet" href="bearbeiten.css">
+  </head>
+  <body>
+  <h2>Prüfung bearbeiten:</h2>
+  <div class="zent">
+    <input type="text" id="prufName" placeholder="Prüfungsbezeichnung" title="Prüfungsbezeichnung">
+  </div>
+  <div class="zent">
+      <div class="wrapper">
+        <div class="selects">
+          <label id="inputliststudsem">
+            <input class="nochange" spellcheck="false" name="inputliststudsem" autocomplete="off" id="inputliststudseminput" list="liststudsem" placeholder="Studiengangsemester eintragen" title="Prüfung zum Slot hinzufügen">
+          </label>
+          <datalist id="liststudsem"></datalist>
+          <button class="nochange" id="buttonaddstudsem">add</button><br>
+          <label id="dataliststudsem2">
+            <select title="STRG gedrückt halten zum entwählen einzelner Elemente" name="dataliststudsem2" id="dataliststudsem" size="4" multiple></select>
+          </label>
+        </div>
+        <div>
+          <label id="inputlistanwesen">
+            <input class="nochange" spellcheck="false" name="inputlistanwesen" autocomplete="off" id="inputlistanweseninput" list="listanwesen" placeholder="Anwesende eintragen" title="Prüfung zum Slot hinzufügen">
+          </label>
+          <datalist id="listanwesen"></datalist>
+          <button class="nochange" id="buttonaddanwesen">add</button><br>
+          <label id="datalistanwesen2">
+            <select title="STRG gedrückt halten zum entwählen einzelner Elemente" name="datalistanwesen2" id="datalistanwesen" name="cars" size="4" multiple></select>
+          </label>
+        </div>
+      </div>
+  </div>
+  <div class="zent">
+    <input class="nochange" type="number" step="30" min="0" id="prufDauer" title="Dauer der Prüfung" placeholder="Dauer der Prüfung">
+    <select name="prüfungart2" id="prüfungsart" title="Prüfungsart" class="waehlen nochange">
+      <option value="schriftliche Prüfung">schriftliche Prüfung</option>
+      <option value="mündliche Prüfung">mündliche Prüfung</option>
+      <option value="Hausarbeit">Hausarbeit</option>
+    </select>
+  </div>
+  <div class="zent">
+    <div class="nochange" id="pp">Pflichtprüfung:</div>
+    <input class="nochange" spellcheck="false" name="pp" id="pflichtprufcheck" type="checkbox" title="Pflichtprüfung:" checked>
+    <input class="nochange" spellcheck="false" type="number" min="0" step="10" placeholder="Teilnehmer" id="teilnehmer" title="Erwartete Teilnehmer">
+  </div>
+  <div class="zent">
+    <select name="prüfungsstatus2" id="prüfungsstatus" title="prüfungsstatus" class="waehlen">
+      <option value="Prüfung">Prüfung</option>
+      <option value="Nachprüfung">Nachprüfung</option>
+      <option value="Vorlleistung">Vorleistung</option>
+    </select>
+    <select name="standardsemester2" id="standardsemester" title="standardsemester" class="waehlen">
+      <option value="Winter">Winter</option>
+      <option value="Sommer">Sommer</option>
+      <option value="Immer">Immer</option>
+    </select>
+    
+
+  </div>
+  <div class="zent">
+    <textarea id="bemerkungen" rows="4" cols="50" placeholder="Bemerkungen" title="Bemerkungen"></textarea>
+    <textarea id="hilfsmittel" rows="4" cols="50" placeholder="Hilfsmittel" title="Hilfsmittel"></textarea>
+  </div>
+  <div class="zent">
+    <input spellcheck="false" id="buttonAddPruf" type="submit" value="update Prüfung" >
+  </div>
+  <hr>
+  </body>
+  <script>
+	require('./renderer.js');
+  </script>
+</html>

@@ -1,0 +1,36 @@
+.zent{
+	margin-bottom: 5vh;
+}
+
+#prüfungsart{
+  margin-left: 2vw;
+  height: 3.2vh;
+}
+
+#prüfungsstatus{
+	margin-left: -0.5vw;
+	margin-right: 2vw;
+}
+
+#pp{
+  font-size: 0.7rem;
+  margin-right: 2vw;
+}
+
+#pflichtprufcheck{
+  margin-right: 2.3vw;
+}
+
+#bemerkungen{
+  margin-right: 2.3vw;
+}
+
+#buttonaddstudsem, #buttonaddanwesen{
+  font-size: 1vw;
+  width: 3.4vw;
+  cursor: pointer;
+}
+
+.selects{
+  margin-right: 2.3vw;
+}

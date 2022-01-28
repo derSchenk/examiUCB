@@ -1,6 +1,7 @@
 var Dialogs = require('dialogs');
 var dialogs = Dialogs(opts = {});
 const lodash = require("lodash");
+const mysql = require('mysql');
 
 const formular = document.querySelectorAll('#formular');
 const buttonSend = document.querySelector('input[type="submit"]');
@@ -20,6 +21,7 @@ const datumInput2 = document.querySelector("#kws");
 
 const buttonEintragen = document.querySelector("#buttonEintragen")
 
+
 //----------Formular-Datenspeicher--------- //Unnutz
 var prufungen;
 var roomcat;
@@ -38,7 +40,7 @@ datumInput.value = transformDateToHTML(new Date());
 
 //Datenbankverbindung herstellen---------------
 
-const mysql = require('mysql');
+
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -260,6 +262,8 @@ function getTime(number) { //Die Funktion liefert einen String mit der zum Times
   return time;
 }
 
+
+
 function returnWeekdayString(datum){
   if(datum.getDay() == 0){
     return "So,"
@@ -277,6 +281,8 @@ function returnWeekdayString(datum){
     return "Sa,"
   }
 }
+
+
 
 function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
 
@@ -366,8 +372,10 @@ function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
     capcounterOuter2.classList.add("capcounterOuter2");
     raumgrid.appendChild(capcounterOuter2); //Hänge äußeren Container an Raumgrid
 
+
     schonPrufung();
-    loadRoomBelegung();
+
+
   });
   //----------------------------------------------------------------------------
 
@@ -652,9 +660,8 @@ function ladeBelegungen(){
       betrachtetesDatum.setHours(0);
 
       db.query(sql, function(err, results) {
-        var ergebnisse = [];
         if (err) throw err;
-        console.log("hier bin ich jetzt",results);
+        var ergebnisse = [];
 
         for (result of results){
           var dateOne = result["Datum"];
@@ -679,16 +686,8 @@ function ladeBelegungen(){
 
 
           }
-        //   var tempdatum = new Date(betrachtetesDatum);
-        //   tempdatum.setDate(tempdatum.getDate()+1);
-        //   console.log(result["Datum"]);
-        //   console.log(result);
-        //     if(result["Grund"] !== null && tempdatum <= result["Datum"] && tempdatum >= result["DatumBis"]){
-        //       console.log("hupihupi")
-        //       ids.push(" "+ result["Studiengang"]+" "+result["Semesternummer"])
-        //     }
-          }
 
+          }
 
         var belegung = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
         for (item of ergebnisse){
@@ -701,6 +700,7 @@ function ladeBelegungen(){
             }
           }
         }
+
         console.log("this is: "+belegung);
         var allDrops = document.querySelectorAll(".insidediv");
         for(drop of allDrops){
@@ -714,10 +714,7 @@ function ladeBelegungen(){
            // } else drop.setAttribute("title", "eingetragene Abwesenheit");
          }
         }
-
-
       });
-
     }
   })
 }
@@ -754,15 +751,82 @@ function calcCap() {
   }
 }
 
+function removeduplicates(arr){
+  let uniquearr = [];
+arr.forEach((element) => {
+    if (!uniquearr.includes(element)) {
+        uniquearr.push(element);
+    }
+});
+
+return uniquearr;
+}
+
 
 
 function drop(e) {
   //e.preventDefault();
   createNewElement();
-
 }
 
 
+
+function ladeVerplanteAnwesende(){
+
+  var thisdate = new Date(datumInput2.value);
+  var prufungen = document.querySelectorAll("#datalistpruf option");
+  var timeslots = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  var anwesende = [];
+
+  prufungen.forEach((pruf) => {
+ if(pruf.selected){
+    var id = extractID(pruf);
+    var sql;
+
+var sql0 = "SELECT * FROM prufungen, prufunganwesendeverbindung, anwesende WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID"
+db.query(sql0, function(err, results0) {
+  if (err) throw err;
+  console.log("jo das sind die Anwesende der prüfung",results0);
+    results0.forEach((result0)=>{
+
+      sql = "SELECT * FROM anwesende, prufunganwesendeverbindung, prufungen, prunfung_termin_verb, prufung_termin WHERE anwesende.Anwesende_ID = prufunganwesendeverbindung.Anwesende_ID AND prufunganwesendeverbindung.Prufung_ID = prufungen.Prufung_ID AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID AND prufung_termin.Datum = '"+transformDateToHTML(thisdate)+"' AND anwesende.Anwesende_ID = '"+result0["Anwesende_ID"]+"'"
+
+      db.query(sql, function(err, results) {
+        if (err) throw err;
+        console.log("MyErgebnis", results)
+        results.forEach((result) => {
+          anwesende.push(" " + result["Vorname"]+" "+result["Nachname"]);
+        })
+        anwesende = removeduplicates(anwesende);
+        results.forEach((result) => {
+          for(var i = 1; i <= 21; i++){
+            if(result["TS"+i] == 1){
+              timeslots[i-1] = " "+anwesende.join()+ " betreut zu dieser Zeit eine Prüfung. PrüfungID: "+result["Prufung_ID"] ;
+            }
+          }
+        })
+
+        console.log(timeslots)
+        var allDrops = document.querySelectorAll(".insidediv");
+        for(drop of allDrops){
+         if(timeslots[parseInt(drop.getAttribute("data-this"))-1] !== 0){
+           console.log("drin");
+           drop.classList.add("belegt4")
+           drop.setAttribute("data-state", "oc")
+           drop.setAttribute("title", "Anweseder"+timeslots[parseInt(drop.getAttribute("data-this"))-1]);
+           // if(ids.length > 0){
+           //   drop.setAttribute("title", "Ein oder mehrere Studsem haben heute bzw. gestern bereits eine Prüfung gehabt: "+ids.join());
+           // } else drop.setAttribute("title", "eingetragene Abwesenheit");
+         }
+        }
+      })
+    })
+});
+
+}
+  })
+  loadRoomBelegung();
+}
 
 
 
@@ -771,6 +835,7 @@ var marker = true;
 var laenge = 0;
 var capEmpfehlungen = [];
 var itemsEmpfehlungen = [];
+
 function empfehlung(restart) {
 
 if(restart != undefined){
@@ -790,18 +855,10 @@ if(restart != undefined){
     return;
   }
 
-  // if(itemsEmpfehlungen[0].getAttribute("data-state") == "oc"){
-  //
-  // }
-
   itemsEmpfehlungen = [];
-
-
   capEmpfehlungen = [];
 
   allDrops.forEach((element) => {
-
-
 
     if (element.style.borderColor == "deepskyblue") {
       element.style.borderColor = "black";
@@ -894,8 +951,6 @@ console.log(capEmpfehlungen);
   // }
   console.log(marker)
 
-
-
 if(marker){
   itemsEmpfehlungen.forEach((element) => {
 
@@ -912,149 +967,7 @@ if(marker){
 }
 }
 
-// var marker = true;
-// var laenge = 0;
-// var capEmpfehlungen = [];
-// var itemsEmpfehlungen = [];
-// function empfehlung(restart) {
-//
-// if(restart != undefined){
-//   laenge = restart;
-// }
-//
-//   const allDrags = document.querySelectorAll("#raumgrid .dnd");
-//   const allDrops = document.querySelectorAll(".insidediv");
-//   if (allDrags.length <= itemsEmpfehlungen.length) {
-//     capEmpfehlungen = [];
-//     marker = true;
-//     console.log("in1")
-//   }
-//
-//   if (capEmpfehlungen.includes(parseInt(allDrops[0].getAttribute("data-cap")))) {
-//     return;
-//   }
-//
-//   // if(itemsEmpfehlungen[0].getAttribute("data-state") == "oc"){
-//   //
-//   // }
-//
-//   itemsEmpfehlungen = [];
-//
-//
-//   capEmpfehlungen = [];
-//
-//   allDrops.forEach((element) => {
-//
-//
-//
-//     if (element.style.borderColor == "deepskyblue") {
-//       element.style.borderColor = "black";
-//       element.style.color = "black";
-//       element.style.borderStyle = "solid";
-//       element.style.fontWeight = "normal";
-//       element.removeAttribute("title");
-//     }
-//   })
-//
-// //  var firstAdvice;
-//
-//   var a = "allDrops[item].getAttribute('data-state') == 'free' && (21 - 0 ) >= parseInt(allDrops[item].getAttribute('data-this'))"
-//   var b = "parseInt(allDrops[item].getAttribute('data-cap')) "
-//   var c = "allDrops[item2].getAttribute('data-state') != 'free' || !((21 - 0) >= parseInt(allDrops[item2].getAttribute('data-this'))) "
-//   var d = "allDrops[item2] = allDrops[item2].nextSibling; "
-//   var e = "capEmpfehlungen.push(parseInt(allDrops[item].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[item]);"
-//
-//   if (allDrags.length > 1) {
-//     for (var i = 2; i <= allDrags.length; i++) {
-//       var p = (i - 1) * 21;
-//       a = a + "&& allDrops[parseInt(item)+" + p + "].getAttribute('data-state') == 'free' && (21 - 0) >= parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-this')) "
-//       b = b + "+ parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-cap')) "
-//       c = c + " || allDrops[parseInt(item2)+" + p + "].getAttribute('data-state') != 'free' || !((21 - 0) >= parseInt(allDrops[parseInt(item2)+" + p + "].getAttribute('data-this'))) "
-//       d = d + " allDrops[parseInt(item2)+" + p + "] = allDrops[parseInt(item2)+" + p + "].nextSibling; "
-//       e = e + "capEmpfehlungen.push(parseInt(allDrops[parseInt(item)+" + p + "].getAttribute('data-cap'))); itemsEmpfehlungen.push(allDrops[parseInt(item)+" + p + "]);"
-//     }
-//   }
-// try{
-//   for (item in allDrops) {
-//     if (getTeilnehmer() - (eval(b)) <= 0) {
-//       if (eval(a)) {
-//         var checker = true;
-//         var item2 = item;
-//         for (var i = 1; i < calcTimeSlots(); i++) {
-//           //eval(d);
-//           item2++;
-//           if (eval(c)) {
-//             checker = false;
-//             break;
-//           }// else console.log("jop")
-//         }
-//         if (checker == true) {
-//           //console.log(capEmpfehlungen);
-//           eval(e);
-//           //console.log(capEmpfehlungen);
-//           break;
-//         }
-//       }
-//     }
-//   }
-// } catch{
-//  console.log("keine Empfehlung möglich?")
-// }
-//
-// console.log("Hier:")
-// console.log(itemsEmpfehlungen);
-//
-//
-//
-// console.log(capEmpfehlungen);
-//   capEmpfehlungen.reverse()
-//   var teilnehmer = getTeilnehmer();
-//   var cap = 0;
-//   console.log(itemsEmpfehlungen);
-//   for (var i = 0; i < capEmpfehlungen.length; i++) {
-//     cap = cap + capEmpfehlungen[i];
-//
-//     if (cap >= teilnehmer && i < capEmpfehlungen.length - 1) {
-//       console.log("jetz isses soweit")
-//       marker = false;
-//
-//
-//       console.log(itemsEmpfehlungen);
-//       //console.log(capEmpfehlungen);
-//       itemsEmpfehlungen.shift();
-//       //console.log(itemsEmpfehlungen);
-//     }
-//   }
-//   console.log("länge"+laenge);
-//   console.log("empfehlungen:"+itemsEmpfehlungen.length)
-//   if(itemsEmpfehlungen.length > laenge){
-//     console.log("in2")
-//     marker = true
-//     laenge = itemsEmpfehlungen.length;
-//   }
-//   // if(capEmpfehlungen.includes(parseInt(allDrops[0].getAttribute("data-cap")))){
-//   //   dialogs.alert("Ende")
-//   //   itemsEmpfehlungen.pop();
-//   // }
-//   console.log(marker)
-//
-//
-//
-// if(marker){
-//   itemsEmpfehlungen.forEach((element) => {
-//
-//     if(element.getAttribute("data-empfehlung") != "verboten"){
-//       element.style.borderColor = "deepskyblue";
-//       element.style.color = "deepskyblue"
-//       element.style.fontWeight = "bold";
-//       if(itemsEmpfehlungen.length > 1){
-//         itemsEmpfehlungen[0].style.borderStyle = "dashed";
-//         itemsEmpfehlungen[0].setAttribute("title", "Dieser Slot muss nicht unbedingt der beste sein, probiere auch mal die Slots darüber aus (falls frei).");
-//       }
-//     }
-//   })
-// }
-// }
+
 
 
 function loadRoomBelegung(){
@@ -1100,11 +1013,14 @@ function falschePosition(){
     if(drop.hasAttribute("data-setby")){
       if(drop.getAttribute("data-state") == "oc" || drop.hasAttribute("data-gegraut")){
         checker = true;
+        break;
       }
     }
   }
   return checker;
 }
+
+
 
 function deleteOldies(){
   var thisdate = new Date();
@@ -1118,11 +1034,14 @@ function deleteOldies(){
 deleteOldies();
 
 
+
 function extractPP(item){
   var temp = item.textContent.split("[PP.: ");
   var temp = temp[1].split("]");
   return temp[0];
 }
+
+
 
 function extractID(item){
   var temp = item.textContent.split("[ID.: ");
@@ -1143,6 +1062,7 @@ function schonPrufung(){
 
 
   prufungen.forEach((pruf) => {
+  if(pruf.selected){
     var pp = extractPP(pruf);
     var id = extractID(pruf);
     var sql;
@@ -1151,6 +1071,9 @@ var sql0 = "SELECT * FROM prufungen, prufungstudsemverbindung, studiengangssemes
 db.query(sql0, function(err, results0) {
   if (err) throw err;
   console.log("jo das sind die semseter der prüfung",results0);
+  var studsem = [];
+  var prufIds = [];
+
     results0.forEach((result0)=>{
 
       if(pp === "N"){
@@ -1162,14 +1085,14 @@ db.query(sql0, function(err, results0) {
       db.query(sql, function(err, results) {
         if (err) throw err;
         console.log("so siehts aus", results)
-        if(results.length > 0){
-          console.log("Es gibt mehr als 0")
-          var studsem = [];
-          var prufIds = [];
+
           for(result of results){
             if(result["Prüfungsart"] !== "Hausarbeit"){
               studsem.push(" "+result["Studiengang"]+" "+result["Semesternummer"]);
               prufIds.push(" "+result["Prufung_ID"]);
+              studsem = removeduplicates(studsem);
+              prufIds = removeduplicates(prufIds);
+              console.log(studsem);
               var allDropsxy = document.querySelectorAll(".insidediv");
               console.log("Es gibt soviele Drops:", allDropsxy.lenth)
               allDropsxy.forEach((drop) => {
@@ -1179,18 +1102,15 @@ db.query(sql0, function(err, results0) {
               })
             }
           }
-
-        }
       })
-
-
 
     })
 
 });
 
-
+}
   })
+ladeVerplanteAnwesende();
 }
 
 
@@ -1235,53 +1155,17 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
   prufungen.forEach((item) => {
 //id ermitteln
   if(item.selected){
-      var temp = item.textContent.split("[ID.: ");
-      var temp = temp[1].split("]");
-      var id = temp[0];
+      var id = extractID(item);
       console.log(id);
 
       var sqltest = "SELECT * FROM prufungen, prunfung_termin_verb, prufung_termin WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID"
-      console.log(sqltest);
       db.query(sqltest, function(err, results000) {
         if (err) throw err;
-        console.log("hopsi", results000.length)
       if(results000.length === 0){
-//Studsem tagesbelegungen eintragen ab hier
-      // var daythis = new Date(datum);
-      // var daynext = new Date(datum);
-      // daynext.setDate(daynext.getDate()+1);
-
-      // var sql234;
-      // if(extractPP(item) === "J"){
-      //   sql234 = "INSERT INTO studiengangssemester_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21, Wochentage, vonTime, bisTime, Grund) VALUES ('" + transformDateToHTML(daythis) + "','" + transformDateToHTML(daynext) + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','"+"1 2 3 4 5 6 7"+"','"+"1"+"','"+"21"+"','"+id+"')"
-      //   } else {
-      //   sql234 = "INSERT INTO studiengangssemester_belegung (Datum, DatumBis, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21, Wochentage, vonTime, bisTime, Grund) VALUES ('" + transformDateToHTML(daythis) + "','" + transformDateToHTML(daythis) + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','" + '1' + "','"+"1 2 3 4 5 6 7"+"','"+"1"+"','"+"21"+"','"+id+"')"
-      // }
-      //   var sql123 = "SELECT studiengangssemester.Studiengangssemester_ID FROM prufungen, prufungstudsemverbindung, studiengangssemester WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID";
-      //   db.query(sql123, function(err, results) {
-      //     if (err) throw err;
-      //     console.log(results);
-      //     results.forEach((result) => {
-      //       db.query(sql234, function(err, results2) {
-      //         if (err) throw err;
-      //         sql345 = "INSERT INTO studsembelegungverbindung (Studiengangssemester_ID, Belegungs_ID) VALUES ('"+result["Studiengangssemester_ID"]+"','"+results2["insertId"]+"')"
-      //         db.query(sql345, function(err, results3) {
-      //           if (err) throw err;
-      //           console.log("erfolgreich Eingetragen husthust")
-      //         })
-      //       })
-      //     })
-      //   });
-
-
-
-//bis hier
 
       var sql2 = "INSERT INTO prunfung_termin_verb (Prufung_ID, Termin_ID) VALUES ('"+id+"','"+results["insertId"]+"')"
       db.query(sql2, function(err, results2) {
       });
-
-
 
       const allDrags = document.querySelectorAll("#raumgrid .dnd")
       if(!alreadyset){
@@ -1309,19 +1193,13 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
 }   //if selected
 }); //Prufung-for each
 }); //erste insert into query
-
-
-
-
 //verwendete Räume ermitteln
-
-
-
-
-
 } //komplette funktion
 
 buttonEintragen.addEventListener("click", eintragen)
+
+
+
 
 
 //https://www.youtube.com/watch?v=jfYWwQrtzzY

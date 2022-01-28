@@ -1,5 +1,8 @@
 var Dialogs = require('dialogs');
 var dialogs = Dialogs(opts={});
+var PdfPrinter = require('pdfmake');
+var printer = new PdfPrinter();
+var fs = require('fs');
 
 const liststudsem = document.querySelector('#liststudsem');
 const listanwesen = document.querySelector('#listanwesen');
@@ -45,6 +48,12 @@ const buttonLöschen = document.querySelector('#buttonLöschen')
 		});
 
 //----------------------------------------------------------
+
+
+
+
+
+
 
 //Sonstige globale Variablen------------------
 var alleStudsems = [];
@@ -335,7 +344,7 @@ function terminlösen(e){
   // db.query(sql2, function(err, results){
   //   if(err) throw err;
   // });
-  dialogs.alert("Prüfung wurde vom Termin gelöst. Bitte Seite neu Laden zum aktualisieren(strg + r)")
+  dialogs.alert("Prüfung wurde vom Termin gelöst. Seite wird neu geladen...")
   this.parentElement.parentElement.remove();
 
 
@@ -346,7 +355,9 @@ function terminlösen(e){
   });
 
 
-
+  setTimeout(()=>{
+    location.reload()
+  }, 2000)
 }
 
 function dateHausarbeiten(e){
@@ -370,12 +381,33 @@ function dateHausarbeiten(e){
     sql2 = "INSERT INTO prunfung_termin_verb (Prufung_ID, Termin_ID) VALUES ('"+tempthis.getAttribute("data-prufid")+"','"+results["insertId"]+"')"
     db.query(sql2, function(err, results){
       if(err) throw err;
-      dialogs.alert("Termin erfolgreich der Hausarbeit zugeordnet")
+      dialogs.alert("Termin erfolgreich der Hausarbeit zugeordnet. Seite wird neu geladen...")
       tempthis.parentElement.firstChild.setAttribute("readonly", "readonly");
       tempthis.remove();
+      setTimeout(()=>{
+        location.reload()
+      }, 2000)
     })
   });
 }
+
+function bearbeitPruf(e){
+
+  var content = this.getAttribute("data-prufID");
+  fs.writeFile('bearbeitenID.txt', content, err => {
+    if (err) {
+      console.error(err)
+      return
+    }
+    //file written successfully
+    window.open("bearbeiten.html");
+    this.parentElement.remove();
+    dialogs.alert("Ein Prüfung wurde möglicherweise geändert. Bitte die Seite neu laden um zu aktualisieren(strg + r)")
+  })
+
+
+}
+
 
 function prufungsUbersicht(){
   tk = document.querySelector("#tabellenkörper");
@@ -390,6 +422,10 @@ function prufungsUbersicht(){
         spalte.appendChild(text);
         zeile.appendChild(spalte);
         spalte = document.createElement("td");
+        spalte.addEventListener("click", bearbeitPruf)
+        spalte.setAttribute("title","Prüfung bearbeiten");
+        spalte.setAttribute("data-prufID", result["Prufung_ID"]);
+        spalte.classList.add("bearbeitenbutton");
         text = document.createTextNode(result["Prufung_Name"])
         spalte.appendChild(text);
         zeile.appendChild(spalte);
@@ -476,10 +512,18 @@ for (result of results){
   var text = document.createTextNode(result["Prufung_ID"])
   spalte.appendChild(text);
   zeile.appendChild(spalte);
+
+
   spalte = document.createElement("td");
   text = document.createTextNode(result["Prufung_Name"])
+  spalte.addEventListener("click", bearbeitPruf)
+  spalte.setAttribute("title","Prüfung bearbeiten");
+  spalte.setAttribute("data-prufID", result["Prufung_ID"]);
+  spalte.classList.add("bearbeitenbutton");
   spalte.appendChild(text);
   zeile.appendChild(spalte);
+
+
   spalte = document.createElement("td");
   if(result["Prüfungsart"] !== "Hausarbeit"){
     text = document.createTextNode("k.A.")
@@ -560,3 +604,20 @@ for (result of results){
     });
 }
 prufungsUbersicht();
+
+
+
+function createPDF(){
+  var docDefinition = {
+    content: [
+		'First paragraph',
+		'Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines'
+	]
+
+  };
+
+  var pdfDoc = printer.createPdfKitDocument(docDefinition);
+pdfDoc.pipe(fs.createWriteStream('document.pdf'));
+pdfDoc.end();
+}
+createPDF();

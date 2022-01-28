@@ -9,12 +9,14 @@
   "author": "Christopher Gehlen",
   "license": "ISC",
   "dependencies": {
-    "@electron/remote": "^2.0.1",
+    "@electron/remote": "^2.0.4",
     "dialogs": "^2.0.1",
     "electron": "^16.0.3",
+    "jspdf": "^2.5.0",
     "lodash": "^4.17.21",
     "lodash.chunk": "^4.2.0",
     "mysql": "^2.18.1",
+    "pdfmake": "^0.2.4",
     "underscore": "^1.13.2",
     "vex-dialog": "^1.1.0"
   }

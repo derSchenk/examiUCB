@@ -335,6 +335,19 @@ function transformDateToHTML(datum){
   return datumstring
 }
 
+function transformDateToHTML2(datum){
+  var day = datum.getDate();
+  var month = datum.getMonth()+1;
+  if(day < 10){
+    day = "0"+day;
+  }
+  if(month < 10){
+    month = "0"+month;
+  }
+  datumstring = datum.getFullYear()+'-'+month+'-'+day
+  return datumstring
+}
+
 
 
 function janein(para){
@@ -390,12 +403,20 @@ function dateHausarbeiten(e){
     return;
   }
   datum = datum.split("T");
+
+  var update = datum[0]+"T"+datum[1];
+  var sqlxyz = "UPDATE prufungen SET Letzter_Termin = '"+update+"' WHERE prufungen.Prufung_ID = '"+this.getAttribute("data-prufid")+"'";
+  db.query(sqlxyz, function(err, results2) {
+    if(err) throw err
+  });
+
   sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + datum[1] + "','" + datum[0] + "','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0')"
   var tempthis = this;
   db.query(sql, function(err, results){
     console.log(this);
     if(err) throw err;
     console.log(results)
+
     sql2 = "INSERT INTO prunfung_termin_verb (Prufung_ID, Termin_ID) VALUES ('"+tempthis.getAttribute("data-prufid")+"','"+results["insertId"]+"')"
     db.query(sql2, function(err, results){
       if(err) throw err;
@@ -429,8 +450,11 @@ function bearbeitPruf(e){
 
 
 function prufungsUbersicht(){
+
+
   tk = document.querySelector("#tabellenkörper");
   sql = "SELECT * FROM prufungen, prunfung_termin_verb, prufung_termin WHERE prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID ORDER BY Datum, Beginn, prufung_termin.Termin_ID, Prufung_Name"
+  console.log(sql)
   db.query(sql, function(err, results){
     if(err) throw err;
       results.forEach((result)=>{
@@ -525,7 +549,10 @@ function prufungsUbersicht(){
       });
     });
 
-  sql2 = "SELECT * FROM prufungen WHERE NOT EXISTS (SELECT 1 FROM prunfung_termin_verb WHERE prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID) ORDER BY Standardsemester, Prufung_Name"
+
+
+
+sql2 = "SELECT * FROM prufungen WHERE NOT EXISTS (SELECT 1 FROM prunfung_termin_verb WHERE prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID) ORDER BY Standardsemester, Prufung_Name"
   db.query(sql2, function(err, results){
     if(err) throw err;
 for (result of results){
@@ -549,9 +576,16 @@ for (result of results){
 
   spalte = document.createElement("td");
   if(result["Prüfungsart"] !== "Hausarbeit"){
-    text = document.createTextNode("k.A.")
-    spalte.appendChild(text);
-
+    console.log("Letzter_Termin: ", result)
+    if(result["Letzter_Termin"] === ""){
+      text = document.createTextNode("k.A.")
+      spalte.appendChild(text);
+    } else{
+      text = document.createTextNode(returnWeekdayString(new Date(result["Letzter_Termin"].split("T")[0]))+" "+transformDateToHTML(new Date(result["Letzter_Termin"].split("T")[0])))
+      spalte.appendChild(text);
+      spalte.setAttribute("title", "Termin obsolet")
+      spalte.classList.add("abgelaufen")
+    }
   }else{
     var input =  document.createElement("input");
     input.setAttribute("type", "datetime-local");
@@ -560,21 +594,38 @@ for (result of results){
 
     var knopf = document.createElement("button")
     knopf.setAttribute("data-prufID", result["Prufung_ID"]);
-    knopf.setAttribute("title", "Datum und Uhrzeit setzen")
+    knopf.setAttribute("title", "Neuer Termin setzen")
     knopf.addEventListener("click", dateHausarbeiten);
     knopf.classList.add("dateknopf");
     text = document.createTextNode("+")
     knopf.appendChild(text);
     spalte.appendChild(knopf);
+    if(result["Letzter_Termin"] !== ""){
+      var divi = document.createElement("div");
+      text = document.createTextNode(returnWeekdayString(new Date(result["Letzter_Termin"].split("T")[0]))+" "+transformDateToHTML(new Date(result["Letzter_Termin"].split("T")[0])))
+      divi.appendChild(text);
+      divi.classList.add("hausarbeitdatum")
+      spalte.appendChild(divi);
+      divi.setAttribute("title", "Termin obsolet")
+      spalte.classList.add("abgelaufen")
+    }
+
+
+
   }
   zeile.appendChild(spalte);
 
 
-
-
   spalte = document.createElement("td");
-  text = document.createTextNode("k.A.")
-  spalte.appendChild(text);
+  if(result["Letzter_Termin"] === ""){
+    text = document.createTextNode("k.A.")
+    spalte.appendChild(text);
+  } else{
+    text = document.createTextNode(result["Letzter_Termin"].split("T")[1])
+    spalte.appendChild(text);
+    spalte.setAttribute("title", "Termin obsolet")
+    spalte.classList.add("abgelaufen")
+  }
   zeile.appendChild(spalte);
   spalte = document.createElement("td");
   text = document.createTextNode(result["Dauer"])
@@ -629,5 +680,21 @@ for (result of results){
 }
 
     });
+
+
+
+
 }
 prufungsUbersicht();
+
+
+
+function deleteOldies(){
+  var thisdate = new Date();
+
+  console.log("Oldies gelöscht bis: ", thisdate);
+  var sql = "DELETE FROM prufung_termin WHERE prufung_termin.Datum < '"+transformDateToHTML2(thisdate)+"'"
+  db.query(sql, function(err, results) {
+  });
+}
+deleteOldies();

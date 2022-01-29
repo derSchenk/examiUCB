@@ -100,7 +100,7 @@ th{
 
 table{
 	margin-top: 5vh;
-	font-size: 0.8vw;
+	font-size: max(0.8vw, 12px); */
 }
 #tablediv{
 	width: 100%;
@@ -142,5 +142,17 @@ table{
 }
 
 .kleinerText{
-	font-size: 0.6vw;
+	font-size: max(0.6vw, 12px);
+}
+
+.abgelaufen{
+	color: #8d1371;
+	text-decoration: line-through;
+}
+
+.hausarbeitdatum{
+	margin-top: 0.5vh;
+	margin-bottom: 0.5vh;
+	padding-top: 0.5vh;
+	border-top: 1px dashed black;
 }

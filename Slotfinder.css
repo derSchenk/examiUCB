@@ -190,9 +190,15 @@ form{
 	vertical-align: middle;
 	text-align: center;
 	font-size: medium;
-	cursor: move;
+	cursor: grab;
 
 }
+
+
+.dnd:active{
+	cursor: grabbing;
+}
+
 
 
 #panel{

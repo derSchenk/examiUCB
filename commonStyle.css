@@ -150,3 +150,8 @@ form input, .auswahl, button{
   background: black;
 		border-radius: 100px;
 }
+
+
+button, input[type=button], input[type=submit]{
+	cursor: pointer;
+}

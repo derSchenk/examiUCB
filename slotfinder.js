@@ -471,7 +471,9 @@ if(!(this.getAttribute("data-empfehlung") == "verboten")){ //falls es sich nicht
 
 function dragend(e) {
   //Die Funktion definiert was passiert wenn ein Token aufgehörtz wird zuziehen
+
   e.target.classList.remove('dragging');  //Die Klasse dragging wird entfernt
+
   try {
     if (e.target.parentElement.classList.contains("insidediv")) {  //Wenn das Parentelement des Token nun ein Timeslot ist...
       if (e.target.hasAttribute("data-token")) { //...und es sich auch tatsächlich um einen Token handelt...
@@ -516,6 +518,7 @@ function dragend(e) {
 
 function dragstart(e) {
 // Die Funktion definiert was passiert wenn ein Token bekonnen wird zu ziehen
+
   console.log(this.parentElement);
   if (this.parentElement.classList.contains("newdrag")) {      //Falls das Parentelement des zuziehen begonnen Token die Tokenquelle war....
     listenershinzufügen();      //...füge die Eventlister hinzu (Eigentlich nur beim, ersten Token nötig, wird aber einfachheitshalber bei jedem neuen Token gemacht -> Stört nicht)
@@ -1029,7 +1032,6 @@ function falschePosition(){
 
 function deleteOldies(){
   var thisdate = new Date();
-  thisdate.setDate(thisdate.getDate()-2);
 
   console.log("Oldies gelöscht bis: ", thisdate);
   var sql = "DELETE FROM prufung_termin WHERE prufung_termin.Datum < '"+transformDateToHTML(thisdate)+"'"
@@ -1211,7 +1213,7 @@ function eintragen(){
     })
     console.log(timeslots);
 
-
+var update = datum+"T"+beginnString;
 var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + beginnString + "','" + datum + "','" + timeslots[0] + "','" + timeslots[1] + "','" + timeslots[2] + "','" + timeslots[3] + "','" + timeslots[4] + "','" + timeslots[5] + "','" + timeslots[6] + "','" + timeslots[7] + "','" + timeslots[8] + "','" + timeslots[9] + "','" + timeslots[10] + "','" + timeslots[11] + "','" + timeslots[12] + "','" + timeslots[13] + "','" + timeslots[14] + "','" + timeslots[15] + "','" + timeslots[16] + "','" + timeslots[17] + "','" + timeslots[18] + "','" + timeslots[19] + "','" + timeslots[20] + "')"
     db.query(sql, function(err, results) {
   var alreadyset = false;
@@ -1221,6 +1223,10 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
       var id = extractID(item);
       console.log(id);
 
+      var sqlxyz = "UPDATE prufungen SET Letzter_Termin = '"+update+"' WHERE prufungen.Prufung_ID = '"+id+"'";
+      db.query(sqlxyz, function(err, results2) {
+        if(err) throw err
+      });
       // var sqltest = "SELECT * FROM prufungen, prunfung_termin_verb, prufung_termin WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID"
       // db.query(sqltest, function(err, results000) {
       //   if (err) throw err;
@@ -1228,6 +1234,7 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
 
       var sql2 = "INSERT INTO prunfung_termin_verb (Prufung_ID, Termin_ID) VALUES ('"+id+"','"+results["insertId"]+"')"
       db.query(sql2, function(err, results2) {
+        if(err) throw err;
       });
 
       const allDrags = document.querySelectorAll("#raumgrid .dnd")

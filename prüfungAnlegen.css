@@ -140,3 +140,7 @@ table{
 	color: #F46EBE;
 	border-color: #F46EBE;
 }
+
+.kleinerText{
+	font-size: 0.6vw;
+}

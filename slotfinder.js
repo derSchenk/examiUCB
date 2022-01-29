@@ -58,20 +58,24 @@ db.connect(function(err) {
 
 
 //Laden der Vorschläge für die Prüfungen--------------------
-var sql = 'SELECT * FROM prufungen ORDER BY Prufung_Name ASC';
-db.query(sql, function(err, results) {
-  if (err) throw err;
-  //console.log(results);
-  results.forEach(result => {
-    if(result["Prüfungsart"] !== "Hausarbeit"){
-      const nOption = document.createElement('option');
-      var inhalt = result["Prufung_Name"].toLowerCase().trim() + " | " + result["Standardsemester"] + " | " + result["Prüfungsstatus"] + " [T.: " + result["Teilnehmerzahl"] + "]" + " [D.: " + result["Dauer"] + "]" + " [ID.: " + result["Prufung_ID"] + "]" + " [PP.: " + (result["Pflichtprüfung"] === 1 ? "J" : "N") + "]";
-      nOption.value = inhalt;
-      allePrufungen.push(inhalt);
-      listprufungen.appendChild(nOption);
-    }
+function ladeVorschläge(){
+  prufungInput.value = "";
+  var sql = 'SELECT * FROM prufungen WHERE Prufung_ID NOT IN (SELECT Prufung_ID FROM prunfung_termin_verb)';
+  db.query(sql, function(err, results) {
+    if (err) throw err;
+    //console.log(results);
+    results.forEach(result => {
+      if(result["Prüfungsart"] !== "Hausarbeit"){
+        const nOption = document.createElement('option');
+        var inhalt = result["Prufung_Name"].toLowerCase().trim() + " | " + result["Standardsemester"] + " | " + result["Prüfungsstatus"] + " [T.: " + result["Teilnehmerzahl"] + "]" + " [D.: " + result["Dauer"] + "]" + " [ID.: " + result["Prufung_ID"] + "]" + " [PP.: " + (result["Pflichtprüfung"] === 1 ? "J" : "N") + "]";
+        nOption.value = inhalt;
+        allePrufungen.push(inhalt);
+        listprufungen.appendChild(nOption);
+      }
+    });
   });
-});
+}
+ladeVorschläge();
 
 //-----------------------------------------------------------------
 
@@ -138,6 +142,7 @@ function setVisible(e) {
 
 
   loadRooms();
+
 
   //Statt hidden könnte auch Display = none gesetzt werden? Besser?
 }
@@ -284,7 +289,7 @@ function returnWeekdayString(datum){
 
 
 
-function loadRooms(e) { //Funktion erstellt das Grid für das Drag'n'Drop
+function loadRooms() { //Funktion erstellt das Grid für das Drag'n'Drop
 
   while (raumgrid.firstChild) { //Falls das Grid durch vorherige Abfrage bereits gefüllt. Lösche diese Einträge.
     raumgrid.firstChild.remove()
@@ -1049,6 +1054,65 @@ function extractID(item){
   return temp[0];
 }
 
+function extractSemester(item){
+  var temp = item.textContent.split(" | ");
+  return temp[1];
+}
+
+function extractDauer(item){
+  var temp = item.textContent.split("[D.: ");
+  var temp = temp[1].split("]");
+  return temp[0];
+}
+
+
+
+function plausiblecheck(e){
+  e.preventDefault();
+  var semester;
+  var dauer;
+  const prüfungen = datalistpruf.children;
+  var checkerSem = false;
+  var checkerDauer = false;
+
+  Array.from(prüfungen).forEach((prüfung) =>{
+    if(prüfung.selected){
+      if(semester === undefined){
+        semester = extractSemester(prüfung);
+      }
+      if(dauer === undefined){
+        dauer = extractDauer(prüfung);
+      }
+      if(semester !== extractSemester(prüfung)){
+        checkerSem = true;
+      }
+      if(dauer !== extractDauer(prüfung)){
+        checkerDauer = true;
+      }
+    }
+  })
+
+
+  if(checkerSem || checkerDauer){
+    dialogs.confirm("Möchten Sie trotzdem eintragen?", ok => {
+      if(ok === true){
+        eintragen();
+      }
+    })
+  } else eintragen();
+
+  if(checkerSem){
+    dialogs.alert("Hinweis: Nicht alle Prüfungen haben das gleiche Standardsemester.")
+  }
+  if(checkerDauer){
+    dialogs.alert("Hinweis: Nicht alle Prüfungen haben die gleiche Dauer.")
+  }
+
+
+}
+
+buttonEintragen.addEventListener("click", plausiblecheck);
+
 
 
 function schonPrufung(){
@@ -1117,8 +1181,7 @@ ladeVerplanteAnwesende();
 
 
 
-function eintragen(e){
-  e.preventDefault();
+function eintragen(){
 
   if(falschePosition()){
     dialogs.alert("Fehlerhafte Positionierung eines Tokens. Keine Eintragung möglich.");
@@ -1158,10 +1221,10 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
       var id = extractID(item);
       console.log(id);
 
-      var sqltest = "SELECT * FROM prufungen, prunfung_termin_verb, prufung_termin WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID"
-      db.query(sqltest, function(err, results000) {
-        if (err) throw err;
-      if(results000.length === 0){
+      // var sqltest = "SELECT * FROM prufungen, prunfung_termin_verb, prufung_termin WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID"
+      // db.query(sqltest, function(err, results000) {
+      //   if (err) throw err;
+      // if(results000.length === 0){
 
       var sql2 = "INSERT INTO prunfung_termin_verb (Prufung_ID, Termin_ID) VALUES ('"+id+"','"+results["insertId"]+"')"
       db.query(sql2, function(err, results2) {
@@ -1186,17 +1249,20 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
 
           alreadyset = true;
         }
-      }
-      dialogs.alert("Prüfungen eingetragen")
-} else dialogs.alert("Für diese Prüfung gibt es schon einen Termin: PrüfungsID "+id+"") //if results.length
-}); //slect query
+       }
+      dialogs.alert("Prüfungen eingetragen", loadRooms);
+      setTimeout(()=>{
+        location.reload()
+      }, 1000);
+// } else dialogs.alert("Für diese Prüfung gibt es schon einen Termin: PrüfungsID "+id+"") //if results.length
+// }); //slect query
 }   //if selected
 }); //Prufung-for each
 }); //erste insert into query
 //verwendete Räume ermitteln
 } //komplette funktion
 
-buttonEintragen.addEventListener("click", eintragen)
+
 
 
 

@@ -17,7 +17,7 @@ textarea{
 	font-family: arial;
 }
 
-#buttonEintragen, #buttonLöschen{
+#buttonEintragen3, #buttonLöschen3,#buttonEintragen2, #buttonLöschen2,#buttonEintragen1, #buttonLöschen1{
 	height: 2.8vh;
 	min-height: 1.5em;
 	width: 8vw;
@@ -25,7 +25,7 @@ textarea{
 	color: white;
 }
 
-#buttonEintragen:hover, #buttonLöschen:hover{
+#buttonEintragen3:hover, #buttonLöschen3:hover, #buttonEintragen2:hover, #buttonLöschen2:hover, #buttonEintragen1:hover, #buttonLöschen1:hover{
 	border: 1px solid #F46EBE;
 	color: #F46EBE;
 }

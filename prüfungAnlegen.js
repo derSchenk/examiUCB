@@ -277,22 +277,29 @@ inputlöschen.addEventListener('focus', loadElements, false);
 function deleteElement(e){
   e.preventDefault();
   if(inputlöschen.value.trim() != ""){
-    var toDelete1 = inputlöschen.value.split("[");
-    toDelete = toDelete1[1].split("]");
-    toDelete = toDelete[0];
-    console.log(toDelete);
-    var sql = "DELETE FROM prufungen WHERE Prufung_ID='"+toDelete+"';";
-    db.query(sql, function(err, results){
-    	if(err) throw err;
-    	dialogs.alert(toDelete1[0]+" gelöscht.");
+  dialogs.confirm("Prüfung wirklich löschen? Es können Abhängigkeiten bestehen.", ok => {
+    if(ok === true){
+      var toDelete1 = inputlöschen.value.split("[");
+      toDelete = toDelete1[1].split("]");
+      toDelete = toDelete[0];
+      console.log(toDelete);
+      var sql = "DELETE FROM prufungen WHERE Prufung_ID='"+toDelete+"';";
+      db.query(sql, function(err, results){
+      	if(err) throw err;
+      	dialogs.alert(toDelete1[0]+" gelöscht.");
 
-      });
+        });
+        inputlöschen.value = "";
+    }
+  })
+
+
     // var sql2 = "DELETE FROM studiengangssemester_belegung WHERE Grund = '"+toDelete+"'"
     // db.query(sql2, function(err, results){
     //   if(err) throw err;
     // });
     } else dialogs.alert("Kein Element gewählt")
-    inputlöschen.value = "";
+
   }
 
 buttonLöschen.addEventListener("click", deleteElement, false);
@@ -328,36 +335,47 @@ function transformDateToHTML(datum){
   return datumstring
 }
 
+
+
 function janein(para){
   if(para === 1){
     return "Ja"
   }else return "Nein"
 }
 
+
+
 function terminlösen(e){
   e.preventDefault();
-  var sql = "DELETE FROM prunfung_termin_verb WHERE Prufung_ID = '"+this.getAttribute("data-prufID")+"' AND Termin_ID = '"+this.getAttribute("data-terminID")+"'"
-  db.query(sql, function(err, results){
-    if(err) throw err;
+  dialogs.confirm("Prüfung wirklich vom Termin lösen?", ok =>{
+    console.log(ok)
+    if(ok === true){
+      var sql = "DELETE FROM prunfung_termin_verb WHERE Prufung_ID = '"+this.getAttribute("data-prufID")+"' AND Termin_ID = '"+this.getAttribute("data-terminID")+"'"
+      db.query(sql, function(err, results){
+        if(err) throw err;
+      });
+      // var sql2 = "DELETE FROM studiengangssemester_belegung WHERE Grund = '"+this.getAttribute("data-prufID")+"'"
+      // db.query(sql2, function(err, results){
+      //   if(err) throw err;
+      // });
+      // dialogs.alert("Prüfung wurde vom Termin gelöst. Seite wird neu geladen...")
+      // this.parentElement.parentElement.remove();
+
+
+
+      var sql2 = "DELETE FROM prufung_termin WHERE NOT EXISTS(SELECT 1 FROM prunfung_termin_verb WHERE prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID)"
+      db.query(sql2, function(err, results){
+        if(err) throw err;
+      });
+
+      dialogs.alert("Termin erfolgreich gelöst. Seite lädt neu...");
+      setTimeout(()=>{
+        location.reload()
+      }, 1000)
+    }
+
   });
-  // var sql2 = "DELETE FROM studiengangssemester_belegung WHERE Grund = '"+this.getAttribute("data-prufID")+"'"
-  // db.query(sql2, function(err, results){
-  //   if(err) throw err;
-  // });
-  dialogs.alert("Prüfung wurde vom Termin gelöst. Seite wird neu geladen...")
-  this.parentElement.parentElement.remove();
 
-
-
-  var sql2 = "DELETE FROM prufung_termin WHERE NOT EXISTS(SELECT 1 FROM prunfung_termin_verb WHERE prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID)"
-  db.query(sql2, function(err, results){
-    if(err) throw err;
-  });
-
-
-  setTimeout(()=>{
-    location.reload()
-  }, 2000)
 }
 
 function dateHausarbeiten(e){
@@ -386,7 +404,7 @@ function dateHausarbeiten(e){
       tempthis.remove();
       setTimeout(()=>{
         location.reload()
-      }, 2000)
+      }, 1000)
     })
   });
 }
@@ -401,8 +419,9 @@ function bearbeitPruf(e){
     }
     //file written successfully
     window.open("bearbeiten.html");
-    this.parentElement.remove();
-    dialogs.alert("Ein Prüfung wurde möglicherweise geändert. Bitte die Seite neu laden um zu aktualisieren(strg + r)")
+    dialogs.alert("Ein Prüfung wurde möglicherweise geändert. Bitte auf 'OK' klicken zum aktualisieren", ok => {
+      location.reload()
+    })
   })
 
 
@@ -454,11 +473,15 @@ function prufungsUbersicht(){
         spalte.appendChild(text);
         zeile.appendChild(spalte);
         spalte = document.createElement("td");
-        text = document.createTextNode(result["Bemerkung"])
+        spalte.classList.add("kleinerText");
+        ttext = document.createTextNode(result["Bemerkung"].slice(0,99)+(result["Bemerkung"].length > 100 ? "[...]" : ""))
+        spalte.setAttribute("title", result["Bemerkung"]);
         spalte.appendChild(text);
         zeile.appendChild(spalte);
         spalte = document.createElement("td");
-        text = document.createTextNode(result["Hilfsmittel"])
+        spalte.classList.add("kleinerText");
+        text = document.createTextNode(result["Hilfsmittel"].slice(0,99)+(result["Hilfsmittel"].length > 100 ? "[...]" : ""))
+        spalte.setAttribute("title", result["Hilfsmittel"]);
         spalte.appendChild(text);
         zeile.appendChild(spalte);
         spalte = document.createElement("td");
@@ -570,11 +593,15 @@ for (result of results){
   spalte.appendChild(text);
   zeile.appendChild(spalte);
   spalte = document.createElement("td");
-  text = document.createTextNode(result["Bemerkung"])
+  spalte.classList.add("kleinerText");
+  text = document.createTextNode(result["Bemerkung"].slice(0,99)+(result["Bemerkung"].length > 100 ? "[...]" : ""))
+  spalte.setAttribute("title", result["Bemerkung"]);
   spalte.appendChild(text);
   zeile.appendChild(spalte);
   spalte = document.createElement("td");
-  text = document.createTextNode(result["Hilfsmittel"])
+  spalte.classList.add("kleinerText");
+  text = document.createTextNode(result["Hilfsmittel"].slice(0,99)+(result["Hilfsmittel"].length > 100 ? "[...]" : ""))
+  spalte.setAttribute("title", result["Hilfsmittel"]);
   spalte.appendChild(text);
   zeile.appendChild(spalte);
   spalte = document.createElement("td");
@@ -604,20 +631,3 @@ for (result of results){
     });
 }
 prufungsUbersicht();
-
-
-
-function createPDF(){
-  var docDefinition = {
-    content: [
-		'First paragraph',
-		'Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines'
-	]
-
-  };
-
-  var pdfDoc = printer.createPdfKitDocument(docDefinition);
-pdfDoc.pipe(fs.createWriteStream('document.pdf'));
-pdfDoc.end();
-}
-createPDF();

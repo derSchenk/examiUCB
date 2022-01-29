@@ -252,73 +252,78 @@ function extractID(item){
 
 function updatePruf(e){
   e.preventDefault();
-
   if(prufName.value.trim() === ""){
     dialogs.alert("Bezeichnung der Prüfung darf nicht leer sein. Keine Änderung vorgenommen");
     return;
   }
-
-  sql = "UPDATE prufungen SET Prufung_Name = '"+prufName.value.trim().toLowerCase()+"', Teilnehmerzahl = '"+teilnehmer.value+"', Standardsemester = '"+standardsemester.value+"', Prüfungsstatus = '"+prüfungsstatus.value+"', Bemerkung = '"+bemerkungen.value.trim()+"', Hilfsmittel = '"+hilfsmittel.value.trim()+"', Pflichtprüfung = '"+(pflichtprufcheck.checked ? 1 : 0)+"', Prüfungsart = '"+prufArt.value+"', Dauer = '"+prufDauer.value+"' WHERE Prufung_ID = '"+this.getAttribute("data-id")+"'"
-  console.log("sql: ", sql)
-  db.query(sql, function(err, results){
-    if(err) throw err;
-
-  })
-
-  studsems = dataliststudsem.children;
-  anwesende = datalistanwesen.children;
-  Array.from(studsems).forEach((studsem) => {
-    if(!studsem.selected){
-      sql2 = "DELETE FROM prufungstudsemverbindung WHERE Prufung_ID = '"+this.getAttribute("data-id")+"' AND Studiengangssemester_ID = '"+extractID(studsem)+"'"
-      db.query(sql2, function(err, results){
+  dialogs.confirm("Prüfung wirklich ändern?", ok =>{
+    if(ok === true){
+      sql = "UPDATE prufungen SET Prufung_Name = '"+prufName.value.trim().toLowerCase()+"', Teilnehmerzahl = '"+teilnehmer.value+"', Standardsemester = '"+standardsemester.value+"', Prüfungsstatus = '"+prüfungsstatus.value+"', Bemerkung = '"+bemerkungen.value.trim()+"', Hilfsmittel = '"+hilfsmittel.value.trim()+"', Pflichtprüfung = '"+(pflichtprufcheck.checked ? 1 : 0)+"', Prüfungsart = '"+prufArt.value+"', Dauer = '"+prufDauer.value+"' WHERE Prufung_ID = '"+this.getAttribute("data-id")+"'"
+      console.log("sql: ", sql)
+      db.query(sql, function(err, results){
         if(err) throw err;
 
       })
-    }else{
-      var this2 = this;
-      sql6 = "SELECT 1 FROM prufungstudsemverbindung WHERE Prufung_ID = '"+this.getAttribute("data-id")+"' AND Studiengangssemester_ID = '"+extractID(studsem)+"'";
-      db.query(sql6, function(err, results){
-        if(err) throw err;
-        if(results.length === 0){
-          sql7 = "INSERT INTO prufungstudsemverbindung (Prufung_ID, Studiengangssemester_ID) VALUES ('"+this2.getAttribute("data-id")+"', '"+extractID(studsem)+"')";
-          db.query(sql7, function(err, results){
+
+      studsems = dataliststudsem.children;
+      anwesende = datalistanwesen.children;
+      Array.from(studsems).forEach((studsem) => {
+        if(!studsem.selected){
+          sql2 = "DELETE FROM prufungstudsemverbindung WHERE Prufung_ID = '"+this.getAttribute("data-id")+"' AND Studiengangssemester_ID = '"+extractID(studsem)+"'"
+          db.query(sql2, function(err, results){
             if(err) throw err;
 
           })
-        }
+        }else{
+          var this2 = this;
+          sql6 = "SELECT 1 FROM prufungstudsemverbindung WHERE Prufung_ID = '"+this.getAttribute("data-id")+"' AND Studiengangssemester_ID = '"+extractID(studsem)+"'";
+          db.query(sql6, function(err, results){
+            if(err) throw err;
+            if(results.length === 0){
+              sql7 = "INSERT INTO prufungstudsemverbindung (Prufung_ID, Studiengangssemester_ID) VALUES ('"+this2.getAttribute("data-id")+"', '"+extractID(studsem)+"')";
+              db.query(sql7, function(err, results){
+                if(err) throw err;
+
+              })
+            }
+        })
+      }
     })
-  }
-})
 
 
-  Array.from(anwesende).forEach((anweseder) => {
-    if(!anweseder.selected){
-      sql3 = "DELETE FROM prufunganwesendeverbindung WHERE Prufung_ID = '"+this.getAttribute("data-id")+"' AND Anwesende_ID = '"+extractID(anweseder)+"'";
-      db.query(sql3, function(err, results){
-        if(err) throw err;
-      })
-    }else{
-      var this2 = this;
-      sql4 = "SELECT 1 FROM prufunganwesendeverbindung WHERE Prufung_ID = '"+this.getAttribute("data-id")+"' AND Anwesende_ID = '"+extractID(anweseder)+"'";
-      db.query(sql4, function(err, results){
-        if(err) throw err;
-        if(results.length === 0){
-          sql5 = "INSERT INTO prufunganwesendeverbindung (Prufung_ID, Anwesende_ID) VALUES ('"+this2.getAttribute("data-id")+"', '"+extractID(anweseder)+"')";
-          db.query(sql5, function(err, results){
+      Array.from(anwesende).forEach((anweseder) => {
+        if(!anweseder.selected){
+          sql3 = "DELETE FROM prufunganwesendeverbindung WHERE Prufung_ID = '"+this.getAttribute("data-id")+"' AND Anwesende_ID = '"+extractID(anweseder)+"'";
+          db.query(sql3, function(err, results){
             if(err) throw err;
+          })
+        }else{
+          var this2 = this;
+          sql4 = "SELECT 1 FROM prufunganwesendeverbindung WHERE Prufung_ID = '"+this.getAttribute("data-id")+"' AND Anwesende_ID = '"+extractID(anweseder)+"'";
+          db.query(sql4, function(err, results){
+            if(err) throw err;
+            if(results.length === 0){
+              sql5 = "INSERT INTO prufunganwesendeverbindung (Prufung_ID, Anwesende_ID) VALUES ('"+this2.getAttribute("data-id")+"', '"+extractID(anweseder)+"')";
+              db.query(sql5, function(err, results){
+                if(err) throw err;
+
+              })
+            }
 
           })
         }
-
       })
+
+
+    dialogs.alert("Prüfung erfolgreich geändert.")
+    setTimeout(() => {
+      window.close();
+    }, 1000)
     }
   })
 
 
-dialogs.alert("Prüfung erfolgreich geändert. Prüfungsübersicht neuladen zum aktualisieren (strg + r)")
-setTimeout(() => {
-  window.close();
-}, 2000)
+
 }
 
 

@@ -1,7 +1,7 @@
 
 /*------------------------------FORM-----------------------------------------------------------------------*/
 
-form{
+/* form{
 	margin: 1vh;
 	margin-top: 5vh;
 	display: flex;
@@ -10,7 +10,7 @@ form{
 }
 
 
-#buttonEintragen, #buttonLöschen{
+#buttonEintragen1, #buttonLöschen1{
 	height: 2.8vh;
 	min-height: 1.5em;
 	width: 8vw;
@@ -18,7 +18,7 @@ form{
 	color: white;
 }
 
-#buttonEintragen:hover, #buttonLöschen:hover{
+#buttonEintragen1:hover, #buttonLöschen1:hover{
 	border: 1px solid #F46EBE;
 	color: #F46EBE;
-}
+} */

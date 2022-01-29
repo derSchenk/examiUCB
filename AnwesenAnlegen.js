@@ -3,12 +3,12 @@ var dialogs = Dialogs(opts={});
 
 const inputvorname = document.querySelector('#vorname');
 const inputnachname = document.querySelector('#nachname');
-const buttonEintragen = document.querySelector('#buttonEintragen')
+const buttonEintragen = document.querySelector('#buttonEintragen2')
 const formulare = document.querySelectorAll('.formular')
 
-const inputlöschen = document.querySelector('#löschen')
-const alleElemente = document.querySelector('#alleElemente')
-const buttonLöschen = document.querySelector('#buttonLöschen')
+const inputlöschen = document.querySelector('#löschen2')
+const alleElemente = document.querySelector('#alleElemente2')
+const buttonLöschen = document.querySelector('#buttonLöschen2')
 
 
 //----------Formular-Datenspeicher---------
@@ -49,7 +49,7 @@ function loadFormData(e){
     });
     dialogs.alert(vorname+" "+nachname+" hinzugefügt")
     //Fomular leeren, damit nicht doppelt hinzugefügt wird.
-    formulare[0].reset()
+    formulare[2].reset()
 
   }else {dialogs.alert("Vor- und Nachname benötigt")}
 }
@@ -79,17 +79,23 @@ inputlöschen.addEventListener('focus', loadElements, false);
 function deleteElement(e){
   e.preventDefault();
   if(inputlöschen.value.trim() != ""){
-    var toDelete1 = inputlöschen.value.split("[");
-    toDelete = toDelete1[1].split("]");
-    toDelete = toDelete[0];
-    var sql = "DELETE FROM anwesende WHERE Anwesende_ID='"+toDelete+"';";
-    db.query(sql, function(err, results){
-    	if(err) throw err;
-    	dialogs.alert(toDelete1[0]+" gelöscht.");
+    dialogs.confirm("Soll der Anwesende wirklich gelöscht werden? Es können Abhängigkeiten bestehen.", ok => {
+      if(ok === true){
+        var toDelete1 = inputlöschen.value.split("[");
+        toDelete = toDelete1[1].split("]");
+        toDelete = toDelete[0];
+        var sql = "DELETE FROM anwesende WHERE Anwesende_ID='"+toDelete+"';";
+        db.query(sql, function(err, results){
+        	if(err) throw err;
+        	dialogs.alert(toDelete1[0]+" gelöscht.");
 
-      });
+          });
+          inputlöschen.value = "";
+      }
+    })
+
     } else dialogs.alert("Kein Element gewählt")
-    inputlöschen.value = "";
+
   }
 
 buttonLöschen.addEventListener("click", deleteElement, false);

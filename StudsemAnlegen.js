@@ -3,12 +3,12 @@ var dialogs = Dialogs(opts={});
 
 var inputStudiengang = document.querySelector('#studiengang');
 var inputSemester = document.querySelector('#semester');
-var buttonEintragen = document.querySelector('#buttonEintragen')
-const formulare = document.querySelectorAll('.formular')
+var buttonEintragen1 = document.querySelector('#buttonEintragen1')
+const formulare1 = document.querySelectorAll('.formular')
 
-const inputlöschen = document.querySelector('#löschen')
-const alleElemente = document.querySelector('#alleElemente')
-const buttonLöschen = document.querySelector('#buttonLöschen')
+const inputlöschen1 = document.querySelector('#löschen1')
+const alleElemente1 = document.querySelector('#alleElemente1')
+const buttonLöschen1 = document.querySelector('#buttonLöschen1')
 
 
 //----------Formular-Datenspeicher---------
@@ -23,18 +23,18 @@ var semester;
 
 //Datenbankverbindung herstellen---------------
 
-  const mysql = require('mysql');
-	const db = mysql.createConnection({
-			host: "localhost",
-			user: "root",
-			password: "",
-			database: "verwaltungssoftware"
-	});
-
-		db.connect(function(err){
-			if(err) throw err;
-			console.log("Verbindung zur Datenbank hergestellt.")
-		});
+  // const mysql = require('mysql');
+	// const db = mysql.createConnection({
+	// 		host: "localhost",
+	// 		user: "root",
+	// 		password: "",
+	// 		database: "verwaltungssoftware"
+	// });
+  //
+	// 	db.connect(function(err){
+	// 		if(err) throw err;
+	// 		console.log("Verbindung zur Datenbank hergestellt.")
+	// 	});
 
 //----------------------------------------------------------
 function loadFormData(e){
@@ -51,16 +51,16 @@ function loadFormData(e){
     });
     dialogs.alert(studiengang+" "+semester+" hinzugefügt")
     //Fomular leeren, damit nicht doppelt hinzugefügt wird.
-    formulare[0].reset()
+    formulare1[4].reset()
 
   }else {dialogs.alert("Studiengang und Semesternummer benötigt");}
 }
-buttonEintragen.addEventListener('click', loadFormData, false)
+buttonEintragen1.addEventListener('click', loadFormData, false)
 
 function loadElements(e){
   e.preventDefault();
-  while (alleElemente.firstChild) {
-    alleElemente.firstChild.remove()
+  while (alleElemente1.firstChild) {
+    alleElemente1.firstChild.remove()
   }
   var sql = 'SELECT * FROM studiengangssemester ORDER BY Studiengang, Semesternummer ASC';
   db.query(sql, function(err, results){
@@ -70,27 +70,33 @@ function loadElements(e){
     	const nOption = document.createElement('option');
     	nOption.value =result["Studiengang"] +" "+ result["Semesternummer"]+"   ["+result["Studiengangssemester_ID"]+"]";
       //alleStudsems.push(result["Nachname"] +" "+ result["Vorname"]+" ["+result["Anwesende_ID"]+"]");
-    	alleElemente.appendChild(nOption);
+    	alleElemente1.appendChild(nOption);
     });
   });
 }
-inputlöschen.addEventListener('focus', loadElements, false);
+inputlöschen1.addEventListener('focus', loadElements, false);
 
 function deleteElement(e){
   e.preventDefault();
-  if(inputlöschen.value.trim() != ""){
-    var toDelete1 = inputlöschen.value.split("[");
-    toDelete = toDelete1[1].split("]");
-    toDelete = toDelete[0];
-    console.log(toDelete);
-    var sql = "DELETE FROM studiengangssemester WHERE Studiengangssemester_ID='"+toDelete+"';";
-    db.query(sql, function(err, results){
-    	if(err) throw err;
-    	dialogs.alert(toDelete1[0]+" gelöscht.");
+  if(inputlöschen1.value.trim() != ""){
+    dialogs.confirm("Soll das Studiengangssemester wirklich gelöscht werden? Es können Abhängigkeiten bestehen.", ok => {
+      if(ok === true){
+        var toDelete1 = inputlöschen1.value.split("[");
+        toDelete = toDelete1[1].split("]");
+        toDelete = toDelete[0];
+        console.log(toDelete);
+        var sql = "DELETE FROM studiengangssemester WHERE Studiengangssemester_ID='"+toDelete+"';";
+        db.query(sql, function(err, results){
+        	if(err) throw err;
+        	dialogs.alert(toDelete1[0]+" gelöscht.");
 
-      });
+          });
+        inputlöschen1.value = "";
+      }
+    })
+
     } else dialogs.alert("Kein Element gewählt")
-    inputlöschen.value = "";
+
   }
 
-buttonLöschen.addEventListener("click", deleteElement, false);
+buttonLöschen1.addEventListener("click", deleteElement, false);

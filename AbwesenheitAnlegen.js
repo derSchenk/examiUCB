@@ -86,18 +86,23 @@ function elementLöschen(e){
     dialogs.alert("Kein Objekt gewählt")
     return
   }
-  if (inputTyp2.value == "Anwesender") {
-    sql = "DELETE FROM anwesende_belegung WHERE Belegungs_ID='"+optionList.value+"'"
-  } else sql = "DELETE FROM studiengangssemester_belegung WHERE Belegungs_ID='"+optionList.value+"'"
-  db.query(sql, function(err, results) {
-    if(err) throw err;
-  });
-  dialogs.alert("Element erfolgreich gelöscht")
-  inputObjekt2.value = "";
-  while (vorhandeneAbwesenheiten.firstChild) {
-    vorhandeneAbwesenheiten.firstChild.remove()
-  }
-  loadAbwesenheiten()
+  dialogs.confirm("Soll die Abwesenheit wirklich gelöscht werden? Es können Abhängigkeiten bestehen.", ok => {
+    if(ok === true){
+      if (inputTyp2.value == "Anwesender") {
+        sql = "DELETE FROM anwesende_belegung WHERE Belegungs_ID='"+optionList.value+"'"
+      } else sql = "DELETE FROM studiengangssemester_belegung WHERE Belegungs_ID='"+optionList.value+"'"
+      db.query(sql, function(err, results) {
+        if(err) throw err;
+      });
+      dialogs.alert("Element erfolgreich gelöscht")
+      inputObjekt2.value = "";
+      while (vorhandeneAbwesenheiten.firstChild) {
+        vorhandeneAbwesenheiten.firstChild.remove()
+      }
+      loadAbwesenheiten()
+    }
+  })
+
 }
 buttonLöschen.addEventListener("click", elementLöschen)
 
@@ -328,10 +333,13 @@ function datenbank(sql, objektID){
     db.query(sql2, function(err2, results2) {
       try {
         if (err2) throw err2;
+        dialogs.alert("Abwesenheit erfolgreich eingetragen. Seite lädt neu...")
+        setTimeout(()=>{
+          location.reload()
+        }, 1000)
       } catch {
         dialogs.alert("Möglicherweise existiert dieses Objekt nicht oder ein anderer Fehler ist aufgetreten");
         console.log(err2);
-        return
       }
     })
   });
@@ -440,7 +448,6 @@ function loadFormData(e) {
       var sql = sqlabfragen(datumVon, datumBis, timeslots, daysnew);
       datenbank(sql, objektID);
 
-    dialogs.alert("Abwesenheit erfolgreich eingetragen")
 
 
 }

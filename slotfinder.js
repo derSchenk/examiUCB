@@ -2,6 +2,7 @@ var Dialogs = require('dialogs');
 var dialogs = Dialogs(opts = {});
 const lodash = require("lodash");
 const mysql = require('mysql');
+var feiertagejs = require('feiertagejs');
 
 const formular = document.querySelectorAll('#formular');
 const buttonSend = document.querySelector('input[type="submit"]');
@@ -36,7 +37,20 @@ var dragID = 1;
 //--------------------------------------------
 
 const datumInput = document.querySelector("#kws");
-datumInput.value = transformDateToHTML(new Date());
+
+function setDate(){
+  today = new Date();
+
+  if(today.getDay() === 0){
+    today.setDate(today.getDate()+1)
+  }
+  if(today.getDay() === 6){
+    today.setDate(today.getDate()+2)
+  }
+  datumInput.value = transformDateToHTML(today);
+}
+setDate();
+
 
 //Datenbankverbindung herstellen---------------
 
@@ -97,7 +111,7 @@ const plus = document.querySelector("#plus");
 function addDate(){
 
   if(datumInput2.value == ""){
-    datumInput2.value = transformDateToHTML(new Date());
+    setDate()
   }
   var datum = new Date(datumInput2.value)
   if(datum.getDay() == 5){
@@ -112,7 +126,7 @@ plus.addEventListener("click", addDate);
 const minus = document.querySelector("#minus");
 function subDate(){
   if(datumInput2.value == ""){
-    datumInput2.value = transformDateToHTML(new Date());
+    setDate();
   }
   var datum = new Date(datumInput2.value)
   if(datum.getDay() == 1){
@@ -142,7 +156,7 @@ function setVisible(e) {
 
 
   loadRooms();
-
+  checkDate();
 
   //Statt hidden könnte auch Display = none gesetzt werden? Besser?
 }
@@ -1270,7 +1284,26 @@ var sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, T
 } //komplette funktion
 
 
+function checkDate(){
 
+  var today = new Date();
+  today.setHours(0);
+  var thisdate = new Date(datumInput2.value);
+
+  if(feiertagejs.isHoliday(thisdate, 'RP')){
+    console.log(feiertagejs.getHolidayByDate(thisdate, 'RP'))
+    dialogs.alert("Dieser Tag könnte ein Feiertag sein: " + feiertagejs.getHolidayByDate(thisdate, 'RP').name)
+  }
+
+
+  if(today > thisdate){
+    console.log("hier bin ich")
+    dialogs.alert("Hinweis: Dieses Datum liegt in der Vergangenheit.")
+
+
+  }
+
+}
 
 
 

@@ -48,6 +48,9 @@ function loadFormData(e){
     	if(err) throw err;
     });
     dialogs.alert(vorname+" "+nachname+" hinzugefügt")
+    setTimeout(() => {
+      dialogs.cancel();
+    }, 2000)
     //Fomular leeren, damit nicht doppelt hinzugefügt wird.
     formulare[2].reset()
 
@@ -88,6 +91,9 @@ function deleteElement(e){
         db.query(sql, function(err, results){
         	if(err) throw err;
         	dialogs.alert(toDelete1[0]+" gelöscht.");
+          setTimeout(() => {
+            dialogs.cancel();
+          }, 2000)
 
           });
           inputlöschen.value = "";

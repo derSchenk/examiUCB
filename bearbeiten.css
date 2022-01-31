@@ -7,6 +7,11 @@
   height: 3.2vh;
 }
 
+#verantwortlicher{
+	margin-left: 2vw;
+}
+
+
 #prüfungsstatus{
 	margin-left: -0.5vw;
 	margin-right: 2vw;

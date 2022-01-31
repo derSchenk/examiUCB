@@ -1,7 +1,6 @@
 var Dialogs = require('dialogs');
 var dialogs = Dialogs(opts={});
-var PdfPrinter = require('pdfmake');
-var printer = new PdfPrinter();
+
 var fs = require('fs');
 const mysql = require('mysql');
 
@@ -25,6 +24,9 @@ const standardsemester = document.querySelector("#standardsemester")
 const pflichtprufcheck = document.querySelector("#pflichtprufcheck")
 const bemerkungen = document.querySelector("#bemerkungen")
 const hilfsmittel = document.querySelector("#hilfsmittel")
+
+const bachelor = document.querySelector('#BM');
+var prufer = document.querySelector('#verantwortlicher');
 
 var alleAnwesen = [];
 var alleStudsems = [];
@@ -78,6 +80,8 @@ prufArt.addEventListener("change", changeTeilnehmer);
       } else pflichtprufcheck.checked = false
       hilfsmittel.value = results[0]["Hilfsmittel"];
       bemerkungen.value = results[0]["Bemerkung"]
+      bachelor.value = results[0]["B_M"];
+      prufer.value = results[0]["Verantwortlicher"];
 
 
     })
@@ -256,9 +260,15 @@ function updatePruf(e){
     dialogs.alert("Bezeichnung der Prüfung darf nicht leer sein. Keine Änderung vorgenommen");
     return;
   }
+
+  var prufer2 = document.querySelector('#verantwortlicher');
+  console.log(prufer2.value);
+  var prufer3 = prufer2.value.split(" [")[0].trim().toLowerCase();
+  console.log(prufer3);
+
   dialogs.confirm("Prüfung wirklich ändern?", ok =>{
     if(ok === true){
-      sql = "UPDATE prufungen SET Prufung_Name = '"+prufName.value.trim().toLowerCase()+"', Teilnehmerzahl = '"+teilnehmer.value+"', Standardsemester = '"+standardsemester.value+"', Prüfungsstatus = '"+prüfungsstatus.value+"', Bemerkung = '"+bemerkungen.value.trim()+"', Hilfsmittel = '"+hilfsmittel.value.trim()+"', Pflichtprüfung = '"+(pflichtprufcheck.checked ? 1 : 0)+"', Prüfungsart = '"+prufArt.value+"', Dauer = '"+prufDauer.value+"' WHERE Prufung_ID = '"+this.getAttribute("data-id")+"'"
+      sql = "UPDATE prufungen SET Prufung_Name = '"+prufName.value.trim().toLowerCase()+"', Teilnehmerzahl = '"+teilnehmer.value+"', Standardsemester = '"+standardsemester.value+"', Prüfungsstatus = '"+prüfungsstatus.value+"', Bemerkung = '"+bemerkungen.value.trim()+"', Hilfsmittel = '"+hilfsmittel.value.trim()+"', Pflichtprüfung = '"+(pflichtprufcheck.checked ? 1 : 0)+"', Prüfungsart = '"+prufArt.value+"', Dauer = '"+prufDauer.value+"', B_M = '"+bachelor.value+"', Verantwortlicher = '"+prufer3+"' WHERE Prufung_ID = '"+this.getAttribute("data-id")+"'"
       console.log("sql: ", sql)
       db.query(sql, function(err, results){
         if(err) throw err;
@@ -342,6 +352,9 @@ function hatTermin(id){
     if(err) throw err;
     if(results.length > 0){
       dialogs.alert("Diese Prüfung hat bereits einen Termin und ist deswegen nur eingeschränkt bearbeitbar.")
+      setTimeout(() => {
+        dialogs.cancel();
+      }, 2000)
       const nochange = document.querySelectorAll(".nochange");
       console.log(nochange);
       for(item of nochange){

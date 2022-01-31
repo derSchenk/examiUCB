@@ -1,8 +1,9 @@
 var Dialogs = require('dialogs');
 var dialogs = Dialogs(opts={});
-var PdfPrinter = require('pdfmake');
-var printer = new PdfPrinter();
+const { jsPDF } = require("jspdf"); // will automatically load the node version
 var fs = require('fs');
+var feiertagejs = require('feiertagejs');
+
 
 const liststudsem = document.querySelector('#liststudsem');
 const listanwesen = document.querySelector('#listanwesen');
@@ -31,6 +32,9 @@ const formulare = document.querySelectorAll('.formular')
 const inputlöschen = document.querySelector('#löschen')
 const alleElemente = document.querySelector('#alleElemente')
 const buttonLöschen = document.querySelector('#buttonLöschen')
+
+const bachelor = document.querySelector('#BM');
+var prufer = document.querySelector('#verantwortlicher');
 
 //Datenbankverbindung herstellen---------------
 
@@ -212,11 +216,17 @@ function loadFormData(e){
       }
     });
 
-    bemerkungen = inputBemerkungen.value.trim();
-    hilfsmittel = inputHilfsmittel.value.trim();
+    var bemerkungen = inputBemerkungen.value.trim();
+    var hilfsmittel = inputHilfsmittel.value.trim();
+
+
+    prufer = prufer.value.split(" [")[0].trim();
+
+
+
 
     //Formulardatenspeicher in Datenbank prufungen schreiben
-    var sql = "INSERT INTO prufungen (Prufung_Name, Teilnehmerzahl, Standardsemester, Prüfungsstatus, Bemerkung, Hilfsmittel, Prüfungsart, Pflichtprüfung, Dauer) VALUES ('"+bezeichnungPruf+"','"+teilnehmer+"','"+standardsemester+"','"+prufungsstatus+"','"+bemerkungen+"','"+hilfsmittel+"','"+prufungsart+"','"+checkboxpflicht+"','"+dauer+"');";
+    var sql = "INSERT INTO prufungen (Prufung_Name, Teilnehmerzahl, Standardsemester, Prüfungsstatus, Bemerkung, Hilfsmittel, Prüfungsart, Pflichtprüfung, Dauer, B_M, Verantwortlicher) VALUES ('"+bezeichnungPruf+"','"+teilnehmer+"','"+standardsemester+"','"+prufungsstatus+"','"+bemerkungen+"','"+hilfsmittel+"','"+prufungsart+"','"+checkboxpflicht+"','"+dauer+"','"+bachelor.value+"', '"+prufer.toLowerCase()+"')";
     db.query(sql, function(err, results){
     	if(err) throw err;
     	primaryKey = results["insertId"]; //sql Insert query liefert Primärschlüssel der einfügten Prüfung zurück
@@ -241,15 +251,18 @@ function loadFormData(e){
 
 
     });
-    dialogs.alert(bezeichnungPruf + " hinzugefügt")
+    dialogs.alert(bezeichnungPruf + " hinzugefügt. Seite lädt neu...")
+    setTimeout(()=>{
+      location.reload()
+    }, 1000)
     //Fomular leeren, damit nicht doppelt hinzugefügt wird.
-    while (dataliststudsem.firstChild) {
-      dataliststudsem.firstChild.remove()
-  }
-    while (datalistanwesen.firstChild) {
-        datalistanwesen.firstChild.remove()
-    }
-    formulare[0].reset()
+  //   while (dataliststudsem.firstChild) {
+  //     dataliststudsem.firstChild.remove()
+  // }
+  //   while (datalistanwesen.firstChild) {
+  //       datalistanwesen.firstChild.remove()
+  //   }
+  //   formulare[0].reset()
 
   }else {dialogs.alert("Bezeichnung der Prüfung benötigt");}
 }
@@ -286,10 +299,13 @@ function deleteElement(e){
       var sql = "DELETE FROM prufungen WHERE Prufung_ID='"+toDelete+"';";
       db.query(sql, function(err, results){
       	if(err) throw err;
-      	dialogs.alert(toDelete1[0]+" gelöscht.");
+      	dialogs.alert(toDelete1[0]+" gelöscht. Seite lädt neu...");
 
+        setTimeout(()=>{
+          location.reload()
+        }, 1000)
         });
-        inputlöschen.value = "";
+
     }
   })
 
@@ -393,41 +409,80 @@ function terminlösen(e){
 
 function dateHausarbeiten(e){
   e.preventDefault();
-  if(this.parentElement.firstChild.value === ""){
+  console.log("knopfparenchild ", this.parentElement.parentElement.firstChild)
+  if(this.parentElement.parentElement.firstChild.value === ""){
     dialogs.alert("Bitte Datum und Uhrzeit eingeben. Falls Abgabe ganztägig möglich, bitte 23:59 Uhr eintragen")
     return;
   }
-  var datum = this.parentElement.firstChild.value
+  var datum = this.parentElement.parentElement.firstChild.value
+
+
   if(new Date(datum) < new Date()){
     dialogs.alert("Termin liegt in der Vergangenheit. Keine Eintragung vorgenommen");
     return;
   }
+
   datum = datum.split("T");
 
-  var update = datum[0]+"T"+datum[1];
-  var sqlxyz = "UPDATE prufungen SET Letzter_Termin = '"+update+"' WHERE prufungen.Prufung_ID = '"+this.getAttribute("data-prufid")+"'";
-  db.query(sqlxyz, function(err, results2) {
-    if(err) throw err
-  });
+  var thisdate = new Date(datum[0]);
+  if(feiertagejs.isHoliday(thisdate, 'RP')){
+    console.log(feiertagejs.getHolidayByDate(thisdate, 'RP'))
+    dialogs.confirm("Dieser Tag könnte ein Feiertag sein: " + feiertagejs.getHolidayByDate(thisdate, 'RP').name+"\n Trotzdem eintragen?", ok => {
+      if(ok === true){
+        var update = datum[0]+"T"+datum[1];
+        var sqlxyz = "UPDATE prufungen SET Letzter_Termin = '"+update+"' WHERE prufungen.Prufung_ID = '"+this.getAttribute("data-prufid")+"'";
+        db.query(sqlxyz, function(err, results2) {
+          if(err) throw err
+        });
 
-  sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + datum[1] + "','" + datum[0] + "','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0')"
-  var tempthis = this;
-  db.query(sql, function(err, results){
-    console.log(this);
-    if(err) throw err;
-    console.log(results)
+        sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + datum[1] + "','" + datum[0] + "','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0')"
+        var tempthis = this;
+        db.query(sql, function(err, results){
+          console.log(this);
+          if(err) throw err;
+          console.log(results)
 
-    sql2 = "INSERT INTO prunfung_termin_verb (Prufung_ID, Termin_ID) VALUES ('"+tempthis.getAttribute("data-prufid")+"','"+results["insertId"]+"')"
-    db.query(sql2, function(err, results){
-      if(err) throw err;
-      dialogs.alert("Termin erfolgreich der Hausarbeit zugeordnet. Seite wird neu geladen...")
-      tempthis.parentElement.firstChild.setAttribute("readonly", "readonly");
-      tempthis.remove();
-      setTimeout(()=>{
-        location.reload()
-      }, 1000)
+          sql2 = "INSERT INTO prunfung_termin_verb (Prufung_ID, Termin_ID) VALUES ('"+tempthis.getAttribute("data-prufid")+"','"+results["insertId"]+"')"
+          db.query(sql2, function(err, results){
+            if(err) throw err;
+            dialogs.alert("Termin erfolgreich der Hausarbeit zugeordnet. Seite wird neu geladen...")
+            tempthis.parentElement.parentElement.firstChild.setAttribute("readonly", "readonly");
+            tempthis.remove();
+            setTimeout(()=>{
+              location.reload()
+            }, 1000)
+          })
+        });
+      }
     })
-  });
+  }else{
+    var update = datum[0]+"T"+datum[1];
+    var sqlxyz = "UPDATE prufungen SET Letzter_Termin = '"+update+"' WHERE prufungen.Prufung_ID = '"+this.getAttribute("data-prufid")+"'";
+    db.query(sqlxyz, function(err, results2) {
+      if(err) throw err
+    });
+
+    sql = "INSERT INTO prufung_termin (Beginn, Datum, TS1, TS2, TS3, TS4, TS5, TS6, TS7, TS8, TS9, TS10, TS11, TS12, TS13, TS14, TS15, TS16, TS17, TS18, TS19, TS20, TS21) VALUES ('" + datum[1] + "','" + datum[0] + "','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0')"
+    var tempthis = this;
+    db.query(sql, function(err, results){
+      console.log(this);
+      if(err) throw err;
+      console.log(results)
+
+      sql2 = "INSERT INTO prunfung_termin_verb (Prufung_ID, Termin_ID) VALUES ('"+tempthis.getAttribute("data-prufid")+"','"+results["insertId"]+"')"
+      db.query(sql2, function(err, results){
+        if(err) throw err;
+        dialogs.alert("Termin erfolgreich der Hausarbeit zugeordnet. Seite wird neu geladen...")
+        tempthis.parentElement.parentElement.firstChild.setAttribute("readonly", "readonly");
+        tempthis.remove();
+        setTimeout(()=>{
+          location.reload()
+        }, 1000)
+      })
+    });
+  }
+
+
 }
 
 function bearbeitPruf(e){
@@ -477,7 +532,43 @@ function prufungsUbersicht(){
         spalte.appendChild(text);
         zeile.appendChild(spalte);
         spalte = document.createElement("td");
-        text = document.createTextNode(result["Beginn"])
+
+        //Berechne ende
+        var tempdate = new Date();
+        tempdate.setHours(0);
+        tempdate.setMinutes(0);
+        tempdate.setSeconds(0);
+        var starthours = result["Beginn"].split(":")[0];
+        var startminutes = result["Beginn"].split(":")[1];
+        if(starthours[0] === "0"){
+          starthours = starthours.slice(1);
+        }
+        if(startminutes[0] === "0"){
+          startminutes = startminutes.slice(1);
+        }
+        tempdate.setMinutes(parseInt(startminutes));
+        tempdate.setHours(parseInt(starthours));
+        tempdate.setMinutes(tempdate.getMinutes()+parseInt(result["Dauer"]));
+
+        var endminutes = tempdate.getMinutes();
+        var endhours = tempdate.getHours();
+
+        if(endminutes < 10){
+          endminutes = "0"+endminutes;
+        }
+        if(endhours < 10){
+          endhours = "0"+endhours;
+        }
+
+        var endtime = " - "+endhours+":"+endminutes;
+        //
+
+
+
+
+
+
+        text = document.createTextNode(result["Beginn"] + (result["Prüfungsart"] !== "Hausarbeit" ? endtime : ""))
         spalte.appendChild(text);
         zeile.appendChild(spalte);
         spalte = document.createElement("td");
@@ -498,7 +589,7 @@ function prufungsUbersicht(){
         zeile.appendChild(spalte);
         spalte = document.createElement("td");
         spalte.classList.add("kleinerText");
-        ttext = document.createTextNode(result["Bemerkung"].slice(0,99)+(result["Bemerkung"].length > 100 ? "[...]" : ""))
+        text = document.createTextNode(result["Bemerkung"].slice(0,99)+(result["Bemerkung"].length > 100 ? "[...]" : ""))
         spalte.setAttribute("title", result["Bemerkung"]);
         spalte.appendChild(text);
         zeile.appendChild(spalte);
@@ -521,6 +612,7 @@ function prufungsUbersicht(){
         spalte.appendChild(text);
         zeile.appendChild(spalte);
         spalte = document.createElement("td");
+        spalte.style.textAlign = "center"
         var knopf = document.createElement("button")
         knopf.setAttribute("data-prufID", result["Prufung_ID"]);
         knopf.setAttribute("data-terminID", result["Termin_ID"]);
@@ -577,14 +669,16 @@ for (result of results){
   spalte = document.createElement("td");
   if(result["Prüfungsart"] !== "Hausarbeit"){
     console.log("Letzter_Termin: ", result)
-    if(result["Letzter_Termin"] === ""){
+    if(result["Letzter_Termin"] === null){
       text = document.createTextNode("k.A.")
       spalte.appendChild(text);
     } else{
+      var divi = document.createElement("div");
       text = document.createTextNode(returnWeekdayString(new Date(result["Letzter_Termin"].split("T")[0]))+" "+transformDateToHTML(new Date(result["Letzter_Termin"].split("T")[0])))
-      spalte.appendChild(text);
-      spalte.setAttribute("title", "Termin obsolet")
-      spalte.classList.add("abgelaufen")
+      divi.appendChild(text);
+      divi.setAttribute("title", "Vorheriger Termin der Prüfung (obsolet)")
+      divi.classList.add("abgelaufen")
+      spalte.appendChild(divi);
     }
   }else{
     var input =  document.createElement("input");
@@ -599,15 +693,18 @@ for (result of results){
     knopf.classList.add("dateknopf");
     text = document.createTextNode("+")
     knopf.appendChild(text);
-    spalte.appendChild(knopf);
-    if(result["Letzter_Termin"] !== ""){
+    var container = document.createElement("div")
+    container.appendChild(knopf)
+    container.style.textAlign = "center"
+    spalte.appendChild(container);
+    if(result["Letzter_Termin"] !== null){
       var divi = document.createElement("div");
       text = document.createTextNode(returnWeekdayString(new Date(result["Letzter_Termin"].split("T")[0]))+" "+transformDateToHTML(new Date(result["Letzter_Termin"].split("T")[0])))
       divi.appendChild(text);
       divi.classList.add("hausarbeitdatum")
       spalte.appendChild(divi);
-      divi.setAttribute("title", "Termin obsolet")
-      spalte.classList.add("abgelaufen")
+      divi.setAttribute("title", "Vorheriger Termin der Prüfung (obsolet)")
+      divi.classList.add("abgelaufen")
     }
 
 
@@ -617,14 +714,16 @@ for (result of results){
 
 
   spalte = document.createElement("td");
-  if(result["Letzter_Termin"] === ""){
+  if(result["Letzter_Termin"] === null){
     text = document.createTextNode("k.A.")
     spalte.appendChild(text);
   } else{
+    var divi = document.createElement("div");
     text = document.createTextNode(result["Letzter_Termin"].split("T")[1])
-    spalte.appendChild(text);
-    spalte.setAttribute("title", "Termin obsolet")
-    spalte.classList.add("abgelaufen")
+    divi.appendChild(text);
+    spalte.setAttribute("title", "Vorheriger Termin der Prüfung (obsolet)")
+    divi.classList.add("abgelaufen")
+    spalte.appendChild(divi)
   }
   zeile.appendChild(spalte);
   spalte = document.createElement("td");
@@ -698,3 +797,36 @@ function deleteOldies(){
   });
 }
 deleteOldies();
+
+
+
+// Default export is a4 paper, portrait, using millimeters for units
+// function downloadPDFWithjsPDF() {
+//   const doc = new jsPDF({
+//     orientation: "landscape",
+//     unit: "mm"
+//   });
+//
+//   doc.html(document.querySelector('#tablePruf'), {
+//     callback: function (doc) {
+//       doc.save('test.pdf');
+//     },
+//     margin: [0, 10000, 20,0],
+//     x: 0,
+//     y: 0,
+//   });
+// }
+
+
+
+function toPDF(){
+
+     window.print();
+
+}
+document.querySelector("#pdf").addEventListener("click", toPDF);
+
+
+var test = new Date();
+test.setMinutes(test.getMinutes()+90);
+console.log(test)

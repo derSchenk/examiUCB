@@ -9,6 +9,7 @@ const formulare1 = document.querySelectorAll('.formular')
 const inputlöschen1 = document.querySelector('#löschen1')
 const alleElemente1 = document.querySelector('#alleElemente1')
 const buttonLöschen1 = document.querySelector('#buttonLöschen1')
+const abkürzung = document.querySelector('#abkürzung')
 
 
 //----------Formular-Datenspeicher---------
@@ -40,16 +41,19 @@ var semester;
 function loadFormData(e){
   e.preventDefault();
   //Formulardaten in Formulardaten-Speicher schreiben
-  if (inputStudiengang.value.trim() != "" && inputSemester.value.trim() != ""){
+  if (inputStudiengang.value.trim() != "" && inputSemester.value.trim() != "" && abkürzung.value.trim() != ""){
     studiengang = inputStudiengang.value.trim().toLowerCase();
     semester = inputSemester.value.trim();
 
     //Formulardatenspeicher in Datenbank prufungen schreiben
-    var sql = "INSERT INTO studiengangssemester (Studiengang, Semesternummer) VALUES ('"+studiengang+"','"+semester+"');";
+    var sql = "INSERT INTO studiengangssemester (Studiengang, Semesternummer, Abkurzung) VALUES ('"+studiengang+"','"+semester+"','"+abkürzung.value.trim().toUpperCase()+"');";
     db.query(sql, function(err, results){
     	if(err) throw err;
     });
     dialogs.alert(studiengang+" "+semester+" hinzugefügt")
+    setTimeout(() => {
+      dialogs.cancel();
+    }, 2000)
     //Fomular leeren, damit nicht doppelt hinzugefügt wird.
     formulare1[4].reset()
 
@@ -89,6 +93,9 @@ function deleteElement(e){
         db.query(sql, function(err, results){
         	if(err) throw err;
         	dialogs.alert(toDelete1[0]+" gelöscht.");
+          setTimeout(() => {
+            dialogs.cancel();
+          }, 2000)
 
           });
         inputlöschen1.value = "";

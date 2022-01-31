@@ -91,6 +91,17 @@
       <div class="wrapper">
         <div>
           <input spellcheck="false" type="number" min=0 step="30" max="600" id="Dauer"  title="Dauer der Prüfung in Minuten" placeholder="Dauer der Prüfung">
+          <select id="BM" title="Bachelor oder Master" class="waehlen abstand">
+            <option value="Bachelor">Bachelor</option>
+            <option value="Master">Master</option>
+            <option value="Sonstiges">Sonstiges</option>
+          </select>
+          <input  class="abstand" spellcheck="false" autocomplete="off" id="verantwortlicher" list="listanwesen" placeholder="Hauptverantwortliche/r" title="Hauptverantwortliche/r">
+        </div>
+      </div>
+      <div class="wrapper">
+        <div>
+
           <input spellcheck="false" id="buttonAddPruf" type="submit" value="Prüfung eintragen" >
         </div>
       </div>
@@ -114,7 +125,7 @@
   <hr>
   <h2>Prüfungsübersicht:</h2>
   <div id=tablediv>
-    <table>
+    <table id="tablePruf">
       <thead>
         <tr>
           <th>PrüfungsID</th>
@@ -138,6 +149,7 @@
       </tbody>
     </table>
   </div>
+  <button id="pdf">Create PDF</button>
   <hr>
   <div id="footer">
     <form>
@@ -153,6 +165,7 @@
       </div>
     </form>
   </div>
+
   </body>
   <script>
 	require('./renderer.js');

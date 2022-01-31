@@ -94,7 +94,10 @@ function elementLöschen(e){
       db.query(sql, function(err, results) {
         if(err) throw err;
       });
-      dialogs.alert("Element erfolgreich gelöscht")
+      dialogs.alert("Element erfolgreich gelöscht");
+      setTimeout(() => {
+        dialogs.cancel()
+      }, 2000)
       inputObjekt2.value = "";
       while (vorhandeneAbwesenheiten.firstChild) {
         vorhandeneAbwesenheiten.firstChild.remove()

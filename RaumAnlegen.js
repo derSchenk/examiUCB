@@ -11,6 +11,7 @@ const alleElemente3 = document.querySelector('#alleElemente3')
 const buttonLöschen3 = document.querySelector('#buttonLöschen3')
 
 
+
 //----------Formular-Datenspeicher---------
 var raum;
 var kapazität;
@@ -54,6 +55,9 @@ function loadFormData(e){
     	if(err) throw err;
     });
     dialogs.alert(raum+" hinzugefügt")
+    setTimeout(() => {
+      dialogs.cancel();
+    }, 2000)
     //Fomular leeren, damit nicht doppelt hinzugefügt wird.
     formulare3[0].reset()
 
@@ -93,6 +97,9 @@ function deleteElement(e){
         db.query(sql, function(err, results){
         	if(err) throw err;
         	dialogs.alert(toDelete1[0]+" gelöscht.");
+          setTimeout(() => {
+            dialogs.cancel();
+          }, 2000)
 
           });
         inputlöschen3.value = "";

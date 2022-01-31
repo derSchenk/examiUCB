@@ -2,14 +2,15 @@
 
 /*------------------------------FORM-----------------------------------------------------------------------*/
 
+
+
 form{
 	margin: 1vh;
 	margin-top: 5vh;
 }
 
-#Dauer{
-	width: 31.5vw;
-	margin-right: 11vw;
+.abstand{
+	margin-left: 0.41vw;
 }
 
 #pflichtprufcheck{
@@ -100,7 +101,8 @@ th{
 
 table{
 	margin-top: 5vh;
-	font-size: max(0.8vw, 12px); */
+	font-size: max(0.7vw, 0.27cm); */
+
 }
 #tablediv{
 	width: 100%;
@@ -125,13 +127,10 @@ table{
 }
 
 .dateknopf{
-	margin-left: 4vw;
 	margin-top: 0.2vh;
 }
 
-.löschknopf{
-	margin-left: 0.8vw;
-}
+
 
 .bearbeitenbutton{
 	cursor: pointer;
@@ -142,12 +141,12 @@ table{
 }
 
 .kleinerText{
-	font-size: max(0.6vw, 12px);
+	font-size: max(0.5vw, 0.27cm);
 }
 
 .abgelaufen{
-	color: #8d1371;
 	text-decoration: line-through;
+	opacity: 0.5;
 }
 
 .hausarbeitdatum{
@@ -155,4 +154,31 @@ table{
 	margin-bottom: 0.5vh;
 	padding-top: 0.5vh;
 	border-top: 1px dashed black;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #tablePruf, #tablePruf * {
+    visibility: visible;
+  }
+  #tablePruf {
+    position: absolute;
+    left: 0;
+    top: 0;
+		width: 29.7cm;
+		-webkit-print-color-adjust: exact;
+
+  }
+	th{
+		/* background-color: #5EBA7D; */
+		color: black;
+		background-color: #95F0B6 !important;
+		border: 2px solid black;
+    -webkit-print-color-adjust: exact;
+	}
+
+
+	@page {size: landscape}
 }

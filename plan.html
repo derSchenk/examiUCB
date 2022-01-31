@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>examiUCB</title>
+	<link rel="stylesheet" href="prüfungAnlegen.css">
+  <script src="plan.js" async></script>
+
+  <link rel="stylesheet" href="commonStyle.css">
+  <link rel="stylesheet" href="plan.css">
+  </head>
+  <body>
+    <table id="tablePruf">
+      <thead>
+        <td colspan="9" id="uberschrift"></td>
+        <tr>
+          <th>Datum</th>
+          <th>Uhrzeit</th>
+          <th>Gruppe</th>
+          <th>B./M.</th>
+          <th>Veranstaltung</th>
+          <th>Prüfer</th>
+          <th>Raum</th>
+          <th>Hilfsmittel</th>
+          <th>Bemerkungen</th>
+        </tr>
+      </thead>
+      <tbody id="tabellenkörper">
+      </tbody>
+      <tfoot>
+        <td colspan="9" id="unterschrift">
+          Für alle Prüfungen ist eine Anmeldung im QIS wie auch das Mitführen des Studien- und eines Lichtbildausweises erforderlich!
+</td>
+      </tfoot>
+    </table>
+  </body>
+  <script>
+	require('./renderer.js');
+  </script>
+</html>

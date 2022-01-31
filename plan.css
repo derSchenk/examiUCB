@@ -1,0 +1,60 @@
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #tablePruf, #tablePruf *{
+    visibility: visible;
+  }
+
+
+  #tablePruf {
+    position: absolute;
+    left: 0;
+    top: 0;
+		width: 29.7cm;
+    border-collapse: collapse;
+		-webkit-print-color-adjust: exact;
+
+  }
+	th{
+		/* background-color: #5EBA7D; */
+		color: white;
+		background-color: black;
+		border: none;
+    -webkit-print-color-adjust: exact;
+    border-radius: 0;
+	}
+
+
+
+  tr:nth-child(odd) {
+    background-color: white;
+
+  }
+  tr:nth-child(even) {
+    background-color: #D5D5D5;
+  }
+
+  td{
+    padding-top: 0.25cm;
+    padding-bottom: 0.25cm;
+  }
+
+  #uberschrift, #unterschrift{
+    font-size: 0.5cm;
+    border: none;
+    background-color: white;
+  }
+
+   #unterschrift{
+    font-size: 0.2cm;
+    border: none;
+    background-color: white;
+  }
+
+
+
+	@page {size: landscape}
+
+
+}

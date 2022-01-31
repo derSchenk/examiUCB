@@ -101,16 +101,18 @@ th{
 
 table{
 	margin-top: 5vh;
-	font-size: max(0.7vw, 0.27cm); */
-
+	font-size: max(0.7vw, 0.27cm);
+	border-collapse: collapse;
+	width: 100%;
 }
+
 #tablediv{
 	width: 100%;
 	overflow-x: scroll;
 }
 
 .datetimeHausarbeit{
-	width: 11vw;
+	width: 100%;
 	font-size: 0.7rem;
 }
 
@@ -132,12 +134,19 @@ table{
 
 
 
-.bearbeitenbutton{
+.bearbeitenbutton, #pdf{
 	cursor: pointer;
 }
-.bearbeitenbutton:hover{
+.bearbeitenbutton:hover, #pdf:hover{
 	color: #F46EBE;
-	border-color: #F46EBE;
+	border-color: 1px solid #F46EBE;
+}
+
+#pdf{
+	background-color: black;
+	color: white;
+	margin-left: 0.5vw;
+	margin-top: 0.5vh;
 }
 
 .kleinerText{
@@ -154,31 +163,5 @@ table{
 	margin-bottom: 0.5vh;
 	padding-top: 0.5vh;
 	border-top: 1px dashed black;
-}
 
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  #tablePruf, #tablePruf * {
-    visibility: visible;
-  }
-  #tablePruf {
-    position: absolute;
-    left: 0;
-    top: 0;
-		width: 29.7cm;
-		-webkit-print-color-adjust: exact;
-
-  }
-	th{
-		/* background-color: #5EBA7D; */
-		color: black;
-		background-color: #95F0B6 !important;
-		border: 2px solid black;
-    -webkit-print-color-adjust: exact;
-	}
-
-
-	@page {size: landscape}
 }

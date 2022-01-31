@@ -626,15 +626,17 @@ function prufungsUbersicht(){
 
         sql3 = "SELECT raum.Bezeichnung FROM prufung_termin, prufung_termin_raumverb, raum WHERE prufung_termin.Termin_ID = '"+result["Termin_ID"]+"' AND prufung_termin.Termin_ID = prufung_termin_raumverb.Termin_ID AND prufung_termin_raumverb.Raum_ID = raum.Raum_ID"
         db.query(sql3, function(err, results2){
-        spalte = document.createElement("td");
-          console.log("ngsl", results2);
-          var text2 = "";
-          for(result of results2){
-            text2 = text2 + result["Bezeichnung"]+" "
+          var spalte = document.createElement("td");
+          for(result2 of results2){
+
+            var text = document.createTextNode(result2["Bezeichnung"])
+            var br = document.createElement("br");
+            var nobr = document.createElement("nobr");
+            nobr.appendChild(text)
+            spalte.appendChild(nobr);
+            spalte.appendChild(br);
           }
-        text = document.createTextNode(text2);
-        spalte.appendChild(text);
-        zeile.appendChild(spalte);
+          zeile.appendChild(spalte)
       });
 
         tk.appendChild(zeile)
@@ -821,7 +823,7 @@ deleteOldies();
 
 function toPDF(){
 
-     window.print();
+     window.open("plan.html");
 
 }
 document.querySelector("#pdf").addEventListener("click", toPDF);

@@ -6,15 +6,15 @@
     visibility: visible;
   }
 
-
   #tablePruf {
     position: absolute;
     left: 0;
     top: 0;
-		width: 29.7cm;
+		/* width: 29.7cm; */
     border-collapse: collapse;
 		-webkit-print-color-adjust: exact;
-
+    font-family: arial;
+    letter-spacing: 0;
   }
 	th{
 		/* background-color: #5EBA7D; */
@@ -25,7 +25,13 @@
     border-radius: 0;
 	}
 
+.kleiner{
+  font-size: 0.22cm;
+}
 
+.dick{
+  font-weight: bold;
+}
 
   tr:nth-child(odd) {
     background-color: white;
@@ -33,26 +39,46 @@
   }
   tr:nth-child(even) {
     background-color: #D5D5D5;
+
+  }
+
+  tr{
+    border-top: none;
+    border-bottom: none;
   }
 
   td{
     padding-top: 0.25cm;
     padding-bottom: 0.25cm;
+    -moz-hyphens: auto;
+   -o-hyphens: auto;
+   -webkit-hyphens: auto;
+   -ms-hyphens: auto;
+   hyphens: auto;
   }
 
-  #uberschrift, #unterschrift{
+  #uberschrift, #unterschrift,#unterschrift2{
     font-size: 0.5cm;
     border: none;
     background-color: white;
   }
 
-   #unterschrift{
+   #unterschrift, #unterschrift2{
     font-size: 0.2cm;
     border: none;
     background-color: white;
   }
 
+  #unterschrift2{
+    padding:0;
+  }
 
+
+
+  .uhr{
+  	font-weight: normal;
+  	font-size: 0.23cm;
+  }
 
 	@page {size: landscape}
 

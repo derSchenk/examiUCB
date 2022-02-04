@@ -1085,6 +1085,12 @@ function extractDauer(item){
 
 function plausiblecheck(e){
   e.preventDefault();
+
+  if(falschePosition()){
+    dialogs.alert("Fehlerhafte Positionierung eines Tokens. Keine Eintragung möglich.");
+    return;
+  }
+
   var semester;
   var dauer;
   const prüfungen = datalistpruf.children;
@@ -1093,14 +1099,17 @@ function plausiblecheck(e){
 
   Array.from(prüfungen).forEach((prüfung) =>{
     if(prüfung.selected){
-      if(semester === undefined){
-        semester = extractSemester(prüfung);
+      if(extractSemester(prüfung) !== "Immer"){
+        if(semester === undefined){
+          semester = extractSemester(prüfung);
+        }
+        if(semester !== extractSemester(prüfung)){
+          checkerSem = true;
+        }
       }
+
       if(dauer === undefined){
         dauer = extractDauer(prüfung);
-      }
-      if(semester !== extractSemester(prüfung)){
-        checkerSem = true;
       }
       if(dauer !== extractDauer(prüfung)){
         checkerDauer = true;
@@ -1157,9 +1166,9 @@ db.query(sql0, function(err, results0) {
     results0.forEach((result0)=>{
 
       if(pp === "N"){
-        sql = "SELECT * FROM studiengangssemester, prufungstudsemverbindung, prufungen, prunfung_termin_verb, prufung_termin WHERE studiengangssemester.Studiengangssemester_ID = prufungstudsemverbindung.Studiengangssemester_ID AND prufungstudsemverbindung.Prufung_ID = prufungen.Prufung_ID AND studiengangssemester.Studiengangssemester_ID = '"+result0["Studiengangssemester_ID"]+"' AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID AND prufung_termin.Datum = '"+transformDateToHTML(thisdate)+"'"
+        sql = "SELECT * FROM studiengangssemester, prufungstudsemverbindung, prufungen, prunfung_termin_verb, prufung_termin WHERE studiengangssemester.Studiengangssemester_ID = prufungstudsemverbindung.Studiengangssemester_ID AND prufungstudsemverbindung.Prufung_ID = prufungen.Prufung_ID AND (studiengangssemester.Studiengang = '"+result0["Studiengang"]+"' OR  studiengangssemester.Abkurzung = '"+result0["Abkurzung"]+"') AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID AND prufung_termin.Datum = '"+transformDateToHTML(thisdate)+"'"
       } else{
-        sql = "SELECT * FROM studiengangssemester, prufungstudsemverbindung, prufungen, prunfung_termin_verb, prufung_termin WHERE studiengangssemester.Studiengangssemester_ID = prufungstudsemverbindung.Studiengangssemester_ID AND prufungstudsemverbindung.Prufung_ID = prufungen.Prufung_ID AND studiengangssemester.Studiengangssemester_ID = '"+result0["Studiengangssemester_ID"]+"' AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID AND (prufung_termin.Datum = '"+transformDateToHTML(thisdate)+"' OR prufung_termin.Datum ='"+transformDateToHTML(nextdate)+"' OR prufung_termin.Datum ='"+transformDateToHTML(prevdate)+"')"
+        sql = "SELECT * FROM studiengangssemester, prufungstudsemverbindung, prufungen, prunfung_termin_verb, prufung_termin WHERE studiengangssemester.Studiengangssemester_ID = prufungstudsemverbindung.Studiengangssemester_ID AND prufungstudsemverbindung.Prufung_ID = prufungen.Prufung_ID AND (studiengangssemester.Studiengang = '"+result0["Studiengang"]+"' OR  studiengangssemester.Abkurzung = '"+result0["Abkurzung"]+"') AND prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID AND (prufung_termin.Datum = '"+transformDateToHTML(thisdate)+"' OR prufung_termin.Datum ='"+transformDateToHTML(nextdate)+"' OR prufung_termin.Datum ='"+transformDateToHTML(prevdate)+"')"
       }
 
       db.query(sql, function(err, results) {
@@ -1199,10 +1208,7 @@ ladeVerplanteAnwesende();
 
 function eintragen(){
 
-  if(falschePosition()){
-    dialogs.alert("Fehlerhafte Positionierung eines Tokens. Keine Eintragung möglich.");
-    return;
-  }
+
 
   var prufungen = document.querySelectorAll("#datalistpruf option");
 

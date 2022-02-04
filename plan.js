@@ -1,11 +1,25 @@
 var Dialogs = require('dialogs');
 var dialogs = Dialogs(opts={});
-const { jsPDF } = require("jspdf"); // will automatically load the node version
-var fs = require('fs');
-var feiertagejs = require('feiertagejs');
 
-
-
+// "use strict";
+//
+// const hyphenopoly = require("hyphenopoly");
+//
+// const hyphenator = hyphenopoly.config({
+//     "require": ["de", "en-us"],
+//     "hyphen": "•",
+//     "exceptions": {
+//         "en-us": "en-han-ces"
+//     }
+// });
+//
+//
+//
+// async function hyphenate_de(text, element) {
+//     const hyphenateText = await hyphenator.get("de");
+//     var knoten = document.createTextNode(wordtolong(hyphenateText(text)))
+//     element.appendChild(knoten);
+// }
 
 const mysql = require('mysql');
 const db = mysql.createConnection({
@@ -47,6 +61,45 @@ tableheader();
 
 
 
+
+function ersterGroß(str){
+  strArr = str.split(" ");
+  strArr2 = []
+  for(var i = 0; i < strArr.length; i++){
+    var neu = strArr[i].slice(0,1).toUpperCase() + strArr[i].slice(1);
+    strArr[i] = neu;
+  }
+  return nachstrichGroß(strArr.join(" "));
+}
+function nachstrichGroß(str){
+  strArr = str.split("-");
+  strArr2 = []
+  for(var i = 0; i < strArr.length; i++){
+    var neu = strArr[i].slice(0,1).toUpperCase() + strArr[i].slice(1);
+    strArr[i] = neu;
+  }
+  return strArr.join("-");
+}
+// function wordtolong(str){  //nur zur absoluten sicherheit, damit die Drucktabelle unter keinen Umständen zerschossen wird.
+//   var strArr = str.split(" ");
+//   console.log(strArr[0].length);
+//     for(var i = 0; i < strArr.length; i++){
+//       if(strArr[i].replaceAll("•", "").length > 25 && !strArr[i].includes('-')){
+//         for(var p = parseInt(strArr[i].length/2); p < strArr[i].length; p++){
+//           if(strArr[i][p] === "•"){
+//             console.log("drinHurra");
+//             strArr[i][p] = strArr[i][p].replace("•", "-\n");
+//             break;
+//           }
+//         }
+//       }
+//       strArr[i] = strArr[i].replaceAll("•", "");
+//     }
+//     return strArr.join(" ");
+// }
+
+
+
 function prufungsUbersicht(){
   tk = document.querySelector("#tabellenkörper");
   sql = "SELECT * FROM prufungen, prunfung_termin_verb, prufung_termin WHERE prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID AND prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID ORDER BY Datum, Beginn, Prufung_Name"
@@ -58,9 +111,10 @@ function prufungsUbersicht(){
         const zeile = document.createElement("tr");
 
         var spalte = document.createElement("td");
+        spalte.classList.add("dick")
+        spalte.style.textAlign = "center";
         var text = document.createTextNode(transformDateToHTML(new Date(result["Datum"])))
         spalte.appendChild(text);
-        zeile.appendChild(spalte);
 
         //Berechne ende
         var tempdate = new Date();
@@ -92,11 +146,13 @@ function prufungsUbersicht(){
         var endtime = " - "+endhours+":"+endminutes;
         //
 
-        spalte = document.createElement("td");
+        var div = document.createElement("div");
+        div.classList.add("uhr");
         var nobr = document.createElement("nobr");
-        text = document.createTextNode(result["Beginn"] + (result["Prüfungsart"] !== "Hausarbeit" ? endtime : ""))
+        text = document.createTextNode((result["Beginn"] !== "23:59" ? result["Beginn"] + (result["Prüfungsart"] !== "Hausarbeit" ? endtime : "") : ""))
         nobr.appendChild(text);
-        spalte.appendChild(nobr);
+        div.appendChild(nobr);
+        spalte.appendChild(div);
         zeile.appendChild(spalte);
 
         var id = result["Prufung_ID"];
@@ -114,18 +170,26 @@ function prufungsUbersicht(){
           }
           zeile.appendChild(spalte);
 
-          var spalte = document.createElement("td");
-          var text = document.createTextNode(result["B_M"])
+          spalte = document.createElement("td");
+          text = document.createTextNode(result["B_M"])
           spalte.appendChild(text);
           zeile.appendChild(spalte);
 
-          var spalte = document.createElement("td");
-          var text = document.createTextNode(result["Prufung_Name"])
+          spalte = document.createElement("td");
+          text = document.createTextNode(result["Prufung_Name"].toUpperCase())
           spalte.appendChild(text);
+          if(result["Prüfungsstatus"] === "Vorleistung"){
+            var span = document.createElement("span")
+            span.classList.add("dick");
+            var text5 = document.createTextNode(" (VL)");
+            span.appendChild(text5);
+            spalte.appendChild(span);
+          }
+          spalte.innerHTML = spalte.innerHTML.replaceAll("\n", "<br>")
           zeile.appendChild(spalte);
 
-          var spalte = document.createElement("td");
-          var text = document.createTextNode(result["Verantwortlicher"])
+          spalte = document.createElement("td");
+          text = document.createTextNode(ersterGroß(result["Verantwortlicher"]))
           spalte.appendChild(text);
           zeile.appendChild(spalte);
 
@@ -145,14 +209,34 @@ function prufungsUbersicht(){
 
 
 
-          var spalte = document.createElement("td");
-          var text = document.createTextNode(result["Hilfsmittel"])
+          spalte = document.createElement("td");
+
+          text = document.createTextNode(result["Hilfsmittel"])
           spalte.appendChild(text);
+          spalte.innerHTML = spalte.innerHTML.replaceAll("\n", "<br>")
+          spalte.classList.add("kleiner");
           zeile.appendChild(spalte);
 
-          var spalte = document.createElement("td");
-          var text = document.createTextNode(result["Bemerkung"])
+          spalte = document.createElement("td");
+          text = document.createTextNode(result["Bemerkung"])
+          var dick = document.createElement("span");
+          dick.classList.add("dick");
+          if(result["Prüfungsart"] === "Hausarbeit"){
+            var text2 = document.createTextNode(" (HA)")
+            dick.appendChild(text2)
+          }
+          if(result["Prüfungsart"] === "mündliche Prüfung"){
+            var text4 = document.createTextNode(" (MP)")
+            dick.appendChild(text4)
+          }
+          if(result["Prüfungsstatus"] === "Nachprüfung"){
+            var text3 = document.createTextNode(" (NP)")
+            dick.appendChild(text3)
+          }
+          spalte.classList.add("kleiner");
           spalte.appendChild(text);
+          spalte.appendChild(dick);
+          spalte.innerHTML = spalte.innerHTML.replaceAll("\n", "<br>")
           zeile.appendChild(spalte);
           tk.appendChild(zeile)
         })

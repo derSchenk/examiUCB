@@ -4,6 +4,14 @@ const { jsPDF } = require("jspdf"); // will automatically load the node version
 var fs = require('fs');
 var feiertagejs = require('feiertagejs');
 
+var $ = require( "jquery" );
+var dt      = require( 'datatables.net' )( window, $ );
+var buttons = require( 'datatables.net-buttons' )( window, $ );
+
+const Mark = require('mark.js');
+
+
+
 
 const liststudsem = document.querySelector('#liststudsem');
 const listanwesen = document.querySelector('#listanwesen');
@@ -35,6 +43,9 @@ const buttonLöschen = document.querySelector('#buttonLöschen')
 
 const bachelor = document.querySelector('#BM');
 var prufer = document.querySelector('#verantwortlicher');
+const suche = document.querySelector("#suche")
+
+const ausblenden = document.querySelector("#ausblenden")
 
 //Datenbankverbindung herstellen---------------
 
@@ -299,7 +310,16 @@ function deleteElement(e){
       var sql = "DELETE FROM prufungen WHERE Prufung_ID='"+toDelete+"';";
       db.query(sql, function(err, results){
       	if(err) throw err;
-      	dialogs.alert(toDelete1[0]+" gelöscht. Seite lädt neu...");
+
+        var sql2 = "DELETE FROM prufung_termin WHERE Termin_ID NOT IN (SELECT Termin_ID FROM prunfung_termin_verb)"
+        db.query(sql2, function(err, results){
+          if(err) throw err;
+          dialogs.alert(toDelete1[0]+" gelöscht. Seite lädt neu...");
+          setTimeout(()=>{
+            location.reload()
+          }, 1000)
+        });
+
 
         setTimeout(()=>{
           location.reload()
@@ -392,7 +412,7 @@ function terminlösen(e){
 
 
 
-      var sql2 = "DELETE FROM prufung_termin WHERE NOT EXISTS(SELECT 1 FROM prunfung_termin_verb WHERE prunfung_termin_verb.Termin_ID = prufung_termin.Termin_ID)"
+      var sql2 = "DELETE FROM prufung_termin WHERE Termin_ID NOT IN (SELECT Termin_ID FROM prunfung_termin_verb)"
       db.query(sql2, function(err, results){
         if(err) throw err;
       });
@@ -525,7 +545,9 @@ function prufungsUbersicht(){
         spalte.setAttribute("data-prufID", result["Prufung_ID"]);
         spalte.classList.add("bearbeitenbutton");
         text = document.createTextNode(result["Prufung_Name"])
+        var text2 = document.createTextNode(" ("+result["B_M"].substring(0,1)+".)");
         spalte.appendChild(text);
+        spalte.appendChild(text2);
         zeile.appendChild(spalte);
         spalte = document.createElement("td");
         text = document.createTextNode(returnWeekdayString(result["Datum"])+" "+transformDateToHTML(result["Datum"]))
@@ -660,11 +682,13 @@ for (result of results){
 
   spalte = document.createElement("td");
   text = document.createTextNode(result["Prufung_Name"])
+  var text2 = document.createTextNode(" ("+result["B_M"].substring(0,1)+".)");
   spalte.addEventListener("click", bearbeitPruf)
   spalte.setAttribute("title","Prüfung bearbeiten");
   spalte.setAttribute("data-prufID", result["Prufung_ID"]);
   spalte.classList.add("bearbeitenbutton");
   spalte.appendChild(text);
+  spalte.appendChild(text2);
   zeile.appendChild(spalte);
 
 
@@ -778,6 +802,8 @@ for (result of results){
   zeile.appendChild(spalte);
 
   tk.appendChild(zeile)
+
+
 }
 
     });
@@ -799,6 +825,29 @@ function deleteOldies(){
   });
 }
 deleteOldies();
+
+
+
+var instance = new Mark(document.querySelector("#tablePruf tbody"));
+function searchTable(){
+  instance.unmark();
+  instance.mark(suche.value.trim())
+
+  var zeilen = document.querySelectorAll("#tablePruf tbody tr")
+  for(zeile of zeilen){
+    if(ausblenden.checked){
+      if(!zeile.textContent.toLowerCase().includes(suche.value.toLowerCase().trim())){
+        zeile.setAttribute("hidden", "hidden")
+      }else{
+        zeile.removeAttribute("hidden");
+      }
+    } else zeile.removeAttribute("hidden");
+  }
+}
+
+suche.addEventListener("keyup", searchTable);
+ausblenden.addEventListener("change", searchTable);
+
 
 
 

@@ -90,25 +90,49 @@ textarea{
 
 th, td{
 	border: 1px solid black;
-	border-radius: 3px;
+
+	hyphens: auto;  /*funktioniert nicht*/
 }
 
 th{
 	background-color: black;
 	color: white;
 	font-weight: normal;
+
 }
 
 table{
-	margin-top: 5vh;
 	font-size: max(0.7vw, 0.27cm);
 	border-collapse: collapse;
 	width: 100%;
+	overflow: scroll;
+
+
 }
 
 #tablediv{
-	width: 100%;
-	overflow-x: scroll;
+		position: sticky;
+		top: 0;
+		z-index: 12;
+    height: 75vh;
+    overflow: auto;
+		border-top: 2px solid white;
+}
+
+thead{
+	position: sticky;
+	top: 0;
+
+
+}
+
+mark{
+    background: #F3FE36;
+    color: black;
+}
+
+#suche{
+	width: 10vw;
 }
 
 .datetimeHausarbeit{
@@ -156,6 +180,12 @@ table{
 .abgelaufen{
 	text-decoration: line-through;
 	opacity: 0.5;
+}
+
+
+
+#untencontrol{
+	margin-top: 2vh;
 }
 
 .hausarbeitdatum{

@@ -9,7 +9,7 @@ const formulare3 = document.querySelectorAll('.formular')
 const inputlöschen3 = document.querySelector('#löschen3')
 const alleElemente3 = document.querySelector('#alleElemente3')
 const buttonLöschen3 = document.querySelector('#buttonLöschen3')
-
+const abkürzung = document.querySelector('#abkürzung')
 
 
 //----------Formular-Datenspeicher---------

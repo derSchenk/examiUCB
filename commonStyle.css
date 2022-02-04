@@ -47,7 +47,7 @@ a{
 	position: sticky;
 	top: 0;
 	z-index: 12;
-
+	border-bottom: 1px solid black;
 	}
 
 	.navitem:last-child{
@@ -154,4 +154,13 @@ form input, .auswahl, button{
 
 button, input[type=button], input[type=submit]{
 	cursor: pointer;
+}
+
+
+
+input[type=checkbox]{
+	vertical-align: middle;
+  position: relative;
+  bottom: 1px;
+	width: 1vw;
 }

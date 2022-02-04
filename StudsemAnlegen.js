@@ -9,7 +9,7 @@ const formulare1 = document.querySelectorAll('.formular')
 const inputlöschen1 = document.querySelector('#löschen1')
 const alleElemente1 = document.querySelector('#alleElemente1')
 const buttonLöschen1 = document.querySelector('#buttonLöschen1')
-const abkürzung = document.querySelector('#abkürzung')
+var abkürzung1 = document.querySelector('#abkürzung')
 
 
 //----------Formular-Datenspeicher---------
@@ -41,12 +41,12 @@ var semester;
 function loadFormData(e){
   e.preventDefault();
   //Formulardaten in Formulardaten-Speicher schreiben
-  if (inputStudiengang.value.trim() != "" && inputSemester.value.trim() != "" && abkürzung.value.trim() != ""){
+  if (inputStudiengang.value.trim() != "" && inputSemester.value.trim() != "" && abkürzung1.value.trim() != ""){
     studiengang = inputStudiengang.value.trim().toLowerCase();
     semester = inputSemester.value.trim();
 
     //Formulardatenspeicher in Datenbank prufungen schreiben
-    var sql = "INSERT INTO studiengangssemester (Studiengang, Semesternummer, Abkurzung) VALUES ('"+studiengang+"','"+semester+"','"+abkürzung.value.trim().toUpperCase()+"');";
+    var sql = "INSERT INTO studiengangssemester (Studiengang, Semesternummer, Abkurzung) VALUES ('"+studiengang+"','"+semester+"','"+abkürzung1.value.trim().toUpperCase()+"');";
     db.query(sql, function(err, results){
     	if(err) throw err;
     });
@@ -92,10 +92,15 @@ function deleteElement(e){
         var sql = "DELETE FROM studiengangssemester WHERE Studiengangssemester_ID='"+toDelete+"';";
         db.query(sql, function(err, results){
         	if(err) throw err;
-        	dialogs.alert(toDelete1[0]+" gelöscht.");
-          setTimeout(() => {
-            dialogs.cancel();
-          }, 2000)
+          var sql2 = "DELETE FROM studiengangssemester_belegung WHERE Belegungs_ID NOT IN (SELECT Belegungs_ID FROM studsembelegungverbindung)"
+          db.query(sql2, function(err, results){
+            if(err) throw err;
+            dialogs.alert(toDelete1[0]+" gelöscht.");
+            setTimeout(() => {
+              dialogs.cancel();
+            }, 2000)
+          });
+
 
           });
         inputlöschen1.value = "";

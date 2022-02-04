@@ -90,10 +90,14 @@ function deleteElement(e){
         var sql = "DELETE FROM anwesende WHERE Anwesende_ID='"+toDelete+"';";
         db.query(sql, function(err, results){
         	if(err) throw err;
-        	dialogs.alert(toDelete1[0]+" gelöscht.");
-          setTimeout(() => {
-            dialogs.cancel();
-          }, 2000)
+          var sql2 = "DELETE FROM anwesende_belegung WHERE Belegungs_ID NOT IN (SELECT Belegungs_ID FROM anwesendebelegungverbindung)"
+          db.query(sql2, function(err, results){
+            dialogs.alert(toDelete1[0]+" gelöscht.");
+            setTimeout(() => {
+              dialogs.cancel();
+            }, 2000)
+          });
+
 
           });
           inputlöschen.value = "";

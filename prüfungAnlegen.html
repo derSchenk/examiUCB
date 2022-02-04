@@ -32,7 +32,7 @@
         </div>
 
           <div id="pp">Pflichtprüfung:</div>
-          <input spellcheck="false" name="pp" id="pflichtprufcheck"type="checkbox" title="Pflichtprüfung:" checked>
+          <input spellcheck="false" name="pp" id="pflichtprufcheck" type="checkbox" title="Pflichtprüfung:" checked>
 
       </div><br>
       <div class="wrapper">
@@ -57,7 +57,7 @@
     				<select name="prüfungsstatus2" id="prüfungsstatus" title="prüfungsstatus" class="waehlen">
               <option value="Prüfung">Prüfung</option>
     				  <option value="Nachprüfung">Nachprüfung</option>
-    				  <option value="Vorlleistung">Vorleistung</option>
+    				  <option value="Vorleistung">Vorleistung</option>
     				</select>
     			</label>
     		</div>
@@ -124,7 +124,7 @@
   </div>
   <hr>
   <h2>Prüfungsübersicht:</h2>
-  <div id=tablediv>
+<div id=tablediv>
     <table id="tablePruf">
       <thead>
         <tr>
@@ -148,8 +148,12 @@
       <tbody id="tabellenkörper">
       </tbody>
     </table>
-  </div>
+</div>
+<div id="untencontrol">
   <button id="pdf">Drucke Prüfungsplan</button>
+  <input id="suche" placeholder="Suche in Tabelle">
+  <input type="checkbox" title="blende nicht zutreffende Prüfungen aus" id="ausblenden" checked>
+</div>
   <hr>
   <div id="footer">
     <form>

@@ -35,7 +35,7 @@ form{
 	border-style: none;
 
 }
-#buttonaddstudsem, #buttonaddanwesen {
+#buttonaddstudsem, #buttonaddanwesen, #buttonaddpruf {
 	width: 4.2vw;
 	margin-left: 0;
 	height: 2.8vh;
@@ -44,7 +44,19 @@ form{
 	background-color: black;
 }
 
-#buttonaddstudsem:hover,#buttonaddanwesen:hover {
+#divinputlistpruf{
+	margin-right: 3vw;
+}
+
+#datalistpruf{
+	width: 25.75vw;
+	margin-top: 0.5vh;
+	border-radius: 3px;
+	border-color: white;
+	border-style: none;
+}
+
+#buttonaddstudsem:hover,#buttonaddanwesen:hover, #buttonaddpruf:hover {
 	border: 1px solid #F46EBE;
 	color: #F46EBE;
 }
@@ -74,7 +86,7 @@ textarea{
 	border-style: none;
 }
 
-#buttonAddPruf,#buttonLöschen{
+#buttonAddPruf,#buttonLöschen, #buttongroupedit{
 	height: 2.8vh;
 	min-height: 1.5em;
 
@@ -83,10 +95,15 @@ textarea{
 	font-weight: bold;
 }
 
-#buttonAddPruf:hover, #buttonLöschen:hover{
+#buttonAddPruf:hover, #buttonLöschen:hover, #buttongroupedit:hover{
 	border: 1px solid #F46EBE;
 	color: #F46EBE;
 }
+
+#buttonAddPruf{
+	margin-left: 20.2vw;
+}
+
 
 th, td{
 	border: 1px solid black;

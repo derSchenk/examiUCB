@@ -7,6 +7,7 @@ var feiertagejs = require('feiertagejs');
 const formular = document.querySelectorAll('#formular');
 const buttonSend = document.querySelector('input[type="submit"]');
 const buttonAdd = document.querySelector('#buttonaddpruf');
+const buttonAdd2 = document.querySelector('#buttonaddpruf2');
 const prufungInput = document.querySelector('#inputlistprufinput');
 const datalistPruf = document.querySelector('#datalistpruf');
 const listprufungen = document.querySelector('#listprufungen');
@@ -21,6 +22,9 @@ const dragcontainer = document.querySelectorAll(".newdrag");
 const datumInput2 = document.querySelector("#kws");
 
 const buttonEintragen = document.querySelector("#buttonEintragen")
+
+const prüfungsgruppelist = document.querySelector("#prüfungsgruppelist")
+const prüfungsgruppeinput = document.querySelector('#prüfungsgruppe')
 
 
 //----------Formular-Datenspeicher--------- //Unnutz
@@ -69,6 +73,18 @@ db.connect(function(err) {
 
 //----------------------------------------------------------
 
+function loadgroups(){
+  const sql = "SELECT * FROM prufungsgruppe"
+  db.query(sql, function(err, results){
+    if(err) throw err;
+    results.forEach(result => {
+    	const nOption = document.createElement('option');
+    	nOption.value = result["Bezeichnung"].toLowerCase().trim()+" ["+result["Prufungsgruppen_ID"]+"]";
+    	prüfungsgruppelist.appendChild(nOption);
+    });
+  })
+}
+loadgroups();
 
 
 //Laden der Vorschläge für die Prüfungen--------------------
@@ -190,16 +206,84 @@ function addPrufung(e) {
 
     var dauer = eingabe.split("[D.: ");
     dauer = dauer[1].split("] [ID.");
-    if (dauer[0] != "null") {
+    // if (dauer[0] != "null") {
       if (parseInt(dauer[0]) >= parseInt(minutes.value)) {
         minutes.value = dauer[0];
       }
-    }
+    // }
+    var sql = "SELECT * FROM prufungen WHERE Prufung_ID = '"+extractID(datalistPruf.lastChild)+"' AND Prufungsgruppen_ID <> 'null'"
+    db.query(sql, function(err, results) {
+      if (err) throw err;
+      if(results.length > 0){
+        dialogs.confirm("Diese Prüfung gehört einer Prüfungsgruppe an. Möchten Sie die anderen Prüfungen auch laden?", ok =>{
+          if(ok === true){
+            var sql2 ="SELECT * FROM prufungen WHERE Prufungsgruppen_ID = '"+results[0]["Prufungsgruppen_ID"]+"' AND Prufung_ID NOT IN (SELECT Prufung_ID FROM prunfung_termin_verb)"
+            addprufgroup(1, sql2);
+          }
+        })
+      }
+    })
   }
   prufungInput.value = "";
 }
 
 buttonAdd.addEventListener('click', addPrufung, false);
+
+
+function addprufgroup(e, sql){
+  if(sql === undefined){
+    e.preventDefault();
+    sql = "SELECT * FROM prufungen WHERE Prufungsgruppen_ID = '"+extractIDString(prüfungsgruppeinput.value)+"' AND Prufung_ID NOT IN (SELECT Prufung_ID FROM prunfung_termin_verb)"
+  }
+  db.query(sql, function(err, results) {
+    if (err) throw err;
+    console.log(results)
+    results.forEach(result => {
+      if(result["Prüfungsart"] !== "Hausarbeit"){
+        var inhalt = result["Prufung_Name"].toLowerCase().trim() + " | " + result["Standardsemester"] + " | " + result["Prüfungsstatus"] + " [T.: " + result["Teilnehmerzahl"] + "]" + " [D.: " + result["Dauer"] + "]" + " [ID.: " + result["Prufung_ID"] + "]" + " [PP.: " + (result["Pflichtprüfung"] === 1 ? "J" : "N") + "]";
+        var vorhanden = datalistPruf.children;
+        var checker = true;
+        if (vorhanden.length > 0) {
+          Array.from(vorhanden).forEach(function(item) {
+            if (item.value.localeCompare(inhalt) == 0) {
+              checker = false;
+            }
+          });
+        }
+
+        if (checker === true) {
+          const neueOption = document.createElement('option');
+          neueOption.value = inhalt;
+          neueOption.selected = true;
+          const neuerText = document.createTextNode(inhalt);
+          neueOption.appendChild(neuerText);
+          datalistPruf.appendChild(neueOption);
+
+          var dauer = inhalt.split("[D.: ");
+          dauer = dauer[1].split("] [ID.");
+          // if (dauer[0] != "null") {
+            if (parseInt(dauer[0]) >= parseInt(minutes.value)) {
+              minutes.value = dauer[0];
+            }
+          // }
+        }
+      }
+    });
+  })
+  prüfungsgruppeinput.value = "";
+}
+buttonAdd2.addEventListener("click", addprufgroup)
+
+
+function extractIDString(item){
+  var temp = item.split("[");
+  var temp = temp[1].split("]");
+  return temp[0];
+}
+
+
+
+
 
 var vorher;
 

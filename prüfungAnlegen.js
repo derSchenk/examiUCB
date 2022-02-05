@@ -46,6 +46,17 @@ var prufer = document.querySelector('#verantwortlicher');
 const suche = document.querySelector("#suche")
 
 const ausblenden = document.querySelector("#ausblenden")
+const prüfungsgruppelist = document.querySelector("#prüfungsgruppelist")
+const prüfungsgruppe = document.querySelector("#prüfungsgruppe")
+const checkneugroup = document.querySelector("#checkneugroup")
+const checkneugroup2 = document.querySelector("#checkpgneu")
+
+const listprufungen = document.querySelector('#listprufungen');
+const prufungInput = document.querySelector('#inputlistprufinput2');
+const buttonAdd = document.querySelector('#buttonaddpruf');
+const datalistPruf = document.querySelector('#datalistpruf');
+const prufgroupedit = document.querySelector("#prufgroupedit");
+const buttongroupedit = document.querySelector("#buttongroupedit")
 
 //Datenbankverbindung herstellen---------------
 
@@ -74,6 +85,7 @@ const ausblenden = document.querySelector("#ausblenden")
 var alleStudsems = [];
 var alleAnwesen = [];
 var primaryKey = "";
+var allePrufungen = [];
 //--------------------------------------------
 
 //Laden der Vorschläge für die Studsems--------------------
@@ -103,7 +115,168 @@ db.query(sql, function(err, results){
   });
 });
 
+
+function bearbeitePG(e){
+  e.preventDefault();
+  var checker = false;
+  for(prufung of Array.from(datalistPruf.children)){
+
+    if(prufung.selected){
+      checker = true;
+      break;
+    }
+  }
+
+  if(prufgroupedit.value.trim() === ""){
+    dialogs.alert("Bezeichnung der Prüfung darf nicht leer sein.")
+    return
+  }
+  if(checkneugroup2.checked){
+    if(datalistPruf.children.length > 0 && checker){
+      console.log("so soll es sein")
+      sql = "INSERT INTO prufungsgruppe (Bezeichnung) VALUES ('"+prufgroupedit.value.trim().toLowerCase()+"')"
+      db.query(sql, function(err, results){
+      	if(err) throw err;
+        var prufungen = datalistPruf.children;
+        Array.from(prufungen).forEach(prufung =>{
+          if(prufung.selected){
+            var sql2 = "UPDATE prufungen SET Prufungsgruppen_ID = '"+results["insertId"]+"' WHERE Prufung_ID = '"+extractID2(prufung)+"'"
+            db.query(sql2, function(err, results){
+            	if(err) throw err;
+              var sql098 = "DELETE FROM prufungsgruppe WHERE Prufungsgruppen_ID NOT IN (SELECT Prufungsgruppen_ID FROM prufungen WHERE Prufungsgruppen_ID IS NOT NULL)"
+              db.query(sql098, function(err, results){
+                console.log(results)
+                if(err) throw err;
+              })
+            })
+          }
+        })
+        dialogs.alert("Prüfungsgruppe erfolgreich hinzugefügt. Lade Seite neu...");
+        setTimeout(() => {
+          location.reload();
+        }, 2000);
+      });
+    }else dialogs.alert("Es muss mindestens eine Prüfung zur neuen Gruppe hinzugefügt werden. Keine Eintragung vorgenommen")
+  }else{
+        var prufungen = datalistPruf.children;
+        Array.from(prufungen).forEach(prufung =>{
+          if(prufung.selected){
+            var sql2 = "UPDATE prufungen SET Prufungsgruppen_ID = '"+extractID(prufgroupedit.value)+"' WHERE Prufung_ID = '"+extractID2(prufung)+"'"
+            db.query(sql2, function(err, results){
+            	if(err) throw err;
+              var sql098 = "DELETE FROM prufungsgruppe WHERE Prufungsgruppen_ID NOT IN (SELECT Prufungsgruppen_ID FROM prufungen WHERE Prufungsgruppen_ID IS NOT NULL)"
+              db.query(sql098, function(err, results){
+                console.log(results)
+                if(err) throw err;
+              })
+            })
+          }else {
+            var sql2 = "UPDATE prufungen SET Prufungsgruppen_ID = NULL WHERE Prufung_ID = '"+extractID2(prufung)+"'"
+            db.query(sql2, function(err, results){
+            	if(err) throw err;
+              var sql098 = "DELETE FROM prufungsgruppe WHERE Prufungsgruppen_ID NOT IN (SELECT Prufungsgruppen_ID FROM prufungen WHERE Prufungsgruppen_ID IS NOT NULL)"
+              db.query(sql098, function(err, results){
+                console.log(results)
+                if(err) throw err;
+              })
+            })
+          }
+        })
+        dialogs.alert("Prüfungsgruppe erfolgreich hinzugefügt. Lade Seite neu...");
+        setTimeout(() => {
+          location.reload();
+        }, 2000);
+      // });
+  }
+
+}
+buttongroupedit.addEventListener("click", bearbeitePG)
+
 //-----------------------------------------------------------------
+
+function addPrufung(e) {
+  e.preventDefault();
+  var eingabe = prufungInput.value;
+  var checker = true;
+  var vorhanden = datalistPruf.children;
+  if (vorhanden.length > 0) {
+    Array.from(vorhanden).forEach(function(item) {
+      if (item.value.localeCompare(eingabe) == 0) {
+        checker = false;
+      }
+    });
+  }
+  console.log(prufungInput)
+  if (checker == true && eingabe.length > 0 && allePrufungen.includes(eingabe)) {
+    const neueOption = document.createElement('option');
+    neueOption.value = eingabe;
+    neueOption.selected = true;
+    const neuerText = document.createTextNode(eingabe);
+    neueOption.appendChild(neuerText);
+    datalistPruf.appendChild(neueOption);
+    }
+  prufungInput.value = "";
+}
+buttonAdd.addEventListener('click', addPrufung, false);
+
+
+
+
+
+
+
+
+function addprufgroup(e){
+    e.preventDefault()
+
+    while(datalistPruf.firstChild){
+      datalistPruf.firstChild.remove();
+    }
+
+    sql = "SELECT * FROM prufungen WHERE Prufungsgruppen_ID = '"+extractID(prufgroupedit.value)+"'"
+  db.query(sql, function(err, results) {
+    if (err) throw err;
+    console.log(results)
+    results.forEach(result => {
+      if(result["Prüfungsart"] !== "Hausarbeit"){
+        var inhalt = result["Prufung_Name"].toLowerCase().trim() + " | " + result["Standardsemester"] + " | " + result["Prüfungsstatus"] + " [T.: " + result["Teilnehmerzahl"] + "]" + " [D.: " + result["Dauer"] + "]" + " [ID.: " + result["Prufung_ID"] + "]" + " [PP.: " + (result["Pflichtprüfung"] === 1 ? "J" : "N") + "]";
+        var vorhanden = datalistPruf.children;
+        var checker = true;
+        if (vorhanden.length > 0) {
+          Array.from(vorhanden).forEach(function(item) {
+            if (item.value.localeCompare(inhalt) == 0) {
+              checker = false;
+            }
+          });
+        }
+
+        if (checker === true) {
+          const neueOption = document.createElement('option');
+          neueOption.value = inhalt;
+          neueOption.selected = true;
+          const neuerText = document.createTextNode(inhalt);
+          neueOption.appendChild(neuerText);
+          datalistPruf.appendChild(neueOption);
+        }
+      }
+    });
+  });
+}
+prufgroupedit.addEventListener('change', addprufgroup )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //Verschieben Studsem von Input zu Select--------------------------
 
 function addStudsem(e){
@@ -135,6 +308,72 @@ function addStudsem(e){
 buttonAddStudsem.addEventListener('click', addStudsem, false);
 
 //------------------------------------------------------------------------
+//laden der Prüfungsgruppen
+
+function loadgroups(){
+  const sql = "SELECT * FROM prufungsgruppe"
+  db.query(sql, function(err, results){
+    if(err) throw err;
+    results.forEach(result => {
+    	const nOption = document.createElement('option');
+    	nOption.value = result["Bezeichnung"].toLowerCase().trim()+" ["+result["Prufungsgruppen_ID"]+"]";
+    	prüfungsgruppelist.appendChild(nOption);
+    });
+  })
+}
+loadgroups();
+
+function ladePrufungen(){
+  prufungInput.value = "";
+  var sql = 'SELECT * FROM prufungen WHERE prufungen.Prufungsgruppen_ID IS NULL';
+  db.query(sql, function(err, results) {
+    if (err) throw err;
+    //console.log(results);
+    results.forEach(result => {
+      if(result["Prüfungsart"] !== "Hausarbeit"){
+        const nOption = document.createElement('option');
+        var inhalt = result["Prufung_Name"].toLowerCase().trim() + " | " + result["Standardsemester"] + " | " + result["Prüfungsstatus"] + " [T.: " + result["Teilnehmerzahl"] + "]" + " [D.: " + result["Dauer"] + "]" + " [ID.: " + result["Prufung_ID"] + "]" + " [PP.: " + (result["Pflichtprüfung"] === 1 ? "J" : "N") + "]";
+        nOption.value = inhalt;
+        allePrufungen.push(inhalt);
+        listprufungen.appendChild(nOption);
+      }
+    });
+  });
+}
+ladePrufungen();
+
+function checkboxneugroup(){
+  prüfungsgruppe.value = ""
+  if(!this.checked){
+    prüfungsgruppe.setAttribute("list", "prüfungsgruppelist");
+    prüfungsgruppe.setAttribute("placeholder", "zu bestehender Prüfungsgruppe hinzufügen")
+    prüfungsgruppe.setAttribute("title", "zu bestehender Prüfungsgruppe hinzufügen")
+  }else{
+    prüfungsgruppe.setAttribute("title", "Bezeichnung der neuen Prüfungsgruppe. Zu dieser wird die neue Prüfung automatisch hinzugefügt")
+    prüfungsgruppe.removeAttribute("list");
+    prüfungsgruppe.setAttribute("placeholder", "Bezeichnung der neuen Prüfungsgruppe eingeben")
+  }
+}
+checkneugroup.addEventListener("change", checkboxneugroup);
+
+
+function checkboxneugroup2(){
+  prufgroupedit.value = ""
+  while(datalistPruf.firstChild){
+    datalistPruf.firstChild.remove();
+  }
+  if(!this.checked){
+    prufgroupedit.setAttribute("list", "prüfungsgruppelist");
+    prufgroupedit.setAttribute("placeholder", "Prüfungsgruppe zum Bearbeiten wählen")
+    prufgroupedit.setAttribute("title", "Prüfungsgruppe zum Bearbeiten wählen")
+  }else{
+    prufgroupedit.setAttribute("title", "Bezeichnung der neuen Prüfungsgruppe.")
+    prufgroupedit.removeAttribute("list");
+    prufgroupedit.setAttribute("placeholder", "Bezeichnung der neuen Prüfungsgruppe eingeben")
+  }
+}
+checkneugroup2.addEventListener("change", checkboxneugroup2);
+
 //Verschieben Anwesenden von Input zu Select--------------------------
 
 function addAnwesen(e){
@@ -260,6 +499,23 @@ function loadFormData(e){
         });
       });
 
+      if(prüfungsgruppe.value.trim() !== ""){
+        if(checkneugroup.checked){
+          const sql534 = "INSERT INTO prufungsgruppe (Bezeichnung) VALUES ('"+prüfungsgruppe.value.trim()+"')"
+          db.query(sql534, function(err, results){
+          	if(err) throw err;
+            const sql309 = "UPDATE prufungen SET Prufungsgruppen_ID = '"+results["insertId"]+"' WHERE Prufung_ID = '"+primaryKey+"'"
+            db.query(sql309, function(err, results){
+            	if(err) throw err;
+            });
+          });
+        }else{
+          const sql309 = "UPDATE prufungen SET Prufungsgruppen_ID = '"+extractID(prüfungsgruppe.value)+"' WHERE Prufung_ID = '"+primaryKey+"'"
+          db.query(sql309, function(err, results){
+            if(err) throw err;
+          });
+        }
+      }
 
     });
     dialogs.alert(bezeichnungPruf + " hinzugefügt. Seite lädt neu...")
@@ -278,6 +534,17 @@ function loadFormData(e){
   }else {dialogs.alert("Bezeichnung der Prüfung benötigt");}
 }
 submitButton.addEventListener('click', loadFormData, false)
+
+function extractID(item){
+  var temp = item.split("[");
+  var temp = temp[1].split("]");
+  return temp[0];
+}
+function extractID2(item){
+  var temp = item.textContent.split("[ID.: ");
+  var temp = temp[1].split("]");
+  return temp[0];
+}
 //--------------------------------------------------------------------------------
 function loadElements(e){
   e.preventDefault();
@@ -320,6 +587,11 @@ function deleteElement(e){
           }, 1000)
         });
 
+        var sql098 = "DELETE FROM prufungsgruppe WHERE Prufungsgruppen_ID NOT IN (SELECT Prufungsgruppen_ID FROM prufungen)"
+        db.query(sql098, function(err, results){
+          if(err) throw err;
+        })
+
 
         setTimeout(()=>{
           location.reload()
@@ -339,6 +611,8 @@ function deleteElement(e){
   }
 
 buttonLöschen.addEventListener("click", deleteElement, false);
+
+
 
 function returnWeekdayString(datum){
   if(datum.getDay() == 0){
@@ -630,6 +904,10 @@ function prufungsUbersicht(){
         spalte.appendChild(text);
         zeile.appendChild(spalte);
         spalte = document.createElement("td");
+        text = document.createTextNode((result["Prufungsgruppen_ID"] === null ? "" : result["Prufungsgruppen_ID"]))
+        spalte.appendChild(text);
+        zeile.appendChild(spalte);
+        spalte = document.createElement("td");
         text = document.createTextNode(result["Termin_ID"])
         spalte.appendChild(text);
         zeile.appendChild(spalte);
@@ -786,6 +1064,10 @@ for (result of results){
   zeile.appendChild(spalte);
   spalte = document.createElement("td");
   text = document.createTextNode(janein(result["Pflichtprüfung"]))
+  spalte.appendChild(text);
+  zeile.appendChild(spalte);
+  spalte = document.createElement("td");
+  text = document.createTextNode((result["Prufungsgruppen_ID"] === null ? "" : result["Prufungsgruppen_ID"]))
   spalte.appendChild(text);
   zeile.appendChild(spalte);
   spalte = document.createElement("td");

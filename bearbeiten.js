@@ -62,6 +62,10 @@ prufArt.addEventListener("change", changeTeilnehmer);
 
 
 
+
+
+
+
   function loadDataPruf(id){
 
     console.log(id)

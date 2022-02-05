@@ -25,7 +25,7 @@
   	<form class="formular">
       <div class="wrapper">
         <div>
-    				<input spellcheck="false" name="inputlistpruf" autocomplete="off" id="inputlistprufinput" list="listprufungen" placeholder="Bezeichnung d. Prüfung*" title="Prüfung zum Slot hinzufügen">
+    				<input spellcheck="false" name="inputlistpruf" autocomplete="off" id="inputlistprufinput" placeholder="Bezeichnung d. Prüfung*" title="Prüfung zum Slot hinzufügen">
     		</div>
         <div>
             <input spellcheck="false" type="number" min="0" step="10" placeholder="Teilnehmer" id="teilnehmer" title="Erwartete Teilnehmer">
@@ -101,7 +101,9 @@
       </div>
       <div class="wrapper">
         <div>
-
+           <input spellcheck="false" name="inputlistpruf" placeholder="zu bestehender Prüfungsgruppe hinzufügen" autocomplete="off" id="prüfungsgruppe" list="prüfungsgruppelist" title="zu bestehender Prüfungsgruppe hinzufügen">
+          <datalist id="prüfungsgruppelist"></datalist>
+          <input type="checkbox" title="neue Prüfungsgruppe" id="checkneugroup">
           <input spellcheck="false" id="buttonAddPruf" type="submit" value="Prüfung eintragen" >
         </div>
       </div>
@@ -118,6 +120,31 @@
       </div>
       <div>
         <input id="buttonLöschen" type="submit" value="Prüfung löschen" >
+      </div>
+    </form>
+  </div>
+  </div>
+  <hr>
+  <h2>Prüfungsgruppe bearbeiten/hinzufügen:</h2>
+  <div class="zent">
+    <form class="formular">
+      <div class="wrapper">
+      <div>
+        <input type=checkbox id="checkpgneu" title="neue Prüfungsgruppe anlegen">
+        <input spellcheck="false" autocomplete="off" id="prufgroupedit" list="prüfungsgruppelist" placeholder="Prüfungsgruppe zum Bearbeiten wählen" title="Prüfungsgruppe zum Bearbeiten wählen">
+      </div>
+      <div id=divinputlistpruf>
+  			<label id="inputlistpruf">
+  				<input spellcheck="false" name="inputlistpruf" autocomplete="off" id="inputlistprufinput2" list="listprufungen" placeholder="Prüfung zum Hinzufügen wählen" title="Prüfung zum Hinzufügen wählen">
+  			</label>
+  			<datalist id="listprufungen"></datalist>
+  			<button id="buttonaddpruf">add</button><br>
+  			<label id="datalistpruf2">
+  				<select title="STRG gedrückt halten zum entwählen einzelner Prüfungen" name="datalistpruf2" id="datalistpruf" name="cars" size="4" multiple></select>
+  			</label>
+  		</div>
+      <div>
+        <input id="buttongroupedit" type="submit" value="Prüfungsgruppe bearbeiten" >
       </div>
     </form>
   </div>
@@ -140,6 +167,7 @@
           <th>Hilfsmittel</th>
           <th>Prüfungsart</th>
           <th>Pflicht?</th>
+          <th>PG</th>
           <th>TerminID</th>
           <th>Prüfung lösen?</th>
           <th>Räumlichkeit</th>

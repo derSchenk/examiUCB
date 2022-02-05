@@ -20,7 +20,11 @@ form{
 	overflow-x: scroll;
 }
 
-#inputlistprufinput{
+/* #prüfungsgruppe{
+	width: 17.3vw
+} */
+
+#inputlistprufinput, #prüfungsgruppe{
 	width: 13vw;
 	margin-right: -0.2vw;
 	border-radius: 3px;
@@ -28,7 +32,7 @@ form{
 	border-style: none;
 
 }
-#buttonaddpruf{
+#buttonaddpruf, #buttonaddpruf2{
 	width: 4.2vw;
 	margin-left: 0;
 	height: 2.8vh;
@@ -37,7 +41,7 @@ form{
 	background-color: black;
 }
 
-#buttonaddpruf:hover{
+#buttonaddpruf:hover, #buttonaddpruf2:hover{
 	border: 1px solid #F46EBE;
 	color: #F46EBE;
 }

@@ -111,6 +111,18 @@ buttonLöschen.addEventListener("click", elementLöschen)
 
 
 
+inputObjekt2.addEventListener('focus', emptyinput, loadObjects2);
+inputObjekt2.addEventListener('focus', loadObjects2);
+inputObjekt.addEventListener('focus', emptyinput);
+
+function emptyinput(e){
+  e.preventDefault()
+  e.target.value = "";
+}
+
+
+
+
 function loadAnwesende() {
   while (datalisteObjekte.firstChild) {
     datalisteObjekte.firstChild.remove()

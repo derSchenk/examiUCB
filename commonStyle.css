@@ -50,6 +50,8 @@ a{
 	border-bottom: 1px solid black;
 	}
 
+
+
 	.navitem:last-child{
 		border-right: 0;
 	}
@@ -154,6 +156,9 @@ form input, .auswahl, button{
 
 button, input[type=button], input[type=submit]{
 	cursor: pointer;
+	/* background-color: black;
+	border: 1px solid #F46EBE;
+	color: white;	 */
 }
 
 

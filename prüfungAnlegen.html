@@ -103,7 +103,7 @@
         <div>
            <input spellcheck="false" name="inputlistpruf" placeholder="zu bestehender Prüfungsgruppe hinzufügen" autocomplete="off" id="prüfungsgruppe" list="prüfungsgruppelist" title="zu bestehender Prüfungsgruppe hinzufügen">
           <datalist id="prüfungsgruppelist"></datalist>
-          <input type="checkbox" title="neue Prüfungsgruppe" id="checkneugroup">
+          <input type="checkbox" title="neue Prüfungsgruppe gründen" id="checkneugroup">
           <input spellcheck="false" id="buttonAddPruf" type="submit" value="Prüfung eintragen" >
         </div>
       </div>
@@ -154,15 +154,15 @@
 <div id=tablediv>
     <table id="tablePruf">
       <thead>
-        <tr>
-          <th>PrüfungsID</th>
+        <tr id="ubersicht">
+          <th>Prüf.ID</th>
           <th>Bezeichnung</th>
           <th>Datum</th>
           <th>Uhrzeit</th>
           <th>Dauer</th>
-          <th>Teilnehmer</th>
-          <th>Standardsemester</th>
-          <th>Prüfungssstatus</th>
+          <th>Teiln.</th>
+          <th>Standardsem.</th>
+          <th>Prüfungssstat.</th>
           <th>Bemerkung</th>
           <th>Hilfsmittel</th>
           <th>Prüfungsart</th>
@@ -170,7 +170,7 @@
           <th>PG</th>
           <th>TerminID</th>
           <th>Prüfung lösen?</th>
-          <th>Räumlichkeit</th>
+          <th>Raum</th>
         </tr>
       </thead>
       <tbody id="tabellenkörper">

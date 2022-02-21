@@ -2,6 +2,80 @@
 
 /*------------------------------FORM-----------------------------------------------------------------------*/
 
+#animation{
+	position: fixed;
+	width: 90vw;
+	height: 100%;
+	z-index: 3;
+	top: 11vh;
+	left: -88.5vw;
+	transition: 1s;
+
+	opacity: 20%;
+
+}
+
+#free, #tablediv{
+	display: flex;
+	justify-content: center;
+	margin: 3vh;
+}
+
+#tablediv{
+	display: flex;
+	justify-content: center;
+	margin: 3vh;
+	overflow: scroll;
+	height: 55vh;
+
+}
+
+#animation:hover{
+	left: 0;
+	z-index: 11;
+	background-color: white;
+	opacity: 100;
+	border-right: 2px solid black;
+}
+
+#kaptable{
+	border: 1px solid black;
+	border-collapse: collapse;
+overflow: auto;
+height: 55vh;
+width: 100%
+}
+
+#kaptable thead{
+	position: sticky;
+	top: 0;
+}
+
+.datadate:hover{
+	color: #F46EBE;
+	cursor: pointer;
+}
+
+#free input{
+	margin-right: 2vw;
+	border-radius: 3px;
+	border: 1px solid black;
+}
+
+#kaptable td  {
+	border: 1px solid black;
+	padding-left: 0.5vw;
+	padding-right: 0.5vw;
+}
+
+#kaptable th{
+	border: none;
+	padding-left: 0.5vw;
+	padding-right: 0.5vw;
+	background-color: black;
+	color: white;
+}
+
 form{
 	margin: 1vh;
 	margin-top: 5vh;
@@ -64,9 +138,15 @@ form{
 	font-weight: bold;
 }
 
-#buttonSuchen:hover, #plus:hover, #minus:hover, #buttonEintragen:hover{
+#buttonSuchen:hover, #plus:hover, #minus:hover, #buttonEintragen:hover, #kapbutton:hover{
 	border: 1px solid #F46EBE;
 	color: #F46EBE;
+}
+
+#kapbutton{
+	color: white;
+	background-color: black;
+	font-weight: bold;
 }
 
 #plus, #minus{
@@ -75,15 +155,37 @@ form{
 	background-color: black;
 }
 
+
 #plus{
 	margin-left: -0.8vw;
 }
+
+#savedate{
+  padding: 0;
+  right: 0;
+	border-radius: 3px;
+	border: 1px solid black;
+	margin-right: 6px;
+	position: absolute;
+	background-color: white;
+	font-family: arial;
+}
+
+#savedate:hover{
+
+	border: 1px solid #F46EBE;
+	color:#F46EBE
+
+}
+
 
 #minus{
 	margin-right: -0.8vw;
 }
 
-
+#groupdiv{
+	margin-top: 0.5vh;
+}
 /*GRID---------------------------------------------*/
 
 .insidediv, .capcounterInner, .capcounterInner2{
@@ -208,7 +310,7 @@ form{
 #panel{
 	display:flex;
 	position: sticky;
-	z-index: 2;
+	z-index: 3;
 	bottom: 7.5vh;
 	width: 21vw;
 }

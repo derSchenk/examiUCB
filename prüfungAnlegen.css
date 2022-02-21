@@ -19,6 +19,11 @@ form{
 	margin-left: -1.5vw;
 }
 
+input[type="datetime-local"]{
+box-sizing: border-box;
+border: 1px solid #D5D5D5;
+}
+
 #dataliststudsem, #datalistanwesen{
 	width: 31.5vw;
 	margin-top: 0.5vh;
@@ -43,10 +48,10 @@ form{
 	color: white;
 	background-color: black;
 }
-
+/*
 #divinputlistpruf{
 	margin-right: 3vw;
-}
+} */
 
 #datalistpruf{
 	width: 25.75vw;
@@ -86,6 +91,19 @@ textarea{
 	border-style: none;
 }
 
+
+#ubersicht th{
+	padding-right: 0.5vw;;
+}
+
+tr:nth-child(odd){
+	background-color: white;
+}
+tr:nth-child(even) {
+	background-color: #D5D5D5;
+
+}
+
 #buttonAddPruf,#buttonLöschen, #buttongroupedit{
 	height: 2.8vh;
 	min-height: 1.5em;
@@ -106,8 +124,10 @@ textarea{
 
 
 th, td{
-	border: 1px solid black;
-
+	border-right: 1px solid black;
+	border-left-style: none;
+	border-top-style: none;
+	border-bottom: 1px solid black;
 	hyphens: auto;  /*funktioniert nicht*/
 }
 
@@ -134,6 +154,7 @@ table{
     height: 75vh;
     overflow: auto;
 		border-top: 2px solid white;
+		margin-top: 4vh;
 }
 
 thead{
@@ -177,6 +198,7 @@ mark{
 
 .bearbeitenbutton, #pdf{
 	cursor: pointer;
+	font-weight: bold;
 }
 .bearbeitenbutton:hover, #pdf:hover{
 	color: #F46EBE;
@@ -203,6 +225,9 @@ mark{
 
 #untencontrol{
 	margin-top: 2vh;
+	float: right;
+	margin-bottom: 9vh;
+	margin-right: 1vw;
 }
 
 .hausarbeitdatum{

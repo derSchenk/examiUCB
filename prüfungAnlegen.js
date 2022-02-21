@@ -182,7 +182,7 @@ function bearbeitePG(e){
             })
           }
         })
-        dialogs.alert("Prüfungsgruppe erfolgreich hinzugefügt. Lade Seite neu...");
+        dialogs.alert("Prüfungsgruppe erfolgreich hinzugefügt/geändert. Lade Seite neu...");
         setTimeout(() => {
           location.reload();
         }, 2000);
@@ -263,9 +263,13 @@ function addprufgroup(e){
   });
 }
 prufgroupedit.addEventListener('change', addprufgroup )
+prufgroupedit.addEventListener('focus', emptyinput);
 
 
-
+function emptyinput(e){
+  e.preventDefault()
+  e.target.value = "";
+}
 
 
 
@@ -587,7 +591,7 @@ function deleteElement(e){
           }, 1000)
         });
 
-        var sql098 = "DELETE FROM prufungsgruppe WHERE Prufungsgruppen_ID NOT IN (SELECT Prufungsgruppen_ID FROM prufungen)"
+        var sql098 = "DELETE FROM prufungsgruppe WHERE Prufungsgruppen_ID NOT IN (SELECT Prufungsgruppen_ID FROM prufungen WHERE Prufungsgruppen_ID IS NOT NULL)"
         db.query(sql098, function(err, results){
           if(err) throw err;
         })
@@ -611,6 +615,7 @@ function deleteElement(e){
   }
 
 buttonLöschen.addEventListener("click", deleteElement, false);
+inputlöschen.addEventListener('focus', emptyinput);
 
 
 
@@ -782,17 +787,18 @@ function dateHausarbeiten(e){
 function bearbeitPruf(e){
 
   var content = this.getAttribute("data-prufID");
-  fs.writeFile('bearbeitenID.txt', content, err => {
-    if (err) {
-      console.error(err)
-      return
-    }
+  localStorage["editID"] = content;
+  // fs.writeFile('bearbeitenID.txt', content, err => {
+  //   if (err) {
+  //     console.error(err)
+  //     return
+  //   }
     //file written successfully
     window.open("bearbeiten.html");
     dialogs.alert("Ein Prüfung wurde möglicherweise geändert. Bitte auf 'OK' klicken zum aktualisieren", ok => {
       location.reload()
     })
-  })
+  // })
 
 
 }
@@ -814,6 +820,7 @@ function prufungsUbersicht(){
         spalte.appendChild(text);
         zeile.appendChild(spalte);
         spalte = document.createElement("td");
+        spalte.innerHTML = "&#9998;"
         spalte.addEventListener("click", bearbeitPruf)
         spalte.setAttribute("title","Prüfung bearbeiten");
         spalte.setAttribute("data-prufID", result["Prufung_ID"]);
@@ -946,7 +953,7 @@ function prufungsUbersicht(){
 
 
 
-sql2 = "SELECT * FROM prufungen WHERE NOT EXISTS (SELECT 1 FROM prunfung_termin_verb WHERE prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID) ORDER BY Standardsemester, Prufung_Name"
+sql2 = "SELECT * FROM prufungen WHERE NOT EXISTS (SELECT 1 FROM prunfung_termin_verb WHERE prufungen.Prufung_ID = prunfung_termin_verb.Prufung_ID) ORDER BY Prufungsgruppen_ID DESC, Prufung_Name"
   db.query(sql2, function(err, results){
     if(err) throw err;
 for (result of results){
@@ -963,6 +970,7 @@ for (result of results){
   var text2 = document.createTextNode(" ("+result["B_M"].substring(0,1)+".)");
   spalte.addEventListener("click", bearbeitPruf)
   spalte.setAttribute("title","Prüfung bearbeiten");
+  spalte.innerHTML = "&#9998;"
   spalte.setAttribute("data-prufID", result["Prufung_ID"]);
   spalte.classList.add("bearbeitenbutton");
   spalte.appendChild(text);

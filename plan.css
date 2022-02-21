@@ -26,7 +26,7 @@
 	}
 
 .kleiner{
-  font-size: 0.22cm;
+  font-size: 0.25cm;
 }
 
 .dick{
@@ -43,8 +43,7 @@
   }
 
   tr{
-    border-top: none;
-    border-bottom: none;
+
   }
 
   td{
@@ -55,6 +54,13 @@
    -webkit-hyphens: auto;
    -ms-hyphens: auto;
    hyphens: auto;
+
+   border-top: none;
+   border-bottom: none;
+  }
+
+  td:last-child{
+      border: none;
   }
 
   #uberschrift, #unterschrift,#unterschrift2{

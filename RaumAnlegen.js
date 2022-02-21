@@ -110,3 +110,11 @@ function deleteElement(e){
   }
 
 buttonLöschen3.addEventListener("click", deleteElement, false);
+
+
+inputlöschen3.addEventListener('focus', emptyinput);
+
+function emptyinput(e){
+  e.preventDefault()
+  e.target.value = "";
+}

@@ -93,8 +93,8 @@ prufArt.addEventListener("change", changeTeilnehmer);
   }
 
 
-fs.readFile('bearbeitenID.txt', 'utf8' , (err, id) => {
-  if (err) throw err;
+function studemsundanwesende(){
+  var id = localStorage["editID"]
 
 
   var sql = "SELECT * FROM prufungen, prufunganwesendeverbindung, anwesende WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID"
@@ -133,10 +133,11 @@ fs.readFile('bearbeitenID.txt', 'utf8' , (err, id) => {
     results.forEach((result) => {
       console.log(result)
       var eingabe = result["Studiengang"]+" "+result["Semesternummer"]+"   ["+result["Studiengangssemester_ID"]+"]"
-      console.log(eingabe)
+
 
       var checker = true;
       var vorhanden = dataliststudsem.children;
+
         if(vorhanden.length > 0){
         Array.from(vorhanden).forEach(function(item){
           if(item.value.localeCompare(eingabe)==0){
@@ -144,7 +145,7 @@ fs.readFile('bearbeitenID.txt', 'utf8' , (err, id) => {
           }
         });
       }
-
+console.log("bob", alleStudsems.length);
       if(checker==true && eingabe.length > 0 && alleStudsems.includes(eingabe)){
         const neueOption = document.createElement('option');
         neueOption.value = eingabe;
@@ -155,10 +156,11 @@ fs.readFile('bearbeitenID.txt', 'utf8' , (err, id) => {
       }
     })
   })
+
   buttonUpdate.setAttribute("data-id", id);
   loadDataPruf(id);
   hatTermin(id);
-})
+}
 
 
 
@@ -188,7 +190,7 @@ db.query(sql, function(err, results){
 
 
 
-
+studemsundanwesende()
 
 
 
@@ -351,18 +353,21 @@ buttonUpdate.addEventListener("click", updatePruf);
 
 
 function hatTermin(id){
-  var sql = "SELECT 1 FROM prunfung_termin_verb WHERE prunfung_termin_verb.Prufung_ID = '"+id+"'"
+  var sql = "SELECT * FROM prunfung_termin_verb, prufungen WHERE prunfung_termin_verb.Prufung_ID = '"+id+"' AND prunfung_termin_verb.Prufung_ID = prufungen.Prufung_ID"
   db.query(sql, function(err, results){
     if(err) throw err;
+    console.log(results);
     if(results.length > 0){
-      dialogs.alert("Diese Prüfung hat bereits einen Termin und ist deswegen nur eingeschränkt bearbeitbar.")
-      setTimeout(() => {
-        dialogs.cancel();
-      }, 2000)
-      const nochange = document.querySelectorAll(".nochange");
-      console.log(nochange);
-      for(item of nochange){
-        item.setAttribute("hidden", "hidden")
+      if(results[0]["Prüfungsart"] !== "Hausarbeit"){
+        dialogs.alert("Diese Prüfung hat bereits einen Termin und ist deswegen nur eingeschränkt bearbeitbar.")
+        setTimeout(() => {
+          dialogs.cancel();
+        }, 2000)
+        const nochange = document.querySelectorAll(".nochange");
+        console.log(nochange);
+        for(item of nochange){
+          item.setAttribute("hidden", "hidden")
+        }
       }
     }
   })

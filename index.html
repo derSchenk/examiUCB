@@ -19,6 +19,33 @@
     <a href="RaumAnlegen.html"><div class="navitem" id="navitemeins"><span class="menutext">Ressourcen</span></div></a>
     <a href="AbwesenheitAnlegen.html"><div class="navitem" id="navitemeins"><span class="menutext">Abwesenheiten</span></div></a>
   </nav>
+  <div id="animation">
+    <div id="info" style="float:right;"><span style="font-size:1.5vw">&#9432;</span></div>
+    <h2>Kapazitätsübersicht:</h2>
+    <div id="free">
+      <div>
+        Von:
+        <input id="vondatum" type="date">
+        Bis:
+        <input id="bisdatum" type="date">
+        <button id="kapbutton">Kapazität anzeigen</button>
+      </div>
+    </div>
+    <div id="tablediv">
+    <table id="kaptable">
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Status</th>
+          <th>max. verfügbare Räume</th>
+          <th>max. mögliche Kapazität</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  </div>
   <h2>Zeitfenster suchen:</h2>
   <div class="zent">
   	<form id="formular">
@@ -31,7 +58,7 @@
   			<label id="datalistpruf2">
   				<select title="STRG gedrückt halten zum entwählen einzelner Prüfungen" name="datalistpruf2" id="datalistpruf" name="cars" size="4" multiple></select>
   			</label>
-        <div>
+        <div id="groupdiv">
           <input spellcheck="false" name="inputlistpruf" placeholder="PG wählen (optional)" autocomplete="off" id="prüfungsgruppe" list="prüfungsgruppelist" title="zu bestehender Prüfungsgruppe hinzufügen">
          <datalist id="prüfungsgruppelist"></datalist>
          <button id="buttonaddpruf2">add</button><br>
@@ -45,7 +72,6 @@
             <option value="Besprechungsraum">Besprechungsraum</option>
             <option value="PC-Pool">PC-Pool</option>
             <option value="Cat XY">Cat XY</option>
-  				  <option value="- Kein Raum benötigt -">- Kein Raum benötigt -</option>
   				</select>
   			</label>
   		</div>
@@ -74,6 +100,7 @@
   		</div>
   	</form>
   </div>
+  <input id="savedate" title="speichere das zzt. gewählte Datum als Standardwert" type="button" value="&#128427;&#128467"></button>
   <hr>
   <div id="footer">
     <form>

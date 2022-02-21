@@ -26,6 +26,17 @@ const buttonEintragen = document.querySelector("#buttonEintragen")
 const prüfungsgruppelist = document.querySelector("#prüfungsgruppelist")
 const prüfungsgruppeinput = document.querySelector('#prüfungsgruppe')
 
+const savedate = document.querySelector("#savedate");
+
+const testbutton = document.querySelector("#test");
+
+const kapübesicht = document.querySelector("#animation");
+const vondatum = document.querySelector("#vondatum");
+const bisdatum = document.querySelector("#bisdatum");
+const kapbutton = document.querySelector("#kapbutton");
+const kaptable = document.querySelector("#kaptable tbody");
+
+
 
 //----------Formular-Datenspeicher--------- //Unnutz
 var prufungen;
@@ -42,18 +53,7 @@ var dragID = 1;
 
 const datumInput = document.querySelector("#kws");
 
-function setDate(){
-  today = new Date();
 
-  if(today.getDay() === 0){
-    today.setDate(today.getDate()+1)
-  }
-  if(today.getDay() === 6){
-    today.setDate(today.getDate()+2)
-  }
-  datumInput.value = transformDateToHTML(today);
-}
-setDate();
 
 
 //Datenbankverbindung herstellen---------------
@@ -72,6 +72,45 @@ db.connect(function(err) {
 });
 
 //----------------------------------------------------------
+
+
+function setDate(){
+
+  var saved = new Date(localStorage['savedDate']);
+  var today = new Date();
+  if(saved > today){
+    today = saved;
+  }
+
+  if(today.getDay() === 0){
+    today.setDate(today.getDate()+1)
+  }
+  if(today.getDay() === 6){
+    today.setDate(today.getDate()+2)
+  }
+  datumInput2.value = transformDateToHTML(today);
+}
+setDate();
+
+
+function dateskapübersicht(){
+   vondatum.value = datumInput2.value;
+   var toDate = new Date(datumInput2.value);
+   toDate.setDate(toDate.getDate()+14);
+   bisdatum.value = transformDateToHTML(toDate);
+}
+kapübesicht.addEventListener("mouseenter", dateskapübersicht);
+
+
+
+
+
+function savethisdate(){
+  localStorage['savedDate'] = datumInput2.value;
+}
+savedate.addEventListener("click", savethisdate);
+
+
 
 function loadgroups(){
   const sql = "SELECT * FROM prufungsgruppe"
@@ -106,6 +145,136 @@ function ladeVorschläge(){
   });
 }
 ladeVorschläge();
+
+
+
+
+function removeduplicates2(arr){
+  var arrNew = [];
+  for(a of arr){
+    if(arrNew.indexOf(a) === -1 && a !== 0){
+      arrNew.push(a)
+    }
+  }
+  return arrNew;
+}
+
+function übersicht(paraDatum, callback){
+  console.log("übsericht in")
+    const drops = document.querySelectorAll(".insidediv");
+    var freieRäume = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    var capRäume =  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    var länge = calcTimeSlots();
+
+
+    for(drop of drops){
+      var checker = true;
+      console.log("Drop entdeckt", drop)
+      var droplauf = drop;
+      for(var i = 0; i < länge; i++){
+        try{
+          if(drop.hasAttribute("data-empfehlung") || droplauf.getAttribute("data-state") === "oc"){
+            checker = false;
+          }
+          droplauf = droplauf.nextSibling;
+        } catch{console.log("letzte können nicht gelesen werden")}
+      }
+      if(checker){
+        // console.log(freieRäume[parseInt(drop.getAttribute("data-this"))-1])
+        freieRäume[parseInt(drop.getAttribute("data-this"))-1] += 1;
+        // console.log(freieRäume[parseInt(drop.getAttribute("data-this"))-1])
+        capRäume[parseInt(drop.getAttribute("data-this"))-1] += parseInt(drop.getAttribute("data-cap"));
+      }
+    }
+
+    for(var i = 20; i > (freieRäume.length-1)-(calcTimeSlots()-1); i--){
+      freieRäume[i] = 0;
+    }
+
+
+    var freieRäumeCopy = freieRäume.slice();
+
+    var sortedCopy = removeduplicates2(freieRäumeCopy.sort().reverse());
+
+    var arrmaped = [];
+    for(f in freieRäume){
+      var arrPair = [];
+      arrPair.push(freieRäume[f]);
+      arrPair.push(capRäume[f]);
+      arrmaped.push(arrPair.slice());
+    }
+
+    var maxNumbers = [];
+    for(a in sortedCopy){
+      maxNumbers.push(0);
+      for(b of arrmaped){
+        if(b[0] === sortedCopy[a]){
+          if(b[1] > maxNumbers[maxNumbers.length-1]){
+            maxNumbers[maxNumbers.length-1] = b[1];
+          }
+        }
+      }
+    }
+    var row = document.createElement("tr");
+    var zelleDate = document.createElement("td");
+    zelleDate.setAttribute("data-date", paraDatum);
+    zelleDate.addEventListener("click", gotothisdate);
+    zelleDate.classList.add("datadate");
+    var text = document.createTextNode(paraDatum);
+    zelleDate.appendChild(text);
+    zelleDate.setAttribute("title", "Im Slotfinder öffnen")
+    var zelleState = document.createElement("td");
+
+
+    if(sortedCopy.length === 0){
+      zelleState.style.backgroundColor = "#f7665e";
+      text = document.createTextNode("voll");
+      zelleState.appendChild(text);
+
+      var zelleRäume = document.createElement("td");
+      text = document.createTextNode("0");
+      zelleRäume.appendChild(text);
+
+      var zelleMaxKap = document.createElement("td");
+      text = document.createTextNode("0");
+      zelleMaxKap.appendChild(text);
+    } else {
+      zelleState.style.backgroundColor = "#95f0b6";
+      text = document.createTextNode("frei");
+      zelleState.appendChild(text);
+
+      var zelleRäume = document.createElement("td");
+      text = document.createTextNode(sortedCopy[0].toString());
+      zelleRäume.appendChild(text);
+
+      var zelleMaxKap = document.createElement("td");
+      text = document.createTextNode(maxNumbers[0].toString());
+      zelleMaxKap.appendChild(text);
+    }
+
+    row.appendChild(zelleDate);
+    row.appendChild(zelleState);
+    row.appendChild(zelleRäume);
+    row.appendChild(zelleMaxKap);
+    kaptable.appendChild(row);
+    callback();
+}
+
+
+function gotothisdate(e){
+  e.preventDefault();
+  datumInput2.value = this.getAttribute("data-date");
+  setVisible(e);
+}
+
+
+
+
+
+
+
+
+
 
 //-----------------------------------------------------------------
 
@@ -171,7 +340,24 @@ function setVisible(e) {
   buttonEintragen.removeAttribute("hidden");
 
 
-  loadRooms();
+  loadRooms(undefined, function(){
+    console.log("Funktion wurde ausgeführt.")
+    ladeBelegungen(undefined, function(){
+      console.log("aber hatschi")
+      schonPrufung(undefined, function(){
+        console.log("auch diese Funktion wurde ausgeührt...buh")
+        ladeVerplanteAnwesende(undefined, function(){
+          console.log("keine Ahnung ob das klappt")
+          loadRoomBelegung(function(){
+            console.log("alles Mist hier")
+            setzeVerboteneDrops(function(){
+              console.log("verbote wurde gesetzt.")
+            })
+          })
+        })
+      });
+    })
+  });
   checkDate();
 
   //Statt hidden könnte auch Display = none gesetzt werden? Besser?
@@ -179,6 +365,98 @@ function setVisible(e) {
 
 buttonSend.addEventListener('click', setVisible, false);
 //---------------------------------------------------
+
+function deleteRooms(callback){
+  while(raumgrid.firstChild){
+    raumgrid.firstChild.remove();
+  }
+  dialogs.cancel();
+  callback()
+}
+
+
+
+function doSomething(datum, callback){
+  console.log(datum);
+  loadRooms(datum, function(){
+    console.log("Funktion wurde ausgeführt.")
+    ladeBelegungen(datum, function(){
+      console.log("aber hatschi")
+      schonPrufung(datum, function(){
+        console.log("auch diese Funktion wurde ausgeührt...buh")
+        ladeVerplanteAnwesende(datum, function(){
+          console.log("keine Ahnung ob das klappt")
+          loadRoomBelegung(function(){
+            console.log("alles Mist hier")
+            setzeVerboteneDrops(function(){
+              console.log("Verbotene wurden gesetzt");
+              übersicht(datum, function(){
+                console.log("es geht nicht")
+                deleteRooms(function(){
+                  console.log("Jetzt sollten die Räume wieder gelöscht werden aber...")
+                  callback();
+                })
+              });
+            })
+          })
+        })
+      });
+    })
+  });
+}
+
+
+
+function übersichtbutton(e) {
+  //Das Panel (Mit Papierkorb und Tokenquelle) soll erst sichbar sein, sobald auf "Slot suchen" gedrückt wird
+  //hierfür hidden entfernen und display eigenschaft (flex, table-cell) hinzufügen. Display direkt ins CSS-Sheet zuschreiben ist nicht möglich, da dann hidden nicht mehr funktioniert
+    e.preventDefault();
+
+  kaptable.innerHTML = "";
+
+
+
+  // dnd.removeAttribute("hidden");
+  // dnd.style.display = "table-cell";
+  // dnd2 = document.querySelector(".newdrag .dnd")
+  // dnd2.textContent = calcTimeSlots();
+  // dragcontainer.forEach((item) => {
+  //   item.removeAttribute("hidden")
+  //   item.style.display = "flex"
+  // })
+  // buttonEintragen.removeAttribute("hidden");
+
+  var startDate = new Date(vondatum.value);
+  var endDate = new Date(bisdatum.value);
+  var data = [];
+
+  for(var i = startDate; i <= endDate; i.setDate(i.getDate()+1)){
+    data.push(transformDateToHTML(i));
+  }
+
+
+  var xlauf = 0;
+  var loopArray = function(arr) {
+      doSomething(arr[xlauf],function(){
+          // set x to next item
+          xlauf++;
+
+          // any more items in array? continue loop
+          if(xlauf < arr.length) {
+              loopArray(arr);
+          }
+      });
+  }
+
+  loopArray(data);
+
+
+
+}
+kapbutton.addEventListener("click", übersichtbutton);
+
+
+
 
 
 //Verschieben der Prüfung von Input zu Select--------------------------
@@ -230,6 +508,7 @@ function addPrufung(e) {
 buttonAdd.addEventListener('click', addPrufung, false);
 
 
+
 function addprufgroup(e, sql){
   if(sql === undefined){
     e.preventDefault();
@@ -273,6 +552,7 @@ function addprufgroup(e, sql){
   prüfungsgruppeinput.value = "";
 }
 buttonAdd2.addEventListener("click", addprufgroup)
+
 
 
 function extractIDString(item){
@@ -387,7 +667,12 @@ function returnWeekdayString(datum){
 
 
 
-function loadRooms() { //Funktion erstellt das Grid für das Drag'n'Drop
+function loadRooms(datumIn, callback) { //Funktion erstellt das Grid für das Drag'n'Drop
+console.log("Funktion loadRooms wurde aufgerufen")
+  if(datumIn === undefined){
+    datumIn = datumInput2.value;
+  }
+
 
   while (raumgrid.firstChild) { //Falls das Grid durch vorherige Abfrage bereits gefüllt. Lösche diese Einträge.
     raumgrid.firstChild.remove()
@@ -398,9 +683,9 @@ function loadRooms() { //Funktion erstellt das Grid für das Drag'n'Drop
   capcounterOuter.classList.add("outsidediv")
   const seitlicherPlatzhalter = document.createElement("div"); //...erstelle ein Div (seitlicher Tabellenkopf) für die Kategorie und für die Kapazität
   seitlicherPlatzhalter.className = "nameDivTwo";
-  const datum = document.createTextNode(returnWeekdayString(new Date(datumInput2.value))+" "+datumInput2.value);
+  const datum = document.createTextNode(returnWeekdayString(new Date(datumIn))+" "+datumIn);
   seitlicherPlatzhalter.appendChild(datum);
-  seitlicherPlatzhalter.setAttribute("data-datum", datumInput2.value);
+  seitlicherPlatzhalter.setAttribute("data-datum", datumIn);
   capcounterOuter.appendChild(seitlicherPlatzhalter);
   for (var i = 1; i <= 21; i++) {
     const capcounterInner = document.createElement("div");
@@ -475,15 +760,15 @@ function loadRooms() { //Funktion erstellt das Grid für das Drag'n'Drop
     capcounterOuter2.classList.add("capcounterOuter2");
     raumgrid.appendChild(capcounterOuter2); //Hänge äußeren Container an Raumgrid
 
+    console.log("Funktion loadRooms wurde ausgeführt")
 
-    schonPrufung();
-
-
+callback(null);
+empfehlung(0)
   });
   //----------------------------------------------------------------------------
 
-  ladeBelegungen();
-  empfehlung(0)
+
+
 
 }
 
@@ -491,7 +776,7 @@ function loadRooms() { //Funktion erstellt das Grid für das Drag'n'Drop
 
 //----------DRAG AND DROP-----------------------------------------------------
 
-function setzeVerboteneDrops(){
+function setzeVerboteneDrops(callback){
   //Diese Funktion itteriert durch alle Timeslot-Divs und gibt den letzten Timeslots das Attibut data-empfehlung="veboten ",
   //Dauert ein Prüfung zb. 4 Timeslots lang, kann der Token der Prüfung nicht auf die letzten drei Timeslots gestzt werden,
   //Sonst würde die Prüfung über 19:30 Uhr hinaus andauern.
@@ -503,6 +788,7 @@ function setzeVerboteneDrops(){
       item.setAttribute("data-empfehlung", "verboten");
     }
   })
+  callback();
 }
 
 
@@ -537,7 +823,7 @@ drags.forEach(item => {
 
 function listenershinzufügen() {
   //Diese Funktion fügt den Timeslot-Divs die für das Drag and Drop nötigen eventlistener hinzu
-  setzeVerboteneDrops();
+  // setzeVerboteneDrops();
   const papierkorb = document.querySelector("#papierkorb");
   papierkorb.addEventListener("dragover", dragoverpapierkorb);    //wenn sich ein Token über den Papierkorb gezogen wird, führe die Funktion dragoverpapierkorb aus
   papierkorb.addEventListener("drop", droppapierkorb);            //wenn der Token über dem Papierkorb losgelassen wird, führ die Funktion ...  aus
@@ -753,7 +1039,65 @@ function getTeilnehmer() {
 
 
 
-function ladeBelegungen(){
+function callbacktest1(results, betrachtetesDatum, callback){
+
+  var ergebnisse = [];
+
+  for(result of results){
+
+    var dateOne = result["Datum"];
+    var dateTwo = result["DatumBis"];
+
+    for (var i = dateOne; i <= dateTwo; i.setDate(i.getDate() + 1)){
+      console.log(results)
+      var teilergebnis = [];
+
+      var betrachteterTag = betrachtetesDatum.getDay()
+      console.log(betrachteterTag);
+      if(betrachteterTag === 0){
+        betrachteterTag = 7;
+      }
+
+      if(result["Wochentage"].includes(betrachteterTag.toString())){
+        teilergebnis.push(i);
+        for(var j = 1; j <= 21; j++){
+          teilergebnis.push(result["TS"+j])
+        }
+          teilergebnis.push(" "+result["Studiengang"]+" "+result["Semesternummer"])
+          ergebnisse.push(lodash.cloneDeep(teilergebnis));
+          console.log("sony", result)
+
+      }
+    //   if(result === results[results.length-1] && i >= dateTwo){
+    //     console.log("ausgabe", ergebnisse)
+    //     callback(ergebnisse);
+    // }
+
+    }
+  }
+    callback(ergebnisse)
+}
+
+function callbacktest2(ergebnisse, betrachtetesDatum, callback){
+  var belegung = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  console.log("Tagesdau", ergebnisse)
+  for (item of ergebnisse){
+    if(item[0].getTime() == betrachtetesDatum.getTime()){     //Hä was soll das?
+
+      for(var u = 1; u <= 21; u++){
+        if(item[u] == 1){
+          belegung[u-1] = item[22];
+        }
+
+      }
+    }
+  }
+  callback(belegung);
+}
+
+
+
+function ladeBelegungen(datumTagt, callback){
   var prufungen = document.querySelectorAll("#datalistpruf option");
   var ids = [];
   prufungen.forEach((item) => {
@@ -761,69 +1105,63 @@ function ladeBelegungen(){
       var id = extractID(item);
 
       var sql = "SELECT * FROM prufungen, prufungstudsemverbindung, studiengangssemester, studsembelegungverbindung, studiengangssemester_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufungstudsemverbindung.Prufung_ID AND prufungstudsemverbindung.Studiengangssemester_ID = studiengangssemester.Studiengangssemester_ID AND studiengangssemester.Studiengangssemester_ID = studsembelegungverbindung.Studiengangssemester_ID AND studsembelegungverbindung.Belegungs_ID = studiengangssemester_belegung.Belegungs_ID UNION SELECT * FROM prufungen, prufunganwesendeverbindung, anwesende, anwesendebelegungverbindung, anwesende_belegung WHERE prufungen.Prufung_ID = '"+id+"' AND prufungen.Prufung_ID = prufunganwesendeverbindung.Prufung_ID AND prufunganwesendeverbindung.Anwesende_ID = anwesende.Anwesende_ID AND anwesende.Anwesende_ID = anwesendebelegungverbindung.Anwesende_ID AND anwesendebelegungverbindung.Belegungs_ID = anwesende_belegung.Belegungs_ID";
-      const datumTag = document.querySelector("#kws");
-      var betrachtetesDatum = new Date(datumTag.value)
+
+      if(datumTagt === undefined){
+        var peter = document.querySelector("#kws");
+        datumTagt = peter.value;
+      }
+      var betrachtetesDatum = new Date(datumTagt)
+
       betrachtetesDatum.setHours(0);
 
       db.query(sql, function(err, results) {
-        if (err) throw err;
-        var ergebnisse = [];
+        console.log("luke", results)
+        if(err) throw err;
 
-        for (result of results){
-          var dateOne = result["Datum"];
-          var dateTwo = result["DatumBis"];
-          for (var i = dateOne; i <= dateTwo; i.setDate(i.getDate() + 1)){
 
-            var teilergebnis = [];
+        callbacktest1(results, betrachtetesDatum, function(ergebnisse){
+          callbacktest2(ergebnisse, betrachtetesDatum, function(belegung){
+            console.log("this is: "+belegung);
+            var allDrops = document.querySelectorAll(".insidediv");
+            for(drop of allDrops){
+              console.log("hier ist die belegung", belegung)
+             if(belegung[parseInt(drop.getAttribute("data-this"))-1] !== 0){
+               console.log("drin");
+               drop.classList.add("belegt3")
+               drop.setAttribute("data-state", "oc")
+               drop.setAttribute("title", "eingetragene Abwesenheit:"+belegung[parseInt(drop.getAttribute("data-this"))-1]);
+               // if(ids.length > 0){
+               //   drop.setAttribute("title", "Ein oder mehrere Studsem haben heute bzw. gestern bereits eine Prüfung gehabt: "+ids.join());
+               // } else drop.setAttribute("title", "eingetragene Abwesenheit");
+             }
+             if(item === prufungen[prufungen.length-1] && drop === allDrops[allDrops.length-1]){
+               console.log(document.querySelectorAll(".insidediv"));
+               console.log("erstes Callback")
+               callback();
 
-            betrachteterTag = betrachtetesDatum.getDay()
-            if(betrachteterTag === 0){
-              betrachteterTag = 7;
+             }
             }
-
-            if(result["Wochentage"].includes(betrachteterTag.toString())){
-              teilergebnis.push(i);
-              for(var j = 1; j <= 21; j++){
-                teilergebnis.push(result["TS"+j])
-              }
-              teilergebnis.push(" "+result["Studiengang"]+" "+result["Semesternummer"])
-              ergebnisse.push(lodash.cloneDeep(teilergebnis));
+            if(item === prufungen[prufungen.length-1] && allDrops.length === 0){
+              console.log("zweites Callback")
+              callback();
             }
-
-
-          }
-
-          }
-
-        var belegung = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-        for (item of ergebnisse){
-          if(item[0].getTime() == betrachtetesDatum.getTime()){     //Hä was soll das?
-
-            for(var u = 1; u <= 21; u++){
-              if(item[u] == 1){
-                belegung[u-1] = item[22];
-              }
-            }
-          }
-        }
-
-        console.log("this is: "+belegung);
-        var allDrops = document.querySelectorAll(".insidediv");
-        for(drop of allDrops){
-         if(belegung[parseInt(drop.getAttribute("data-this"))-1] !== 0){
-           console.log("drin");
-           drop.classList.add("belegt3")
-           drop.setAttribute("data-state", "oc")
-           drop.setAttribute("title", "eingetragene Abwesenheit:"+belegung[parseInt(drop.getAttribute("data-this"))-1]);
-           // if(ids.length > 0){
-           //   drop.setAttribute("title", "Ein oder mehrere Studsem haben heute bzw. gestern bereits eine Prüfung gehabt: "+ids.join());
-           // } else drop.setAttribute("title", "eingetragene Abwesenheit");
-         }
-        }
+          })
+        })
       });
+    }else{
+      if(item === prufungen[prufungen.length-1]){
+        callback();
+      }
     }
   })
+  if(prufungen.length === 0){
+    console.log("drittes Callback")
+    callback();
+  }
 }
+
+
+
 
 
 function calcCap() {
@@ -877,9 +1215,12 @@ function drop(e) {
 
 
 
-function ladeVerplanteAnwesende(){
-
-  var thisdate = new Date(datumInput2.value);
+function ladeVerplanteAnwesende(paraDatum, callback){
+console.log("Funktion ladeVerplanteAnwesende in")
+if(paraDatum === undefined){
+  paraDatum = datumInput2.value;
+}
+  var thisdate = new Date(paraDatum);
   var prufungen = document.querySelectorAll("#datalistpruf option");
   var timeslots = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
   var anwesende = [];
@@ -925,13 +1266,23 @@ db.query(sql0, function(err, results0) {
            // } else drop.setAttribute("title", "eingetragene Abwesenheit");
          }
         }
+        if(pruf === prufungen[prufungen.length-1] && result0 === results0[results0.length-1]){
+          callback();
+        }
       })
+
     })
+    if(pruf === prufungen[prufungen.length - 1] && results0.length === 0){
+      callback();
+    }
 });
 
 }
   })
-  loadRoomBelegung();
+  console.log("Funktion ladeVerplanteAnwesende out")
+  if(prufungen.length === 0){
+    callback();
+  }
 }
 
 
@@ -1076,17 +1427,15 @@ if(marker){
 
 
 
-function loadRoomBelegung(){
+function loadRoomBelegung(callback){
+  console.log("Funktion ladeRoombelegung wurde auferufen!")
   const rooms = document.querySelectorAll(".roomdiv");
   nameDivTwo = document.querySelector(".nameDivTwo");
   datumsangabe = nameDivTwo.getAttribute("data-datum");
   rooms.forEach((room) => {
-    console.log(datumsangabe)
-    console.log(room.getAttribute("data-room"))
     var sql = "SELECT * FROM raum, prufung_termin_raumverb, prufung_termin WHERE raum.Bezeichnung = '"+room.getAttribute("data-room")+"' AND raum.Raum_ID = prufung_termin_raumverb.Raum_ID AND prufung_termin_raumverb.Termin_ID = prufung_termin.Termin_ID AND prufung_termin.Datum='"+datumsangabe+"'"
     db.query(sql, function(err, results) {
-      console.log(results)
-      console.log(room);
+      console.log(results);
       if(results.length > 0){
         console.log(results)
 
@@ -1105,9 +1454,16 @@ function loadRoomBelegung(){
           }
         }
       }
+      if(room === rooms[rooms.length-1]){
+        callback()
+      }
     });
 
   });
+  console.log("Funktion ladeRoombelegung wurde ausgeführt!")
+  if(rooms.length === 0){
+    callback()
+  }
 }
 
 
@@ -1224,12 +1580,16 @@ buttonEintragen.addEventListener("click", plausiblecheck);
 
 
 
-function schonPrufung(){
-  var thisdate = new Date(datumInput2.value);
-  var nextdate = new Date()
-  nextdate.setDate(thisdate.getDate()+1)
-  var prevdate = new Date()
-  prevdate.setDate(thisdate.getDate()-1)
+function schonPrufung(paraDatum, callback){
+  if(paraDatum === undefined){
+    paraDatum = datumInput2.value;
+  }
+  console.log("Funktion schonPrufung in")
+  var thisdate = new Date(paraDatum);
+  var nextdate = new Date(paraDatum);
+  nextdate.setDate(nextdate.getDate()+1)
+  var prevdate = new Date(paraDatum);
+  prevdate.setDate(prevdate.getDate()-1)
 
   var prufungen = document.querySelectorAll("#datalistpruf option");
 
@@ -1274,16 +1634,27 @@ db.query(sql0, function(err, results0) {
                 drop.setAttribute("title", "Studiengangssemester stehen nicht zur Verfügug: "+studsem.join()+"; Durch diese Prüfungen belegt:"+prufIds.join());
               })
             }
+            if(pruf === prufungen[prufungen.length-1] && result0 === results0[results0.length-1] && result === results[results.length-1]){
+              callback()
+            }
+          }
+          if(pruf === prufungen[prufungen.length-1] && result0 === results0[results0.length-1] && results.length === 0){
+            callback()
           }
       })
 
     })
-
+    if(pruf === prufungen[prufungen.length-1] && results0.length === 0){
+      callback()
+    }
 });
 
 }
   })
-ladeVerplanteAnwesende();
+  console.log("Funktion schonPrufung out")
+  if(prufungen.length === 0){
+    callback(null)
+  }
 }
 
 

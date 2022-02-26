@@ -89,6 +89,7 @@ function setDate(){
     today.setDate(today.getDate()+2)
   }
   datumInput2.value = transformDateToHTML(today);
+
 }
 setDate();
 
@@ -96,7 +97,7 @@ setDate();
 function dateskapübersicht(){
    vondatum.value = datumInput2.value;
    var toDate = new Date(datumInput2.value);
-   toDate.setDate(toDate.getDate()+14);
+   toDate.setDate(toDate.getDate()+21);
    bisdatum.value = transformDateToHTML(toDate);
 }
 kapübesicht.addEventListener("mouseenter", dateskapübersicht);
@@ -160,52 +161,55 @@ function removeduplicates2(arr){
 }
 
 function übersicht(paraDatum, callback){
-  console.log("übsericht in")
-    const drops = document.querySelectorAll(".insidediv");
-    var freieRäume = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-    var capRäume =  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-    var länge = calcTimeSlots();
+
+    const drops = document.querySelectorAll(".insidediv");              //greife alle Timeslots
+    var freieRäume = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];       //Setze zunächst alle Zeitfenster auf besetzt (Bsp: Wenn freieRäume[0] == 0, dann sind um 9:00 keine Räume frei, wenn freieRäume[1] == 13, dann sind um 9:30 13 Räume frei...)
+    var capRäume =  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];        //daraus folgt, dass die zur Verfügung stehende Kapazität zunächts auch 0 ist
+    var räume = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]];
+    var länge = calcTimeSlots();                                        //berechne die die aus der Dauer der Prüfung hervorgehende Anzahl an benötigten Timeslots. Dauert die Prüfung 90 Minuten, müssen 4 Timeslot (3 + 1 Pufferslot zur nächsten Prüfung = 4)
 
 
-    for(drop of drops){
-      var checker = true;
-      console.log("Drop entdeckt", drop)
-      var droplauf = drop;
-      for(var i = 0; i < länge; i++){
+    for(drop of drops){       //durchlaufe Slot für Slot und...
+      var checker = true;     //Gehe zunächst davon auf dass dieser Slot frei ist, solange nichts anderes bewiesen
+      var droplauf = drop;    //Erstelle einen Prüfer und setze ihn am Slot an
+      for(var i = 0; i < länge; i++){  //Lasse den Prüfer weiterlaufen zu den nächsten Timeslots die auch noch für die Prüfung benötigt werden. Wenn eine Prüfung 4 Timeslots dauert muss sowohl der Slot selbts als auch die nächsten 3 anderen überprüft werden ob...
         try{
-          if(drop.hasAttribute("data-empfehlung") || droplauf.getAttribute("data-state") === "oc"){
-            checker = false;
+          if(drop.hasAttribute("data-empfehlung") || droplauf.getAttribute("data-state") === "oc"){    //...sie besetzt sind (oc == occupied) oder ob sich der drop außerhalb des zulässigen Bereichs befindet (Wenn die Prüfung 120 Minuten (entspricht 5 Timeslots) dauert, darf Sie natürlich nicht um 19:00 beginnen.). Timeslot hat dann das Attribute data-empfehlung="verboten"
+            checker = false;  //wenn dies der Fall ist der Timeslot nicht frei
+            break;
           }
-          droplauf = droplauf.nextSibling;
-        } catch{console.log("letzte können nicht gelesen werden")}
+          droplauf = droplauf.nextSibling; //Lass den Prüfer zum nächsten Slot wandern.
+        } catch{console.log("letzte können nicht gelesen werden")}     //ist drop beim letzen Timeslot angekommen hat er keinen nextSibling, der Prüfer läft also in Leere. Dies gibt einen Fehler
       }
-      if(checker){
-        // console.log(freieRäume[parseInt(drop.getAttribute("data-this"))-1])
-        freieRäume[parseInt(drop.getAttribute("data-this"))-1] += 1;
-        // console.log(freieRäume[parseInt(drop.getAttribute("data-this"))-1])
-        capRäume[parseInt(drop.getAttribute("data-this"))-1] += parseInt(drop.getAttribute("data-cap"));
+      if(checker){ //Wenn Checker immernoch true, dann ist der Slot wirklich Frei
+        freieRäume[parseInt(drop.getAttribute("data-this"))-1] += 1;       //Zähle den Counter an der Stelle des zum Slot korespondierenden Zeitfensters hoch
+        capRäume[parseInt(drop.getAttribute("data-this"))-1] += parseInt(drop.getAttribute("data-cap")); //Rechne auch die Kapazität des Raumes drauf
+        räume[parseInt(drop.getAttribute("data-this"))-1].push(drop.getAttribute("data-parent")+" (Kap: "+drop.getAttribute("data-cap")+")")
       }
     }
 
     for(var i = 20; i > (freieRäume.length-1)-(calcTimeSlots()-1); i--){
-      freieRäume[i] = 0;
+      freieRäume[i] = 0; //Setze die freien Räume außerhalb des zulässigen Bereiches auf 0 [RELIKT? Prüfen ob noch nötig]
     }
 
+    var freieRäumeCopy = freieRäume.slice();   //Kopiere Array freieRäume (.slice() kopiert das Array wirklich ansstatt nur einen zweiten Verweis auf das alte Array zu setzen)
+    console.log(freieRäume);
+    var sortedCopy = removeduplicates2(freieRäumeCopy.sort((a, b) => a - b)).reverse();   //Sortiere dieses Array, drehe es um und entferne Duplikate. Die größte Anzahl an Räumen steht nun an Index 0, die kleinster am letzten Index
+    console.log(sortedCopy);
 
-    var freieRäumeCopy = freieRäume.slice();
 
-    var sortedCopy = removeduplicates2(freieRäumeCopy.sort().reverse());
-
-    var arrmaped = [];
-    for(f in freieRäume){
-      var arrPair = [];
+    var arrmaped = [];  //In diesem Array sollen für jedes Zeitfenster die die maximale Anzahl an Räumen, der maximalen zur verfügungstehenden Kapaziät zugeordnet werden. BSP.: [[12, 345], [3, 43], [4, 34]...]
+    for(f in freieRäume){       //Hinweis: Bei einer for(item OF ...)-Schleife ist item das Objekt selbst, während bei einer for(item IN ...)-Schleife item der Index des Objekts ist. Weiß nicht ob das bei anderen Programmiersprachen auch so ist.
+      var arrPair = [];  //Array für Paare
       arrPair.push(freieRäume[f]);
-      arrPair.push(capRäume[f]);
-      arrmaped.push(arrPair.slice());
+      arrPair.push(capRäume[f]); //Paar hnzufügen
+      arrmaped.push(arrPair.slice()); //Echte Kopie von arrPair in arrmaped einfügen
     }
 
+
+    //Hier soll zu der höchsten Anzahl an freien Räumen am Tag, die höchste Anzahl an Kapazität zugeordnet werden. Beispiel: An einem Tag sind beträgt die maximale Anzahl an Räumen 5. Jedoch sind um 9:30 fünf Räume mit einer Kap. von 100 Personen aber um 12:30 sind es 5 Räume mit 40 Personen. Wir wollen dann das Paar [5, 100] nicht das Paar [5, 40]. Dieses Vorgang für alle
     var maxNumbers = [];
-    for(a in sortedCopy){
+    for(a in sortedCopy){    //Laufe das sortierte Array mit der Anzahl an freien Räumen ab. Gößter Wert ist in Index 0
       maxNumbers.push(0);
       for(b of arrmaped){
         if(b[0] === sortedCopy[a]){
@@ -215,13 +219,22 @@ function übersicht(paraDatum, callback){
         }
       }
     }
+
+    console.log("maxN", maxNumbers);
+    for(var i = 0; i <= 20; i++){
+      arrmaped[i].unshift(getTime(i+1) + " - ")
+    }
+
+    //Erstelle Zeile in Kapazitätstabelle
     var row = document.createElement("tr");
     var zelleDate = document.createElement("td");
     zelleDate.setAttribute("data-date", paraDatum);
     zelleDate.addEventListener("click", gotothisdate);
     zelleDate.classList.add("datadate");
     var text = document.createTextNode(paraDatum);
-    zelleDate.appendChild(text);
+    var nbr = document.createElement("nobr");
+    nbr.appendChild(text);
+    zelleDate.appendChild(nbr);
     zelleDate.setAttribute("title", "Im Slotfinder öffnen")
     var zelleState = document.createElement("td");
 
@@ -239,17 +252,28 @@ function übersicht(paraDatum, callback){
       text = document.createTextNode("0");
       zelleMaxKap.appendChild(text);
     } else {
-      zelleState.style.backgroundColor = "#95f0b6";
-      text = document.createTextNode("frei");
+
+      if(maxNumbers[0] < getTeilnehmer()){
+        zelleState.style.backgroundColor = "#ED8D66";
+        text = document.createTextNode("gering");
+      }else{
+        zelleState.style.backgroundColor = "#95f0b6";
+        text = document.createTextNode("frei");
+      }
+
       zelleState.appendChild(text);
 
       var zelleRäume = document.createElement("td");
-      text = document.createTextNode(sortedCopy[0].toString());
+      //text = document.createTextNode(sortedCopy[0].toString());
+
+      text = document.createTextNode(String(Math.max(...sortedCopy)) +"R | "+ String(maxNumbers[0])+ "K");
       zelleRäume.appendChild(text);
 
       var zelleMaxKap = document.createElement("td");
-      text = document.createTextNode(maxNumbers[0].toString());
-      zelleMaxKap.appendChild(text);
+//      text = document.createTextNode(maxNumbers[0].toString());
+      zelleMaxKap = createNiceSlots(arrmaped.join("K | ").replaceAll("- ,", "- ").replaceAll(",", "R ") + "K", zelleMaxKap, räume);
+      // text = document.createTextNode("...");
+      // zelleMaxKap.appendChild(text);
     }
 
     row.appendChild(zelleDate);
@@ -261,14 +285,60 @@ function übersicht(paraDatum, callback){
 }
 
 
+function createNiceSlots(string, div, räume){
+  var strArr = string.split(" | ");
+  var div1 = document.createElement("div");
+  div1.classList.add("fatherNiceSlot")
+  var div2 = document.createElement("div");
+  div2.classList.add("fatherNiceSlot")
+  var div3 = document.createElement("div");
+  div3.classList.add("fatherNiceSlot")
+  for(var i = 0; i <= 6; i++){
+    var innerDiv = document.createElement("div");
+    innerDiv.classList.add("niceSlot");
+    var nbr = document.createElement("nobr");
+    var text = document.createTextNode(strArr[i]);
+    nbr.appendChild(text);
+    innerDiv.setAttribute("title", räume[i].join(" | "))
+    innerDiv.appendChild(nbr);
+    div1.appendChild(innerDiv);
+  }
+  for(var i = 7; i <= 13; i++){
+    var innerDiv = document.createElement("div");
+    innerDiv.classList.add("niceSlot");
+    var nbr = document.createElement("nobr");
+    var text = document.createTextNode(strArr[i]);
+    nbr.appendChild(text);
+    innerDiv.setAttribute("title", räume[i].join(" | "))
+    innerDiv.appendChild(nbr);
+    div2.appendChild(innerDiv);
+  }
+  for(var i = 14; i <= 20; i++){
+    var innerDiv = document.createElement("div");
+    innerDiv.classList.add("niceSlot");
+    var nbr = document.createElement("nobr");
+    var text = document.createTextNode(strArr[i]);
+    nbr.appendChild(text);
+    innerDiv.setAttribute("title", räume[i].join(" | "))
+    innerDiv.appendChild(nbr);
+    div3.appendChild(innerDiv);
+  }
+  div.appendChild(div1);
+  div.appendChild(div2);
+  div.appendChild(div3);
+  return div;
+}
+
 function gotothisdate(e){
   e.preventDefault();
   datumInput2.value = this.getAttribute("data-date");
   setVisible(e);
 }
 
+// const body= document.querySelector("body");
 
 
+window.addEventListener("load", setVisible);
 
 
 
@@ -359,7 +429,6 @@ function setVisible(e) {
     })
   });
   checkDate();
-
   //Statt hidden könnte auch Display = none gesetzt werden? Besser?
 }
 
@@ -374,6 +443,13 @@ function deleteRooms(callback){
   callback()
 }
 
+function deleteRooms2(callback){
+  while(raumgrid.firstChild){
+    raumgrid.firstChild.remove();
+  }
+  dialogs.cancel();
+
+}
 
 
 function doSomething(datum, callback){
@@ -431,6 +507,12 @@ function übersichtbutton(e) {
   var data = [];
 
   for(var i = startDate; i <= endDate; i.setDate(i.getDate()+1)){
+
+    if(feiertagejs.isHoliday(i, "RP") || i.getDay() === 0 || i.getDay() === 6){
+      continue;
+    }
+
+
     data.push(transformDateToHTML(i));
   }
 
@@ -503,6 +585,8 @@ function addPrufung(e) {
     })
   }
   prufungInput.value = "";
+  deleteRooms2();
+
 }
 
 buttonAdd.addEventListener('click', addPrufung, false);
@@ -550,6 +634,8 @@ function addprufgroup(e, sql){
     });
   })
   prüfungsgruppeinput.value = "";
+  deleteRooms2()
+
 }
 buttonAdd2.addEventListener("click", addprufgroup)
 
@@ -574,6 +660,8 @@ function changeRaumkat() {
   if (minutes.value == 0) {
     raumkat.value = "- Kein Raum benötigt -";
   } else raumkat.value = vorher;
+  deleteRooms2();
+
 }
 minutes.addEventListener('change', changeRaumkat)
 
@@ -793,7 +881,7 @@ function setzeVerboteneDrops(callback){
 
 
 
-
+kategorie.addEventListener("change", deleteRooms2);
 
 
 function dragoverpapierkorb(e) { //Was passiert wenn ein Token über den Papierkorb gezogen wird

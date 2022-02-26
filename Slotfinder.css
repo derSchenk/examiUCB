@@ -30,6 +30,30 @@
 
 }
 
+
+.fatherNiceSlot{
+	display: flex;
+	width: 100%;
+	gap: 0.1vw;
+	margin-bottom: 0.1vw;
+}
+
+.niceSlot{
+	/* border: 1px solid black; */
+	background-color: #EDDBF2;
+	border-radius: 10px;
+	flex-basis: 14%;
+	font-size: 0.65vw;
+	padding-left: 0.4vw;
+}
+
+
+
+
+
+
+
+
 #animation:hover{
 	left: 0;
 	z-index: 11;
@@ -43,7 +67,8 @@
 	border-collapse: collapse;
 overflow: auto;
 height: 55vh;
-width: 100%
+width: 100%;
+font-size: 0.9vw;
 }
 
 #kaptable thead{
